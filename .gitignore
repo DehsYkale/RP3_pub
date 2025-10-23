@@ -39,7 +39,6 @@ chatgpt_api.py
 /build
 /data
 config.py
-fun_login*.py
 NEW_AWS_EMAIL_METHOD.py
 
 # Django stuff:
