@@ -287,7 +287,7 @@ def create_query_string(service, sendlist, oprType):
 		# Select Records to Send
 		while 1:
 			# TEMP TEST test CODE
-			if oprType == 'PIR_OPR' or oprType == 'PIR_Comp' or oprType == 'Comp':
+			if oprType == 'PIR_OPR' or oprType == 'PIR_Comp':
 				ui = 'AZPinal258934'
 				# ui = 'FLSarasota295605'
 			else:
@@ -344,14 +344,16 @@ def get_universal_fields(row):
 	dHTML['Location__c'] = lao.charactersToASCII(row['Location__c'], charCase='TITLE')
 	dHTML['Longitude__c'] = row['Longitude__c']
 	# Check for Lead Parcel
+	dHTML['Lot_Table'] = '' # HTML table of lot details
+	dHTML['Lot_Width__c'] = 0
 	dHTML['Lead_Parcel__c'] = (row['Lead_Parcel__c']).upper()
 	dHTML['Lead_Parcel__c'] = dHTML['Lead_Parcel__c'].strip()
 	if dHTML['Lead_Parcel__c'] == 'NONE' or dHTML['Lead_Parcel__c'] == '':
 		dHTML['Lead_Parcel__c'] = bb.addLeadParcel(service, dHTML['Id'])
 	dHTML['Lots__c'] = int(row['Lots__c'])
 	dHTML['PID__c'] = row['PID__c']
-	dHTML['PLT'] = 0
-	dHTML['PPP'] = 0
+	dHTML['Price_per_Lot__c'] = 0
+	dHTML['Price_per_parcel__c'] = 0
 	dHTML['Parcels__c'] = row['Parcels__c']
 	dHTML['Recorded_Instrument_Number__c '] = row['Recorded_Instrument_Number__c']
 	dHTML['Submarket__c'] = (row['Submarket__c']).title()
@@ -505,7 +507,7 @@ def lao_activity(PID):
 	if dHTML['AGENTNAMES'] == 'None':
 		dHTML['LAOACT'] = 0
 	# Exclude agents in the OPR for deals that may have LAO agents but are not LAO sales
-	elif dHTML['STAGENAME'] == 'Closed Lost':
+	elif dHTML['StageName__c'] == 'Closed Lost':
 		dHTML['LAOACT'] = 0
 
 def get_comp_fields(row, recipients_to):
@@ -792,7 +794,7 @@ def get_buyer(row):
 	
 	# Check for Buyer Entity
 	if row['Offers__r']['records'][0]['Buyer_Entity__r'] == 'None':
-		dHTML['Buyer_Entity__r_Name'], dHTML['BTXID'], dHTML['BTXurl'], dHTML['Buyer_Entity__r_Category__c'] = '', '', '', ''
+		dHTML['Buyer_Entity__r_Name'], dHTML['Buyer_Entity__r_Id'], dHTML['Buyer_Entity__r_url'], dHTML['Buyer_Entity__r_Category__c'] = '', '', '', ''
 	else:
 		# BTX > Buyer_Entity__r_Name
 		dHTML['Buyer_Entity__r_Name'] = (row['Offers__r']['records'][0]['Buyer_Entity__r']['Name'])
@@ -821,7 +823,7 @@ def get_lot_details():
 	wc = "Opportunity__c = '{0}' AND RecordTypeId = '012a0000001ZSiZAAW'".format(dHTML['Id'])
 	lot_dict = bb.tf_query_3(service, rec_type='LotDetail', where_clause=wc, limit=None, fields=fields)
 
-	dHTML['PFFFloat'] = 501
+	dHTML['Price_Front_Foot_Float'] = 501  # Minimum price per front foot to trigger warning
 
 	if 'Apartment' not in dHTML['Lot_Type__c']:
 		if dHTML['Lot_Type__c'] == 'Platted and Engineered':
@@ -830,20 +832,18 @@ def get_lot_details():
 		elif dHTML['Lot_Type__c'] == 'Partially Improved':
 			# dHTML['Lot_Type__c'] = 'PIPE'
 			dHTML['Add_Lot_Table'] = 'TRUE'  # Needed to generate the lot table
-		# elif dHTML['Lot_Type__c'] == 'Raw Acreage':
-			# dHTML['Lot_Type__c'] = 'PIPE'
 		elif dHTML['Lot_Type__c'] == 'Initial Lot Option':
 			# dHTML['Lot_Type__c'] = 'LOTS'
 			dHTML['Add_Lot_Table'] = 'TRUE'  # Needed to generate the lot table
 		else:
 			# dHTML['Lot_Type__c'] = 'LOTS'
 			dHTML['Add_Lot_Table'] = 'TRUE'  # Needed to generate the lot table
-	dHTML['PPP'] = 0
-	dHTML['NLG'] = 0  # Number of Lot Groups
-	dHTML['LTC'] = 0  # Lot Count (total of groups)
-	dHTML['TOTALFF'] = 0
-	dHTML['LST'] = ''  # List of groups in HTML
-	dHTML['LTW'] = ''
+	dHTML['Price_per_parcel__c'] = 0
+	dHTML['Num_Lot_Groups'] = 0  # Number of Lot Groups in Lot Details table
+	dHTML['Total_Lots_All_Groups'] = 0  # Lot Count (total of groups)
+	dHTML['Total_Front_Foot'] = 0
+	dHTML['Lot_Table'] = ''  # HTML table of lot details
+	dHTML['Lot_Width__c'] = ''
 	dHTML['avg_front_foot'] = 0
 
 	if lot_dict == []:
@@ -854,57 +854,57 @@ def get_lot_details():
 		if row['Price_per_Lot__c'] == None:
 			return False
 		
-		dHTML['NLG'] += 1
-		dHTML['LAC'] = row['Acres__c']
+		dHTML['Num_Lot_Groups'] += 1
+		# dHTML['LAC'] = row['Acres__c']
 		dHTML['LTCSINGLE'] = row['Lot_Count__c']
-		dHTML['LTC'] = dHTML['LTC'] + int(dHTML['LTCSINGLE'])
+		dHTML['Total_Lots_All_Groups'] = dHTML['Total_Lots_All_Groups'] + int(dHTML['LTCSINGLE'])
 		# Check for blank dimensions
 		try:
-			dHTML['LTD'] = int(row['Lot_Depth__c'])
+			dHTML['Lot_Depth__c'] = int(row['Lot_Depth__c'])
 		except TypeError:
-			dHTML['LTD'] = None
-		if dHTML['LTD'] == 0:
-			dHTML['LTD'] = None
-		if dHTML['LTD'] is None:
-			dHTML['LTD'] = 'None'
-			dHTML['LTW'] = 'None'
+			dHTML['Lot_Depth__c'] = None
+		if dHTML['Lot_Depth__c'] == 0:
+			dHTML['Lot_Depth__c'] = None
+		if dHTML['Lot_Depth__c'] is None:
+			dHTML['Lot_Depth__c'] = 'None'
+			dHTML['Lot_Width__c'] = 'None'
 			dHTML['price_per_front_foot'] = 'None'
 			dHTML['avg_front_foot'] = 'None'
-			dHTML['PFFFloat'] = 'None'
+			dHTML['Price_Front_Foot_Float'] = 'None'
 		else:
-			dHTML['LTW'] = int(row['Lot_Width__c'])
-			dHTML['TOTALFF'] = dHTML['TOTALFF'] + (dHTML['LTW'] * dHTML['LTCSINGLE'])
+			dHTML['Lot_Width__c'] = int(row['Lot_Width__c'])
+			dHTML['Total_Front_Foot'] = dHTML['Total_Front_Foot'] + (dHTML['Lot_Width__c'] * dHTML['LTCSINGLE'])
 			# dHTML['avg_front_foot'] = dHTML['avg_front_foot'] + float(dHTML['price_per_front_foot'])
-			if dHTML['LTW'] == 0:
-				dHTML['PFFFloat'] = 0
+			if dHTML['Lot_Width__c'] == 0:
+				dHTML['Price_Front_Foot_Float'] = 0
 				dHTML['price_per_front_foot'] = 0
 			else:
 				if dHTML['StageName__c'] != 'Lead':
 					dHTML['price_per_front_foot'] = row['Price_per_Front_Foot__c']
-					dHTML['PFFFloat'] = float(dHTML['price_per_front_foot'])  #check if PFF is below $500 variable
+					dHTML['Price_Front_Foot_Float'] = float(dHTML['price_per_front_foot'])  #check if PFF is below $500 variable
 					dHTML['price_per_front_foot'] = td.currency_format_from_number(dHTML['price_per_front_foot'])
 				else:
 					# dHTML['price_per_front_foot'] = 0
 					if dHTML['price_per_front_foot'] != 0 and dHTML['price_per_front_foot'] != 'None':
-						dHTML['avg_front_foot'] = dHTML['avg_front_foot'] + float(dHTML['PFFFloat'])
+						dHTML['avg_front_foot'] = dHTML['avg_front_foot'] + float(dHTML['Price_Front_Foot_Float'])
 
-		dHTML['PLT'] = row['Price_per_Lot__c']
+		dHTML['Price_per_Lot__c'] = row['Price_per_Lot__c']
 		try:
-			dHTML['PLT'] = td.currency_format_from_number(dHTML['PLT'])
+			dHTML['Price_per_Lot__c'] = td.currency_format_from_number(dHTML['Price_per_Lot__c'])
 		except TypeError:
 			td.warningMsg('\n Lot Detail is missing Price.', colorama=True)
 			sys.exit('\n Terminaiting program...continue...')
-		dHTML['PPP'] = row['Price_per_parcel__c']
-		dHTML['PPP'] = td.currency_format_from_number(dHTML['PPP'])
+		dHTML['Price_per_parcel__c'] = row['Price_per_parcel__c']
+		dHTML['Price_per_parcel__c'] = td.currency_format_from_number(dHTML['Price_per_parcel__c'])
 
 		if dHTML['avg_front_foot'] == 'None':
-			dHTML['TAG'] = "<tr><td>%d</td><td>%d</td><td>N/A</td><td>%s</td><td>%s</td><td>N/A</td></tr>" % (dHTML['NLG'], dHTML['LTCSINGLE'], dHTML['PPP'], dHTML['PLT'])
+			dHTML['TAG'] = "<tr><td>%d</td><td>%d</td><td>N/A</td><td>%s</td><td>%s</td><td>N/A</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'])
 		else:
-			dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='right'>%s</td><td align='right'>%s</td><td align='right'>%s</td></tr>" % (dHTML['NLG'], dHTML['LTCSINGLE'], dHTML['LTW'], dHTML['LTD'], dHTML['PPP'], dHTML['PLT'], dHTML['price_per_front_foot'])
-		dHTML['LST'] = dHTML['LST'] + dHTML['TAG']
+			dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='right'>%s</td><td align='right'>%s</td><td align='right'>%s</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+		dHTML['Lot_Table'] = dHTML['Lot_Table'] + dHTML['TAG']
 	# Use Lot Details Count if not 0 rather than Lots__c
-	if dHTML['LTC'] != 0:
-		dHTML['Lots__c'] = dHTML['LTC']
+	if dHTML['Total_Lots_All_Groups'] != 0:
+		dHTML['Lots__c'] = dHTML['Total_Lots_All_Groups']
 	return True
 
 def get_opr_title(oprType, recipients_to):
@@ -1188,15 +1188,15 @@ def qc(oprType, market):
 			errorVar = errorVar + '-- *** Caution Missing Owner/Seller Person *** --<br>'
 
 	if oprType == 'Comp': # dHTML['PNZ'] != 'PNZ':
-		if dHTML['Buyer_Acting_As__c'] == '':
+		if dHTML['Buyer_Acting_As__c'] == 'None':
 			errorVar = errorVar + 'Missing Buyer Acting As<br>'
 		if dHTML['Buyer_Entity__r_Category__c'] == '' and dHTML['Buyer_Entity__r_Name'] != '':
 			errorVar = '{0}<a href="https://landadvisors.my.salesforce.com/{1}"><font color="red">Buyer Entity</font></a> missing Category<br>'.format(
-				errorVar, dHTML['BTXID'])
+				errorVar, dHTML['Buyer_Entity__r_Id'])
 		if dHTML['Buyer__r_Name'] == '' and (market == 'Scottsdale' or market == 'Tucson'):
 			errorVar = errorVar + '-- *** Caution Missing Buyer Person *** --<br>'
 		try:
-			if dHTML['PPP'] == 0 and dHTML['LST'] != '':
+			if dHTML['Price_per_parcel__c'] == 0 and dHTML['Lot_Table'] != '':
 				errorVar = errorVar + 'Missing Price Per Parcel<br>'
 		except NameError:
 			pass
@@ -1207,16 +1207,16 @@ def qc(oprType, market):
 		if dHTML['Buyer__r_Name'] == dHTML['slr_AccountId__r_Name'] and dHTML['Buyer__r_Name'] != '':
 			errorVar = errorVar + 'Buyer Person & Owner/Seller Person are the same<br>'
 		try:
-			if dHTML['LTW'] != '' and dHTML['LTW'] != 0 and dHTML['LTW'] != None:
-				if dHTML['PFFFloat'] < 500 and dHTML['Lot_Type__c'] == 'LOTS' and dHTML['LTW'] < 100:
+			if dHTML['Lot_Width__c'] != '' and dHTML['Lot_Width__c'] != 0 and dHTML['Lot_Width__c'] != None:
+				if dHTML['Price_Front_Foot_Float'] < 500 and dHTML['Lot_Type__c'] == 'LOTS' and dHTML['Lot_Width__c'] < 100:
 					errorVar = errorVar + 'Price per Front Foot is Low<br>PFF = ' + dHTML['price_per_front_foot'] + '<br>'
-				if dHTML['LTW'] < 30 and dHTML['LTW'] > 100 and market == 'Scottsdale':
+				if dHTML['Lot_Width__c'] < 30 and dHTML['Lot_Width__c'] > 100 and market == 'Scottsdale':
 					errorVar = errorVar + 'Odd Lot Width (<30 or >100)<br>PFF = ' + dHTML['price_per_front_foot'] + '<br>'
-				if dHTML['LTW'] != '':
-					if dHTML['PFFFloat'] > 1700 and dHTML['LTW'] >= 35 and oprType != 'P&Z':  # dHTML['PNZ'] != 'PNZ':
+				if dHTML['Lot_Width__c'] != '':
+					if dHTML['Price_Front_Foot_Float'] > 1700 and dHTML['Lot_Width__c'] >= 35 and oprType != 'P&Z':  # dHTML['PNZ'] != 'PNZ':
 						errorVar = errorVar + 'Price per Front Foot is High<br>PFF = ' + dHTML['price_per_front_foot'] + '<br>'
 					if dHTML['Lot_Type__c'] == 'Platted and Engineered' and dHTML[
-						'PFFFloat'] > 1000 and oprType != 'P&Z':  # dHTML['PNZ'] != 'PNZ':
+						'Price_Front_Foot_Float'] > 1000 and oprType != 'P&Z':  # dHTML['PNZ'] != 'PNZ':
 						errorVar = errorVar + 'P&E Lots have High Front Foot Price and could be Finished Lots instead<br>'
 		except(NameError, TypeError) as e:
 			pass
@@ -1348,10 +1348,13 @@ while 1:
 		if oprType == 'Comp':
 			get_comp_fields(row, recipients_to)
 			get_buyer(row)
+			# Lot Details
+			if dHTML['Lots__c'] > 0 and not 'Apartment' in dHTML['Classification__c']:
+				get_lot_details()
 			
-			if get_lot_details() == False:  # Skip temporarily to figure out fix
-				td.uInput('\n Skipped making OPR cuz missing Price per Lot in Lot Details...Continue...')
-				continue
+			# if get_lot_details() == False:  # Skip temporarily to figure out fix
+			# 	td.uInput('\n Skipped making OPR cuz missing Price per Lot in Lot Details...Continue...')
+			# 	continue
 
 		# Top 100 Fields
 		elif oprType == 'TOP100':
@@ -1411,6 +1414,7 @@ while 1:
 			with open(html_filename, 'w', encoding='utf-8') as f:
 				f.write(body)
 			print(f'\n Saved {html_filename} file.')
+			openbrowser(html_filename)
 
 			# TEST PIR ###############################################################
 			# if oprType == 'PIR_OPR' or oprType == 'PIR_Comp':

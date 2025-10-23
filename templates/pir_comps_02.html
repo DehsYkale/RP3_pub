@@ -81,12 +81,18 @@
 							</table>
 							<!-- BUYER/SELLER ################################################  -->
 							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-bottom: 3px solid #d3d3d3;">
-								<tr>
-									<td><strong style="color: #1e3a5f;">Seller Entity: </strong><a href="{{slr_Owner_Entity__r_url}}" target="_blank">{{slr_Owner_Entity__r_Name}}</a> ({{slr_Owner_Entity__r_Category__c}})</td>
-								</tr>
-								<tr>
-									<td><strong style="color: #1e3a5f;">Contact: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
-								</tr>
+								{{% if slr_Owner_Entity__r_Name == "" %}}
+									<tr>
+										<td><strong style="color: #1e3a5f;">Seller: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
+									</tr>
+								{{% else %}}
+									<tr>
+										<td><strong style="color: #1e3a5f;">Seller Entity: </strong><a href="{{slr_Owner_Entity__r_url}}" target="_blank">{{slr_Owner_Entity__r_Name}}</a> ({{slr_Owner_Entity__r_Category__c}})</td>
+									</tr>
+									<tr>
+										<td><strong style="color: #1e3a5f;">Contact: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
+									</tr>
+								{{% endif %}}
 								<tr>
 									<td><strong style="color: #1e3a5f;">Buyer Entity: </strong><a href='{{Buyer_Entity__r_url}}' target="_blank">{{Buyer_Entity__r_Name}}</a> ({{Buyer_Entity__r_Category__c}})</td>
 								</tr>
@@ -123,7 +129,7 @@
 		{% if Add_Lot_Table %}
 		<tr>
 			<td style="padding: 20px;">
-				<div ><strong>Lot Summary:</strong> {{LTC}} total lots</div>
+				<div ><strong>Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
 				<table width="50%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
 					<tr bgcolor="#1e3a5f" style="color: white;">
 						<th align="left" style="padding: 15px; color: white;">Group</th>
@@ -133,7 +139,7 @@
 						<th align="left" style="padding: 15px; color: white;">Price/Lot</th>
 						<th align="left" style="padding: 15px; color: white;">Price/FF</th>
 					</tr>
-					{% autoescape off %}{{LST}}{% endautoescape %}
+					{% autoescape off %}{{Lot_Table}}{% endautoescape %}
 				</table>
 			</td>
 		</tr>
