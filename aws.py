@@ -87,16 +87,36 @@ def opr_map_aws_copy(PID, action='UP or DOWN'):
 	folder_user = f'C:/Users/Public/"Public Mapfiles"/M1_Files'
 	png_file = f'{PID}.png'
 	jpg_file = f'{PID}.jpg'
+	creation_flags = subprocess.CREATE_NO_WINDOW
 
 	if action == 'DOWN':
 		print('\n Downloading OPR map...')
-		subprocess.run(f'aws s3 cp {folder_aws}/{png_file} {folder_user}/{png_file} --only-show-errors')
+		# subprocess.run(f'aws s3 cp {folder_aws}/{png_file} {folder_user}/{png_file} --only-show-errors')
+		subprocess.run([
+			'aws', 's3', 'cp',
+			f'{folder_aws}/{png_file}',
+			f'{folder_user}/{png_file}',
+			'--only-show-errors',
+			'--acl', 'public-read'
+		], creationflags=creation_flags, check=True)
 	elif action == 'UP':
 		print('\n Uploading OPR maps...')
-		creation_flags = subprocess.CREATE_NO_WINDOW
-		subprocess.run(f'aws s3 cp {folder_user}/{png_file} {folder_aws}/{png_file} --only-show-errors --acl public-read', creationflags=creation_flags, check=True)
+		# subprocess.run(f'aws s3 cp {folder_user}/{png_file} {folder_aws}/{png_file} --only-show-errors --acl public-read', creationflags=creation_flags, check=True)
+		subprocess.run([
+			'aws', 's3', 'cp',
+			f'{folder_user}/{png_file}',
+			f'{folder_aws}/{png_file}',
+			'--only-show-errors',
+			'--acl', 'public-read'
+		], creationflags=creation_flags, check=True)
 		# if os.path.exists(jpg_file_user):
-		subprocess.run(f'aws s3 cp {folder_user}/{jpg_file} {folder_aws}/{jpg_file} --only-show-errors --acl public-read', creationflags=creation_flags, check=True)
+		subprocess.run([
+			'aws', 's3', 'cp',
+			f'{folder_user}/{jpg_file}',
+			f'{folder_aws}/{jpg_file}',
+			'--only-show-errors',
+			'--acl', 'public-read'
+		], creationflags=creation_flags, check=True)
 	# aws s3 sync "{0}" s3://request-server/maps/ --acl public-read
 
 def opr_map_aws_list_png():

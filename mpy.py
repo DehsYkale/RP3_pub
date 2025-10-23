@@ -622,6 +622,7 @@ def make_opr_map_api(service, PID, pause_it=True):
 
 	# Create a copy of the OPR map for the child Deal
 	if len(results) == 1:
+		print(f'\n Creating OPR Map copy for child Deal: {results[0]['PID__c']}...')
 		PID_child = results[0]['PID__c']
 		img_jpg_child = img_jpg.replace(f'{PID}.jpg', f'{PID_child}.jpg')
 		# Copy the jpg file
