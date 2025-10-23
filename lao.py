@@ -1,6 +1,6 @@
 #! python3
 
-#LAO Functions Python3
+# LAO Functions for Python3
 
 import csv
 from ctypes import windll, byref
@@ -2177,7 +2177,7 @@ def consoleWindowPosition(position='default'):
 	import win32gui
 	import win32api
 
-	# Get screen resolution using Windows API
+	# Get screen resolution using Windows API call
 	screenwidth = win32api.GetSystemMetrics(0)  # SM_CXSCREEN
 	screenheight = win32api.GetSystemMetrics(1)  # SM_CYSCREEN
 	
