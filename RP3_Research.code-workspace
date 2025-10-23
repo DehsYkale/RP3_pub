@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../Research"
+		},
+		{
+			"path": "C:/Users/blandis/Documents/mcp-servers"
+		}
+	],
+	"settings": {
+		"python.languageServer": "Pylance"
+	}
+}

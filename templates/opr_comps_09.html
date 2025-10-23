@@ -1,0 +1,328 @@
+<!-- This version removes LAO Activity and replaces it with Agents only if an LAO Deal -->
+<html>
+	<head>
+        <meta charset="UTF-8">
+    </head>
+	<body style="font-family:Arial,sans-serif;">
+
+<!-- TITLE & MENU DIV -->
+		<div>
+<!-- LAO LOGO -->
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+				<tr>
+                    <td align="left"><a href='http://www.landadvisors.com/'><img src='https://request-server.s3.amazonaws.com/maps/laologo.png' title="Land Advisors Organization"></a></td>
+                 <td style="color:#D45E0F;font-size:12pt;text-align:right"><strong>Comps Report</strong></td>
+                </tr>
+            </table>
+<!-- OPR TITLE -->
+            <span style="color:#D45E0F;font-size:14pt;"><strong>{{TLT}}</strong></span>
+<!-- VIEW IN TERRAFORCE OR L5 BUTTONS -->
+				<table style="background-color:#D45E0F;font-family:Arial,sans-serif;font-size:10pt;vertical-align:middle" width="600" cellpadding="1" cellspacing="1">
+					<tr>
+						<td style="height:10px;text-align:center;color:#FFFFFF"><b>LINKS TO: </b></td>
+						<td style="height:10px;text-align:center;"><a href='https://landadvisors.my.salesforce.com/{{DID}}' style="color:#FFFFFF;text-decoration: none"><b>TERRAFORCE</b></a></td>
+						<td style="height:10px;text-align:center"><a href='{{L5L}}' style="color:#FFFFFF;text-decoration: none"><b>VIEW IN L5</b></a></td>
+						{% if RDL %}
+							<td style="height:10px;text-align:center"><a href='{{RDL}}' style="color:#FFFFFF;text-decoration: none"><b>AFFIDAVIT</b></a></td>
+							<td style="height:10px;text-align:center"><a href='{{LPL}}' style="color:#FFFFFF;text-decoration: none"><b>ASSESSOR</b></a></td>
+						{% endif %}
+						{% if SOURCE == 'Vizzda' %}
+						<td style="height:10px;text-align:center"><a href='{{SOURCELINK}}' style="color:#FFFFFF;text-decoration: none"><b>VIZZDA</b></a></td>
+						{% elif SOURCE == 'RED News' %}
+						<td style="height:10px;text-align:center"><a href='{{SOURCELINK}}' style="color:#FFFFFF;text-decoration: none"><b>RED NEWS</b></a></td>
+						{% elif SOURCE == 'Reonomy' %}
+						<td style="height:10px;text-align:center"><a href='{{SOURCELINK}}' style="color:#FFFFFF;text-decoration: none"><b>Reonomy</b></a></td>
+						{% endif %}
+						<td style="height:10px;text-align:center;"><a href='https://landadvisors--c.na68.visual.force.com/apex/opr?scontrolCaching=1&id={{DID}}' style="color:#FFFFFF;text-decoration: none"><b>PRINT</b></a></td>
+					</tr>
+				</table>
+				<table style="background-color:#D45E0F;font-family:Arial,sans-serif;font-size:8pt;vertical-align:middle" width="600" cellpadding="1" cellspacing="1">
+					<tr>
+						<td style="height:10px;text-align:center;color:#FFFFFF"><b>Reply to this email or click <a href="mailto:research@landadvisors.com?subject={{PID}}%20Changes/Corrections&body=Please%20make%20the%20following%20changes/corrections%20to%20{{PID}}:%20" style="color:#FFFFFF">here</a> to request changes or corrections.</b></td>
+					</tr>
+				</table>
+		</div>
+<!-- MAIN BODY -->
+		<div style="font-family:Arial,sans-serif;">
+<!-- LAO Agents -->
+            {% if LAOACT == 1 %}
+                <span style="color:#000080;font-size:12pt;"><strong>AGENTS</strong></span>
+                <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align:top;" width="600" cellpadding="3" cellspacing="3">
+                    <tr>
+                        <td width="100">{{AGENTNAMES}}</td>
+                    </tr>
+                </table>
+				<hr style="color: #D45E0F; height: 2px; width: 600px; text-align: left;">
+
+            {% endif %}
+<!-- PROPERTY DETAILS -->
+			<span style="color:#000080;font-size:12pt;"><strong>PROPERTY DETAILS</strong></span>
+            <!-- PD: COMMUNITY -->
+			{% if CMT != 'None' %}
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align:top;" width="600" cellpadding="3" cellspacing="3">
+					<tr>
+						<td width="120">Community:</td>
+						<td width="500">{{CMT}}</td>
+					</tr>
+				</table>
+			{% endif %}
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                <!-- PD: PID, CLASSIFICATION, LOT TYPE, ZONING, ACRES/LOTS,  -->
+				<tr>
+					<td width="120">PID:</td>
+					<td>{{PID}}</td>
+				</tr>
+				<tr>
+					<td width="120">Zoning:</td>
+					<td>{{ZON}}</td>
+				</tr>
+				<tr>
+					<td width="120">Classification:</td>
+					<td>{{CLA}}</td>
+				</tr>
+
+                <!-- PD: ADD LOT TYPE IF APARTMENT OR RESIDENTIAL -->
+				 {% if "APARTMENT" in CLA or "ASSISTED LIVING" in CLA or "RESIDENTIAL" in CLA %}
+					<tr>
+						<td width="120">Lot Type:</td>
+						<td>{{TTY}}</td>
+					</tr>
+				{% endif %}
+                {% if "APARTMENT" in CLA or "ASSISTED LIVING" in CLA %}
+					<tr>
+						<td width="120">Dev Status:</td>
+						<td>{{DEVSTAT}}</td>
+					</tr>
+                {% endif %}
+				<tr>
+                    {% if NLT > 0 %}
+					    <td width="120">Acres & Lots:</td>
+                        <td>{{ACR}} / {{NLT}}</td>
+                    {% else %}
+                        <td width="120">Acres:</td>
+					    <td>{{ACR}}</td>
+                    {% endif %}
+				</tr>
+			</table>
+            <hr style="color: #D45E0F; height: 2px; width: 600px; text-align: left;">
+<!-- BUYER/SELLER OR OWNER/APPLICANT/GOV CONTACT -->
+		    <span style="color:#000080;font-size:12pt;"><strong>BUYER/SELLER</strong></span><br>
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                <!-- PD: BUYER ACTING AS -->
+                {% if BAA %}
+                    <tr>
+                        <td width="120">Buyer Acting As:</td>
+                        <td>{{BAA}}</td>
+                    </tr>
+                {% endif %}
+                {% if 'UNKNOWN' in BTX %}
+                    <tr>
+                        <td width="120">Buyer Entity:</td>
+                        <td width="380">UNKNOWN BUYER</td>
+                        <td width="100"></td>
+                    </tr>
+				{% elif BTX %}
+                    <tr>
+                        <td width="120">Buyer Entity:</td>
+                        <td width="380"><a href='{{BTXurl}}'>{{BTX}}</a></td>
+                        <td width="100">{{BTXcat}}</td>
+                    </tr>
+				{% endif %}
+                {% if BPR %}
+                    <tr>
+                        {% if BPRT100 == "MAKE MVP" %}
+                            <tr style="color:black">
+                            <td width="120">Buyer:</td>
+                            <td width="380"><a href='{{BPRurl}}'>{% autoescape off %}{{BPR}}{% endautoescape %}</a></td>
+                            <td width="100"><a href='{{BPRT100url}}'>{% autoescape off %}{{BPRT100}}{% endautoescape %}</a></td>
+                        {% else %}
+                            <tr style="color:green">
+                            <td width="120">Top 100 Buyer:</td>
+                            <td width="380"><a style="color:green" href='{{BPRurl}}'>{% autoescape off %}{{BPR}}{% endautoescape %}</a></td>
+                            <td width="100"><a style="color:green" href='{{BPRT100url}}'>{% autoescape off %}{{BPRT100}}{% endautoescape %}</a></td>
+                        {% endif %}
+                    </tr>
+                {% endif %}
+                {% if 'UNKNOWN' in STX %}
+                    <tr>
+                        <td width="120">Seller Entity:</td>
+                        <td width="380">UNKNOWN SELLER</td>
+                        <td width="100"></td>
+                    </tr>
+				{% elif STX %}
+                    <tr>
+                        <td width="120">Seller Entity:</td>
+                        <td width="380"><a href='{{STXurl}}'>{% autoescape off %}{{STX}}{% endautoescape %}</a></td>
+                        <td width="100">{{STXcat}}</td>
+                    </tr>
+				{% endif %}
+                {% if SPR %}
+                        {% if SPRT100 == "MAKE MVP" %}
+                            <tr style="color:black">
+                            <td width="120">Seller:</td>
+                            <td width="380"><a href='{{SPRurl}}'>{% autoescape off %}{{SPR}}{% endautoescape %}</a></td>
+                            <td width="100"><a href='{{SPRT100url}}'>{% autoescape off %}{{SPRT100}}{% endautoescape %}</a></td>
+                        {% else %}
+                            <tr style="color:green">
+                            <td width="120">Top 100 Seller:</td>
+                            <td width="380"><a style="color:green" href='{{SPRurl}}'>{% autoescape off %}{{SPR}}{% endautoescape %}</a></td>
+                            <td width="100"><a style="color:green" href='{{SPRT100url}}'>{% autoescape off %}{{SPRT100}}{% endautoescape %}</a></td>
+                        {% endif %}
+                    </tr>
+                {% endif %}
+			</table>
+<!-- FINANCIAL SUMMARY -->
+			<hr style="color: #D45E0F; height: 2px; width: 600px; text-align: left;">
+            <span style="color:#000080;font-size:12pt;"><strong>FINANCIAL SUMMARY</strong></span><br>
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+				<!-- SALE DATE & PRICE -->
+                <tr>
+                    <td width="120">Sale Date:</td>
+                    <td>{{DTE}}</td>
+                </tr>
+                <tr>
+                    <td width="120">Sale Price:</td>
+                    {% if PRC == '$10,000' %}
+                        {% if 'REONOMY ESTIMATED' in CMM %}
+                            <td>Estimated in Description</td>
+                        {% else %}
+                            <td>Undisclosed</td>
+                        {% endif %}
+                    {% else %}
+                        <td>{{PRC}}</td>
+                    {% endif %}
+                </tr>
+            </table>
+			<!-- NO LOT BREAKDOWN TABLE -->
+            {% if not LBN %}
+					<!-- PRICE/ACRE & PRICE/SQFT -->
+                {% if PPA and not LBN and PRC != '$10,000' %}
+					<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+                        <tr>
+                            <td width="120">Price/Acre:</td>
+                            <td width="180">{{PPA}}</td>
+                            <td width="120">Price/SqFt:</td>
+                            <td>{{PPSQFT}}</td>
+                        </tr>
+					</table>
+          		{% endif %}
+				 <!-- If Lot Type if MultiFamily -->
+                {% if CLA == "APARTMENT" or CLA == "HIGH DENSITY ASSISTED LIVING" or CLA == "APARTMENT TRADITIONAL" %}
+					<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+                        <tr>
+                            <td width="120">Units:</td>
+                            {% if NLT > 0 %}
+                                <td width="180">{{NLT}}</td>
+                            {% else %}
+								<td width="180">UNKNOWN</td>
+                            {% endif %}
+							{% if NLT > 0 %}
+								<td width="120">Price/Unit:</td>
+								<td>{{PPU}}</td>
+							{% endif %}
+						</tr>
+					</table>
+                {% endif %}
+			<!-- ADD LOT BREAKDOWN TABLE -->
+			{% else %}
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+                    {% if PPA and TTY != "FINISHED LOTS" and TTY != "INITIAL LOT OPTION" %}
+                        <tr>
+                            <td width="120">Total Lots:</td>
+                            <td width="180">{{LTC}}</td>
+                            <td width="120">Price/Acre:</td>
+                            <td>{{PPA}}</td>
+                        </tr>
+                        {% if AFF != 'None' %}
+                            <tr>
+                                <td width="120">Avg $/FF:</td>
+                                <td width="180">{{AFF}}</td>
+                                <td width="120"></td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                    {% elif AFF != 'None' %}
+                        <tr>
+                            <td width="120">Total Lots:</td>
+                            <td width="180">{{LTC}}</td>
+                            <td width="120">Avg $/FF:</td>
+                            <td>{{AFF}}</td>
+                        </tr>
+                     {% else %}
+                        <tr>
+                            <td width="120">Total Lots:</td>
+                            <td width="480">{{LTC}}</td>
+                        </tr>
+                     {% endif %}
+				</table>
+                <!-- LOT DETAILS TABLE -->
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;text-align: center;" width="600" cellpadding="3" cellspacing="3">
+					<tr><i>
+						<td></td>
+						<td>Group</td>
+						<td>Count</td>
+                        <td>Dimensions</td>
+                        {% if PRC != '$10,000' %}
+							<td>Price/Parcel</td>
+							<td>Price/Lot</td>
+							<td>Price/FF</td></i>
+						{% endif %}
+					</tr>
+					{% autoescape off %}{{LST}}{% endautoescape %}
+				</table>
+			{% endif %}
+		
+<!-- DEBT SUMMARY-->
+			{% if BENEFICIARY %}
+				<hr style="color: #D45E0F; height: 2px; width: 600px; text-align: left;">
+				<span style="color:#000080;font-size:12pt;"><strong>DEBT SUMMARY</strong></span><br>
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+					<tr>
+						<td width="120">Beneficiary:</td>
+						<td><a href='{{BNFurl}}'>{% autoescape off %}{{BENEFICIARY}}{% endautoescape %}</a></td>
+					<tr>
+						<td width="120">Loan Amount:</td>
+						<td>{{LOANAMOUNT}}</td>
+					</tr>
+				</table>
+			{% endif %}
+		</div>
+<!-- DESCRIPTION -->
+		{% if CMM %}
+            <div style="width:600px">
+                <hr style="color: #D45E0F; height: 2px; width: 600px; text-align: left;">
+                <span style="color:#000080;font-size:12pt;"><strong>DESCRIPTION</strong></span><br>
+                <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                    <tr>
+                        <td>{{CMM}}</td>
+                    </tr>
+                </table>
+            </div>
+        {% endif %}
+<!-- LOCATION AND MAP -->
+		<hr style="color: #D45E0F; height: 2px; width: 600px; text-align: left;">
+		<span style="color:#000080;font-size:12pt;"><strong>LOCATION</strong></span><br>
+        <span style="font-size:10pt;">County: {{COU}}</span><br>
+		<span style="font-size:10pt;">Submarket: {{SMK}}</span><br>
+        <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="0" cellspacing="0">
+            <tr>
+                <td>{{LOC}}, {{CTY}}, {{STT}}</td>
+            </tr>
+		<!--<a href='https://maps.google.com/maps?z=10&t=m&q=loc:{{LAT}}+{{LON}}'><img src={{MAP}} height="600" width="600"></a><br> -->
+            <a href='https://www.google.com/maps/search/?api=1&query={{LAT}},{{LON}}'><img src={{MAP}} height="600" width="600"></a><br>
+<!-- PARCEL LIST & DISCLAIMER -->
+		<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+			<tr>
+				<td>
+					<span style="font-size:10pt;">Parcel List: {{PRL}}</span><br><br>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<span style="color:gray;font-size:6pt;">The information contained herein was assembled by the Land Advisors Organization Research Department, Bill Landis, Benevolent Dictator of Research. The information has been obtained from sources deemed reliable. While we have no reason to doubt the accuracy of this information, Land Advisors Organization accepts no responsibility for any errors contained herein, or for any errors that may result from using this information. All information should be independently confirmed and verified. For more information on the Land Advisors Organization or for assistance with your land needs, please call us at 1-480-483-8100 (c) 2025.</span>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+</html>

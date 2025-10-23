@@ -1,0 +1,128 @@
+<!-- Annoyatron 5000 template -->
+<html>
+	<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+	<body style="font-family:Arial,sans-serif;">
+
+<!-- TITLE & MENU DIV -->
+		<div>
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+				<tr>
+					{% if TYPE == "Posters" %}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mm_title_aerial_poster.jpg' title="Land Advisors Organization"></a></td>
+					{% elif TYPE == "Mail List" %}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mm_title_rolodex.jpg' title="Land Advisors Organization"></a></td>
+					{% elif TYPE == "Market Insights" %}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mi_title_market_insights_eblast.jpg' title="Land Advisors Organization"></a></td>
+						<!-- <td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mm_title_market_insights.jpg' title="Land Advisors Organization"></a></td> -->
+					{% elif TYPE == "Market Overview" %}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mo_title_market_overview.jpg' title="Land Advisors Organization"></a></td>
+					{% elif TYPE == "Cover Letter" %}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mm_title_cover_letter.jpg' title="Land Advisors Organization"></a></td>
+					{% elif TYPE == "Notification" and STATUS == "Ready to Print"%}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mm_title_crossing_the_finish.jpg' title="Land Advisors Organization"></a></td>
+					{% elif TYPE == "Notification" and STATUS == "Market Mailers"%}
+						<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mm_title_notification.jpg' title="Land Advisors Organization"></a></td>
+					{% endif %}
+				</tr>
+			</table>
+<!-- SALUTATION AND MESSAGE-->
+			<P span style="color:#000000;font-size:12pt;">{{SALUTATION}},</span></P>
+			{% if TYPE == "Mail List" %}
+				<P span style="color:#000000;font-size:12pt;">{{MESSAGE}}</span></P>
+			{% elif TYPE == "Cover Letter" %}
+				<P span style="color:#ff0000;font-size:12pt;">{{MESSAGE}}</span></P>
+			{% else %}
+				<P span style="color:#000000;font-size:12pt;">{{MESSAGE}}</span></P>
+			{% endif %}
+<!-- LINKS-->
+			<!-- POSTERS -->
+			{% if TYPE == "Posters" %}
+				<!-- INSTRUCTIONS & LINKS-->
+				{% if STATUS == "Waiting for Changes" or STATUS == "Reminded" %}
+					<P span style="color:#000000;font-size:12pt;"><strong>Instructions</strong></span><br/>1] Download the 2026 poster using the "Download Poster" link below.<br/>2] Use the "Submit Aerial Poster Revisions" link to request changes.</span></P>
+					<P><a href='{{PDFLINK}}' style="color:#005695;font-size:12pt;">Download {{OFFICE}} Poster</a></P>
+					<P><a href='{{REVISIONLINK}}' style="color:#005695;font-size:12pt;">Submit Aerial Poster Revisions</a></P>
+					<P><a href='{{RQLINK}}' style="color:#005695;font-size:12pt;">Review the Request</a></P>
+				{% endif %}
+				<!-- COMPLETED NEED APPROVAL -->
+				{% if STATUS == "Completed Need Approval" %}
+					<P><a href='{{PDFLINK}}' style="color:#005695;font-size:12pt;">Download {{OFFICE}} Poster</a></P>
+					<P>If you have any further changes use the revisions link bleow.</P>
+					<P><a href='{{REVISIONLINK}}' style="color:#005695;font-size:12pt;">Submit Aerial Poster Revisions</a></P>
+					<P><a href='{{RQLINK}}' style="color:#005695;font-size:12pt;">Review the Request</a></P>
+				{% endif %}
+				<!-- APPROVED SEND TO PRINTER -->
+				{% if STATUS == "Approved Send to Printer" %}
+					<P><a href=mailto:blandis@landadvisors.com?subject="{{OFFICE}} Aerial Poster Approved" style="color:#005695;font-size:12pt;">Download {{OFFICE}} Poster</a></P>
+					<P><a href='{{PDFLINK}}' style="color:#005695;font-size:12pt;">Download {{OFFICE}} Poster</a></P>
+				{% endif %}		
+			<!-- MAIL LIST -->
+			{% elif TYPE == "Mail List" %}
+				<P>Click the link to see your Market Mailer list in TerraForce. <a href="{{LISTLINK}}" style="color:#005695;font-size:12pt;">Market Mailer Recipients</a></br></P>
+				<!-- <P span style="color:#000000;font-size:12pt;">Number of contacts on your list: <STRONG>{{NUMCONTACTS}}</STRONG></br></P> -->
+				<P>Super helpful instructions on how to add and remove contacts from your list...</P>
+				<P><a href="https://request-server.s3.amazonaws.com/maps/maintain_mm_mi_lists_v04.pdf#New_contact_to_Terraforce_Market_Mailer" style="color:#005695;font-size:12pt;">Add a contact NOT in Terraforce to your Market Mailer List</a></br></P>
+				<P><a href="https://request-server.s3.amazonaws.com/maps/maintain_mm_mi_lists_v04.pdf#Existing_Contact_to_MM" style="color:#005695;font-size:12pt;">Add an existing contact in Terraforce to your Market Mailer List</a></br></P>
+				<P><a href="https://request-server.s3.amazonaws.com/maps/maintain_mm_mi_lists_v04.pdf#Removing_Contact_from_MM_List" style="color:#005695;font-size:12pt;">Remove a contact from your Market Mailer List</a></br></P>
+				<!-- <P>Link to MVP Deals not tagged to receive a Market Mailer.</P>
+				<P><a href="{{NOMAILERLINK}}" style="color:#ff0000;font-size:12pt;">No Mailer MVP Deals</a></br></P> -->
+				<!--{% if NUMCONTACTS > 200 %}
+					<P span style="color:#ff0000;font-size:12pt;">Your Market Mailer list has an excessive number of contacts.  Please reduce the count to under 200.</P>
+				{% endif %} -->
+			<!-- MARKET OVERVIEW -->
+			{% elif TYPE == "Market Overview" %}
+				<P><a href='https://landadvisors.lightning.force.com/lightning/o/ContentDocument/home' style="color:#005695;font-size:12pt;">Click here to open the TerraForce File Library.</a></P>
+				<P>Instructions:</P>
+				<P>
+					<ul>
+						<li>Select the <strong>Files</strong> tab at the top</li>
+						<li>Select the <strong>Libraries</strong> menu on the left</li>
+						<li>Select the <strong>Market Overviews</strong> Market Overviews folder under Name</li>
+						<li>Click the Market Overivew file</li>
+						<li>Select <strong>Download</strong> in the top menu bar</li>
+					</ul>
+				</P>
+				<td align="left"><img src='https://request-server.s3.amazonaws.com/maps/mo_download_from_tf.jpg' title="Land Advisors Organization"></a></td>
+			{% endif %}
+<!-- COVER LETTER -->
+			{% if TYPE == "Cover Letter" %}
+				<P span style="color:#000000;font-size:12pt;">You are welcome to write your own Cover Letter rather than use the provided template.<br/><br/>Either way, your Cover Letter is due by Tuesday, February 18th. </span></P>
+			{% endif %}
+<!-- CLOSING -->
+			<P span style="color:#000000;font-size:12pt;">Please let me know if you have any questions or need help.</span></P>
+<!-- BILL LANDIS EMAIL SIGNATURE-->
+			<P style="FONT-SIZE: 10pt; FONT-FAMILY: Arial"><FONT 
+			style="FONT-SIZE: 11pt"><FONT style="FONT-SIZE: 11pt" 
+			color=#005695><STRONG><SPAN style="FONT-FAMILY: Calibri Light"><SPAN 
+			style="FONT-SIZE: 12pt"><SPAN style="FONT-SIZE: 12pt">Bill Landis<SPAN 
+			style="FONT-FAMILY: Calibri Light"></SPAN></SPAN></SPAN></SPAN><BR 
+			style="FONT-FAMILY: Calibri Light"></STRONG><FONT 
+			style="FONT-FAMILY: Calibri Light" color=#595959><SPAN 
+			style="COLOR: #000000"><FONT style="FONT-FAMILY: Calibri Light; COLOR: #000000" 
+			color=#595959>Benevolent Dictator of Research<BR>
+			<SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light; COLOR: #000000">4900 North Scottsdale Road, Suite 3000</SPAN><BR 
+			style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light"><SPAN 
+			style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light; COLOR: #000000">Scottsdale, 
+			Arizona 85251</SPAN><BR 
+			style="FONT-SIZE: 11pt; FONT-FAMILY: Calibri Light"><SPAN 
+			style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light; COLOR: #000000">o|480.483.8100 d|480.874.4325</SPAN><BR> 
+			<SPAN 
+			style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light; COLOR: #000000">blandis@landadvisors.com</SPAN></FONT></SPAN><SPAN 
+			style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light"><BR></SPAN></FONT></FONT></FONT><FONT 
+			style="FONT-SIZE: 11pt"><FONT style="FONT-SIZE: 11pt" color=#005695><FONT 
+			style="FONT-FAMILY: Calibri Light" color=#595959><SPAN 
+			style="FONT-SIZE: 10pt; FONT-FAMILY: Calibri Light"><BR><BR></SPAN></FONT></FONT></FONT><A 
+			title="Land Advisors Organization" href="https://landadvisors.com/"><IMG 
+			border=0 src="https://landadvisors.com/wp-content/uploads/LAO.png"></A></P>
+			<P style="FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN 
+			style="FONT-FAMILY: Calibri"><SPAN style="FONT-FAMILY: Calibri Light"><FONT 
+			style="COLOR: #000000" color=#595959><SPAN 
+			style="FONT-FAMILY: Calibri Light; COLOR: #000000"></SPAN><SPAN 
+			style="FONT-FAMILY: Calibri Light; COLOR: #000000"></SPAN><SPAN 
+			style="FONT-FAMILY: Calibri Light; COLOR: #000000"></SPAN><SPAN 
+			style="FONT-FAMILY: Calibri Light; COLOR: #000000"></SPAN></FONT></SPAN></SPAN></P>
+		</div>
+	</body>
+</html>

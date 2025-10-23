@@ -1,0 +1,211 @@
+<!-- This version removes LAO Activity and replaces it with Agents and Stage only if an LAO Deal -->
+<html>
+	<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+	<body style="font-family:Arial,sans-serif;">
+
+<!-- TITLE & MENU DIV -->
+		<div>
+<!-- LAO LOGO -->
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+				<tr>
+                    <td align="left"><a href='http://www.landadvisors.com/'><img src='https://request-server.s3.amazonaws.com/maps/laologo.png' title="Land Advisors Organization"></a></td>
+                    <td style="color:green;font-size:12pt;text-align:right"><strong>Planning & Zoning Report</strong></td>
+                </tr>
+            </table>
+<!-- OPR TITLE -->
+            <span style="color:green;font-size:14pt;"><strong>{{TLT}}</strong></span>
+<!-- VIEW IN TERRAFORCE OR L5 BUTTONS -->
+            <table style="background-color:green;font-family:Arial,sans-serif;font-size:10pt;vertical-align:middle" width="600" cellpadding="1" cellspacing="1">
+                <tr>
+                    <td style="height:10px;text-align:center;color:#FFFFFF"><b>LINKS TO: </b></td>
+                    <td style="height:10px;text-align:center;"><a href='https://landadvisors.my.salesforce.com/{{DID}}' style="color:#FFFFFF;text-decoration: none"><b>TERRAFORCE</b></a></td>
+                    <td style="height:10px;text-align:center"><a href='{{L5L}}' style="color:#FFFFFF;text-decoration: none"><b>VIEW IN L5</b></a></td>
+                    <td style="height:10px;text-align:center"><a href='{{LPL}}' style="color:#FFFFFF;text-decoration: none"><b>ASSESSOR</b></a></td>
+                    {% if SOURCE == 'Vizzda' %}
+                        <td style="height:10px;text-align:center"><a href='{{SOURCELINK}}' style="color:#FFFFFF;text-decoration: none"><b>VIZZDA</b></a></td>
+                    {% endif %}
+                </tr>
+                </table>
+		</div>
+<!-- MAIN BODY -->
+		<div style="font-family:Arial,sans-serif;">
+<!-- LAO Agents -->
+            {% if LAOACT == 1 %}
+                <span style="color:#000080;font-size:12pt;"><strong>AGENTS</strong></span>
+                <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align:top;" width="600" cellpadding="3" cellspacing="3">
+                    <tr>
+                        <td width="100">{{AGENTNAMES}}</td>
+                    </tr>
+                </table>
+                <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                    <!-- Stage -->
+                    <tr>
+                        <td width="150">Stage: {{STAGENAME}}</td>
+                    </tr>
+                </table>
+				<hr style="color: green; height: 2px; width: 600px; text-align: left;">
+            {% endif %}
+<!-- PROPERTY DETAILS -->
+			<span style="color:#000080;font-size:12pt;"><strong>PROPERTY DETAILS</strong></span>
+            <!-- PD: COMMUNITY -->
+			{% if CMT != 'None' %}
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align:top;" width="600" cellpadding="3" cellspacing="3">
+					<tr>
+						<td width="120">Community:</td>
+						<td width="480">{{CMT}}</td>
+					</tr>
+				</table>
+			{% endif %}
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                <!-- PD: P&Z CITY, CASE/PLAN -->
+                <tr>
+					<td width="120">PID:</td>
+					<td width="200">{{PID}}</td>
+                    <td width="120">Date:</td>
+                    <td width="160">{{PNZDTE}}</td>
+                </tr>
+                <!-- PD: ACRES, PID -->
+				<tr>
+					{% if NLT > 0 %}
+					    <td>Acres & Lots:</td>
+                        <td>{{ACR}} / {{NLT}}</td>
+                    {% else %}
+                        <td>Acres:</td>
+					    <td>{{ACR}}</td>
+                    {% endif %}
+					<td width="120">Case & Plan:</td>
+                    <td width="160">{{PNZCASE}}</td>
+					
+				</tr>
+                <!-- PD: ZONING, LEAD APN -->
+				<tr>
+					<td>Classification:</td>
+					<td>{{CLA}}</td>
+					<td>Zoning:</td>
+					<td>{{ZON}}</td>
+				</tr>
+                <!-- PD: PROPERTY TYPE, SUBTYPE/CLASSIFICATION -->
+				<tr>
+					<td>Lot Type:</td>
+					<td>{{TTY}}</td>
+					<td>Lead APN:</td>
+					<td>{{LPR}}</td>
+				</tr>
+				{% if DEVSTAT != 'NONE' %}
+					<tr>
+						<td width="120">Dev Status:</td>
+						<td width="200">{{DEVSTAT}}</td>
+						<td width="120"></td>
+						<td width="160"></td>
+					</tr>
+                {% endif %}
+			</table>
+			<hr style="color: green; height: 2px; width: 600px; text-align: left;">
+<!-- BUYER/SELLER OR OWNER/APPLICANT/GOV CONTACT -->
+            <span style="color:#000080;font-size:12pt;"><strong>CONTACTS</strong></span><br>
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                {% if STX %}
+                    <tr>
+                        <td width="100">Owner Entity:</td>
+                        <td width="500"><a href='{{STXurl}}'>{% autoescape off %}{{STX}}{% endautoescape %}</a></td>
+                        <td width="100">{{STXcat}}</td>
+                    </tr>
+                {% endif %}
+                {% if SPR %}
+                        {% if SPRT100 == "ADD Top100" %}
+                            <tr>
+                            <td width="120">Owner:</td>
+                            <td width="380"><a href='{{SPRurl}}'>{% autoescape off %}{{SPR}}{% endautoescape %}</a></td>
+                            <td width="100"><a href='{{SPRT100url}}'>{% autoescape off %}{{SPRT100}}{% endautoescape %}</a></td>
+                        {% else %}
+                            <tr style="color:green">
+                            <td width="120">Top 100 Owner:</td>
+                            <td width="380"><a style="color:green" href='{{SPRurl}}'>{% autoescape off %}{{SPR}}{% endautoescape %}</a></td>
+                            <td width="100"><a style="color:green" href='{{SPRT100url}}'>{% autoescape off %}{{SPRT100}}{% endautoescape %}</a></td>
+                        {% endif %}
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td width="100">Applicant:</td>
+                    <td width="500"><a href='{{PNZAPPLICANTurl}}'>{{PNZAPPLICANT}}</a></td>
+                </tr>
+                <tr>
+                    <td width="100">City Planner:</td>
+                    <td width="500"><a href='{{PNZCITYPLANNERurl}}'>{{PNZCITYPLANNER}}</a></td>
+                </tr>
+			</table>
+<!-- FINANCIAL SUMMARY -->
+			{% if LBN %}
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+                    {% if AFF %}
+                        <tr>
+                            <td width="100">Avg Price/FF:</td>
+                            <td width="500">{{AFF}}</td>
+                        </tr>
+                    {% endif %}
+					<tr>
+						<td width="100">Total Lots:</td>
+						<td width="500">{{LTC}}</td>
+					</tr>
+				</table>
+                <!-- LOT DETAILS TABLE -->
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;text-align: center;" width="600" cellpadding="3" cellspacing="3">
+					<tr><i>
+						<td></td>
+						<td>Group</td>
+						<td>Count</td>
+						<td>Dimensions</td>
+						<td>Price/Parcel</td>
+						<td>Price/Lot</td>
+					    <td>Price/FF</td></i>
+					</tr>
+					{% autoescape off %}{{LST}}{% endautoescape %}
+				</table>
+			{% endif %}
+		</div>
+<!-- DESCRIPTION -->
+        <div style="width:600px">
+			<hr style="color: green; height: 2px; width: 600px; text-align: left;">
+            <span style="color:#000080;font-size:12pt;"><strong>PLANNING & ZONING NOTES</strong></span><br>
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                <tr>
+                    <td>{{PNZDES}}</td>
+                </tr>
+            </table>
+        </div>
+		{% if CMM %}
+            <div style="width:600px">
+				<hr style="color: green; height: 2px; width: 600px; text-align: left;">
+                <span style="color:#000080;font-size:12pt;"><strong>DESCRIPTION</strong></span><br>
+                <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+                    <tr>
+                        <td>{{CMM}}</td>
+                    </tr>
+                </table>
+            </div>
+        {% endif %}
+<!-- LOCATION -->
+		<hr style="color: green; height: 2px; width: 600px; text-align: left;">
+		<span style="color:#000080;font-size:12pt;"><strong>LOCATION</strong></span><br>
+		<span style="font-size:10pt;">Submarket: {{SMK}}</span><br>
+		<span style="font-size:10pt;">{{LOC}}, {{CTY}}, {{STT}}</span><br>
+		<!-- <a href='https://maps.google.com/maps?z=10&t=m&q=loc:{{LAT}}+{{LON}}'><img src={{MAP}}></a><br> -->
+		<a href='https://www.google.com/maps/search/?api=1&query={{LAT}},{{LON}}'><img src={{MAP}} height="600" width="600"></a><br>
+<!-- PARCEL LIST & DISCLAIMER -->
+		<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+			<tr>
+				<td>
+					<span style="font-size:10pt;">Parcel List: {{PRL}}</span><br><br>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<span style="color:gray;font-size:6pt;">The information contained herein was assembled by the Land Advisors Organization Research Department, Bill Landis, Benevolent Dictator of Research. The information has been obtained from sources deemed reliable. While we have no reason to doubt the accuracy of this information, Land Advisors Organization accepts no responsibility for any errors contained herein, or for any errors that may result from using this information. All information should be independently confirmed and verified. For more information on the Land Advisors Organization or for assistance with your land needs, please call us at 1-480-483-8100 (c) 2025.</span>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+</html>

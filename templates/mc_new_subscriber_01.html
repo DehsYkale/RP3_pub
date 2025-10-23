@@ -1,0 +1,78 @@
+<!-- This version removes LAO Activity and replaces it with Agents and Stage only if an LAO Deal -->
+<html>
+	<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+	<body style="font-family:Arial,sans-serif;">
+
+<!-- TITLE & MENU DIV -->
+		<div>
+			<img src='https://request-server.s3.amazonaws.com/maps/mc_title_new_mi_subscriber.jpg' title="Land Advisors Organization">
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:12pt;" width="600" cellpadding="3" cellspacing="3">
+				<tr>
+					<td><strong>{{NAME}} has been added to your Market Insights list.<br>Please reply to this email if you wish to have them removed.</strong><br><br>
+					</td>
+				</tr>
+			</table>
+		</div>
+<!-- MAIN BODY -->
+		<div style="font-family:Arial,sans-serif;">
+<!-- NEW SUBSCRIBER DETAILS -->
+			<span style="color:#000080;font-size:12pt;"><strong>NEW SUBSCRIBER DETAILS</strong></span>
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="600" cellpadding="3" cellspacing="3">
+				<!-- SUBSCRIBER DETAILS -->
+				<tr>
+					<td width="120">Contact:</td>
+                    <td width="380"><a href='{{URLNAME}}'>{% autoescape off %}{{NAME}}{% endautoescape %}</a></td>
+				</tr>
+				<tr>
+					<td width="120">Entity:</td>
+					{% if "None" in ENTITY %}
+						<td width="380">None</td>
+					{% else %}
+						<td width="380"><a href='{{URLENTITY}}'>{% autoescape off %}{{ENTITY}}{% endautoescape %}</a></td>
+					{% endif %}
+				</tr>
+				<tr>
+					<td width="120">Address:</td>
+					{% if "None" in ADDRESS %}
+						<td width="380">None</td>
+					{% else %}
+						<td width="380">{{ADDRESS}}</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<td width="120">Phone:</td>
+					{% if "None" in PHONE %}
+						<td width="380">None</td>
+					{% else %}
+						<td width="380">{{PHONE}}</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<td width="120">Email:</td>
+					<td width="380">{{EMAIL}}</td>
+				</tr>
+				<tr>
+					<td width="120">Subscriber Message:</td>
+					<td width="380">{{MSG}}</td>
+				</tr>
+			</table>
+<!-- END MESSAGE -->
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="600" cellpadding="3" cellspacing="3">
+				<tr>
+					<td><br/>Let us know if you have any questions.
+					</td>
+				</tr>
+				<tr>
+					<td>Thanks!
+					</td>
+				</tr>
+				<tr>
+					<td>LAO Research
+					</td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>

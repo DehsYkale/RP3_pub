@@ -1,0 +1,165 @@
+<html>
+	<head>
+        <meta charset="UTF-8">
+    </head>
+	<body style="font-family:Arial,sans-serif;">
+
+<!-- TITLE & MENU DIV -->
+		<div>
+<!-- LAO LOGO -->
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="3" cellspacing="3">
+				<tr>
+                    <td align="left"><a href='http://www.landadvisors.com/'><img src='https://request-server.s3.amazonaws.com/maps/laologo.png' title="Land Advisors Organization"></a></td>
+                    <td><a style="color:red;font-size:12pt;text-align:right"><strong><a href='https://maps.landadvisors.com/LAOPlayer.html?v=w_DizJS9zOo'>EBLAST REPORT - CLICK TO VIEW TUTORIAL</a></strong></a></td>
+                </tr>
+            </table>
+<!-- EBR SUBJECT LINE -->
+            <span style="color:#551A8B;font-size:12pt;"><strong>{{EMAIL_SUBJECT}}</strong></span>
+<!-- VIEW IN TERRAFORCE OR L5 BUTTONS -->
+            <table style="background-color:#551A8B;font-family:Arial,sans-serif;font-size:10pt;vertical-align:middle" width="700" cellpadding="2" cellspacing="2">
+                <tr>
+                    <td style="height:14px;text-align:left;color:#FFFFFF;width: 50px"><strong>Campaign:</strong></td>
+                    <td style="height:14px;text-align:left;color:#FFFFFF"><strong>{{CAMPTITLE}}</strong></td>
+                    <td style="height:14px;text-align:right;color:#FFFFFF;width:100px"><a href='https://request-server.s3.amazonaws.com/maps/{{HTML_FILE_NAME}}' style="color:#FFFFFF;text-decoration: none"><strong>Click to View EBlast</strong></a></td>
+                </tr>
+                <tr><td style="height:14px;text-align:left;color:#FFFFFF;width: 50px"><strong>Sent By:</strong></td>
+                    <td style="height:14px;text-align:left;color:#FFFFFF"><strong>{{SENDER}}</strong></td>
+                    <td style="height:14px;text-align:right;color:#FFFFFF;width:200px"><strong>{{SEND_DATE}}</strong></td>
+                </tr>
+            </table>
+		</div>
+<!-- MAIN BODY -->
+		<div style="font-family:Arial,sans-serif;">
+<!-- CAMPAIGN RESULTS -->
+            <table style="font-family:Arial,sans-serif;font-size:12pt;vertical-align: top;color:#000080;" width="700" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td width="300"><b>CAMPAIGN RESULTS</b></td>
+					<td width="400" align="right"><a href='https://request-server.s3.amazonaws.com/maps/eblast_definitions.html'>Definition of Terms</a></td>
+                </tr>
+            </table>
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="0" cellspacing="3">
+                <!-- CR: SENT, CLICKS, OPENS -->
+                <tr>
+                    <td width="120"><b>Total Sent:</b></td>
+					<td width="80">{{TOTAL_SENT_TO}}</td>
+                    <td width="120"><b>Subscriber Clicks:</b></td>
+					<td width="80">{{CLICKS_UNIQUE_SUBSCRIBERS}}</td>
+                    <td width="120"><b>Click Rate:</b></td>
+					<td width="80">{{CLICK_RATE}}</td>
+
+                </tr>
+                <tr>
+					<td width="120"><b>Total Opens:</b></td>
+					<td width="80">{{OPENS}}</td>
+                    <td width="100"><b>Not Opened:</b></td>
+					<td width="80">{{NOT_OPENED}}</td>
+                    <td width="120"><b>Open Rate:</b></td>
+					<td width="80">{{OPEN_RATE}}</td>
+				</tr>
+                <!-- CR: NOT OPENED, BOUNCED -->
+				<tr>
+					<td width="120"><b>Bounced:</b></td>
+					<td width="80">{{BOUNCED}}</td>
+                    <td width="100"><b>Unsubscribed:</b></td>
+					<td width="80">{{UNSUB}}</td>
+                    <td width="120"></td>
+					<td width="80"></td>
+				</tr>
+                <!-- CR: UNSUBSCRIBED -->
+                <tr>
+
+				</tr>
+			</table>
+<!-- MVP
+        <!-- CLICKS
+		    <table style="background-color:#551A8B;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+                <tr style="height:14px;text-align:left;color:#FFFFFF">
+                    <td width="160"><strong>Name</strong></td>
+                    <td width="80"><strong>MVP</strong></td>
+                    <td width="260" ><strong>Company</strong></td>
+                    <td width="160"><strong>Phone</strong></td>
+                    <td width="40"><strong>Email</strong></td>
+                </tr>
+            </table>
+            <span style="color:#000080;font-size:12pt;"><strong>MVP CLICKS</strong></span><br>
+            <table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+                {% autoescape off %}{{T100_CLICK_TABLE}}{% endautoescape %}
+            </table>
+            <hr style="color:#551A8B;height:2px;" align="left"  width="700">
+		-->
+<!-- OPENS
+		    <span style="color:#000080;font-size:12pt;"><strong>MVP OPENS</strong></span><br>
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+                {% autoescape off %}{{T100_OPEN_TABLE}}{% endautoescape %}
+            </table>
+            <hr style="color:#551A8B;height:2px;" align="left"  width="700">
+		-->
+<!-- SENT
+		    <span style="color:#000080;font-size:12pt;"><strong>MVP NOT OPENED</strong></span><br>
+			<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+                {% autoescape off %}{{T100_SENT_TABLE}}{% endautoescape %}
+            </table>
+            <hr style="color:#551A8B;height:2px;" align="left"  width="700">
+		-->
+<!-- CLICKS -->
+			<!-- If total sent is greather than 1000 then do not include the table of contacts -->
+			{% if TOTAL_SENT_TO < 1000 %}
+				<table style="background-color:#551A8B;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+					<tr style="height:14px;text-align:left;color:#FFFFFF">
+						<td width="160"><strong>Name</strong></td>
+						<td width="80"><strong>MVP</strong></td>
+						<td width="260" ><strong>Company</strong></td>
+						<td width="160"><strong>Phone</strong></td>
+						<td width="40"><strong>Email</strong></td>
+					</tr>
+				</table>
+				<span style="color:#000080;font-size:12pt;"><strong>CLICKS</strong></span><br>
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+					{% autoescape off %}{{CLICK_TABLE}}{% endautoescape %}
+				</table>
+				<hr style="color:#551A8B;height:2px;" align="left"  width="700">
+			
+	<!-- OPENS -->
+				<span style="color:#000080;font-size:12pt;"><strong>OPENS</strong></span><br>
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+					{% autoescape off %}{{OPEN_TABLE}}{% endautoescape %}
+				</table>
+				<hr style="color:#551A8B;height:2px;" align="left"  width="700">
+			
+	<!-- SENT -->
+				<span style="color:#000080;font-size:12pt;"><strong>NOT OPENED</strong></span><br>
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+					{% autoescape off %}{{SENT_TABLE}}{% endautoescape %}
+				</table>
+				<hr style="color:#551A8B;height:2px;" align="left"  width="700">
+			
+	<!-- BOUNCED -->
+				<span style="color:#000080;font-size:12pt;"><strong>BOUNCED</strong></span><br>
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+					{% autoescape off %}{{BOUNCED_TABLE}}{% endautoescape %}
+				</table>
+				<hr style="color:#551A8B;height:2px;" align="left"  width="700">
+			
+	<!-- SUNSUBSCRIBED -->
+				<span style="color:#000080;font-size:12pt;"><strong>UNSUBSCRIBED</strong></span><br>
+				<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;vertical-align: top;" width="700" cellpadding="2" cellspacing="2">
+					{% autoescape off %}{{UNSUB_TABLE}}{% endautoescape %}
+				</table>
+	<!-- Total sent greater than 1,000 message -->
+			{% else %}
+				<span style="color:#000080;font-size:12pt;"><strong><br>Your e-blast was sent to more than 1,000 recipients so the list was not printed to keep the email small.<br><br>Please open the attached spreadsheet and <span style="color:red;">click Enable Editing</span> to review the list of recipients and their actions (clicked, opened, not opened, bounced or unsubscribed).</strong></span><br>
+			{% endif %}
+
+		
+<!-- PARCEL LIST & DISCLAIMER -->
+        <hr style="color:#551A8B;height:2px;" align="left"  width="700">
+		<table style="background-color:#FFFFFF;font-family:Arial,sans-serif;font-size:10pt;" width="700" cellpadding="3" cellspacing="3">
+			<tr>
+				<td>
+					<span style="color:gray;font-size:6pt;">The information contained herein was assembled by the Land Advisors Organization Research Department, Bill Landis, Benevolent Dictator of Information. The information has been obtained from sources deemed reliable. While we have no reason to doubt the accuracy of this information, Land Advisors Organization accepts no responsibility for any errors contained herein, or for any errors that may result from using this information. All information should be independently confirmed and verified. For more information on the Land Advisors Organization or for assistance with your land needs, please call us at 1-480-483-8100 (c) 2025.</span>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Property Information Report - {{PID__c}}</title>
+</head>
+<body bgcolor="#f8f9fa" style="font-family: Arial, sans-serif; margin: 0; padding: 20px;">
+
+	<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 1000px; margin: 0 auto; background-color: white;">
+		<!-- Header Navigation -->
+		<tr>
+			<td>
+				<table width="100%" cellpadding="5" cellspacing="0" border="0" bgcolor="white">
+					<tr>
+						<td width="23%" align="right" style="padding-left: 0px;">
+							<img src="https://request-server.s3.amazonaws.com/maps/laologo.png" alt="LAO Logo" width="100%""></a>
+						</td>
+						<td width="77%" align="right">
+							<a href="{{L5L}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">L5 | </strong></a>
+							<a href="https://landadvisors.my.salesforce.com/{{Id}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">TerraForce | </strong></a>
+							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Google Maps | </strong></a>
+							<a href="mailto:research@landadvisors.com?subject={{PID__c}}%20Changes/Corrections&body=Please%20make%20the%20following%20changes/corrections%20to%20{{PID__c}}:%20" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Request Changes </strong></a>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+
+		<!-- Color Bar -->
+		<tr>
+			<td>
+				<table width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td width="25%" bgcolor="#3a5f79" height="20">&nbsp;</td>
+						<td width="75%" bgcolor="#6dcff6" height="20">&nbsp;</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+
+		<!-- Hero Section -->
+		<tr>
+			<td>
+				<table width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<!-- Left Content Panel -->
+						 <!-- TITLE ################################################  -->
+						<td width="60%" valign="top" style="padding: 20px;">
+							<h1 style="font-size: 22px; color: #1e3a5f; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
+
+							<!-- PROPERTY DETAILS ########################################  -->
+							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
+								<tr>
+									<td width="50%"><strong style="color: #1e3a5f;">Stage Name:</strong> {{StageName__c}}</td>
+									<td width="50%"><strong style="color: #1e3a5f;">PID:</strong> {{PID__c}}</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Classification:</strong> {{Classification__c}}</td>
+									<td><strong style="color: #1e3a5f;">Acres:</strong> {{Acres__c}}</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Lot Type:</strong> {{Lot_Type__c}}</td>
+									<td><strong style="color: #1e3a5f;">Lots:</strong> {{Lots__c}}</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Zoning:</strong> {{Zoning__c}}</td>
+									<td><strong style="color: #1e3a5f;">Subdivision:</strong> {{Subdivision__c}}</td>
+								</tr>
+							</table>
+							<!-- FINANCIAL INFO ################################################  -->
+							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3; border-bottom: 3px solid #d3d3d3;">
+								<tr>
+									<td><strong style="color: #1e3a5f;">Sale Price: </strong>{{Sale_Price__c}}</td>
+									<td><strong style="color: #1e3a5f;">Sale Date: </strong>{{Sale_Date__c}}</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Price per Acre: </strong>{{PPA}}</td>
+									<td><strong style="color: #1e3a5f;">Price per SqFt: </strong>{{PPSQFT}}</td>
+								</tr>
+							</table>
+							<!-- BUYER/SELLER ################################################  -->
+							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-bottom: 3px solid #d3d3d3;">
+								<tr>
+									<td><strong style="color: #1e3a5f;">Seller Entity: </strong><a href="{{slr_Owner_Entity__r_url}}" target="_blank">{{slr_Owner_Entity__r_Name}}</a> ({{slr_Owner_Entity__r_Category__c}})</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Contact: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Buyer Entity: </strong><a href='{{Buyer_Entity__r_url}}' target="_blank">{{Buyer_Entity__r_Name}}</a> ({{Buyer_Entity__r_Category__c}})</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Contact: </strong><a href='{{Buyer__r_url}}' target="_blank">{{Buyer__r_Name}}</a></td>
+								</tr>
+							</table>
+						</td>
+						
+						<!-- Right Image Panel -->
+						 <!-- MAP ################################################  -->
+						<td width="40%" valign="top" style="padding: 20px;">
+							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank">
+								<img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="100%" height="350" style="border: 2px solid #ccc; border-radius: 10px;">
+							</a>
+							<div style="font-size: 12px; margin: 2px 0;">{{Location__c}}, {{City__c}}</div>
+							<div style="font-size: 12px;">{{County__c}} County, {{State__c}}</div>
+							<div style="font-size: 12px;">Submarket: {{Submarket__c}}</div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+
+		<!-- Owner Information Section -->
+<tr>
+	<td style="padding: 20px;">
+		<table width="100%" cellpadding="0" cellspacing="0" border="0">
+			<tr>
+				<!-- Left Column - BUYER -->
+				<td width="50%" valign="top" style="padding-right: 10px;">
+					<!-- BUYER ENTITY ################################################  -->
+					{% if Buyer_Entity__c != '' %}
+						<a href="https://client-dashboard.landadvisors.workers.dev/dashboard/{{Buyer_Entity__c}}" style="font-size: 20px; color: #1e3a5f; text-decoration: none;" target="_blank"><strong>{{Buyer_Entity__r_Name}}</strong></a>
+						
+						<table cellpadding="5" cellspacing="0" border="0" style="margin: 25px 0 10px 0;">
+							{% if Buyer_Entity__r_BillingStreet != 'UNKNOWN' %}
+							<tr>
+								<td style="color: #1e3a5f;">{{Buyer_Entity__r_BillingStreet}}</td>
+							</tr>
+							<tr>
+								<td style="color: #1e3a5f;">{{Buyer_Entity__r_BillingCity}}, {{Buyer_Entity__r_BillingState}} {{Buyer_Entity__r_BillingPostalCode}}</td>
+							</tr>
+							{% endif %}
+							{% if Buyer_Entity__r_Category__c != 'UNKNOWN' %}
+							<tr>
+								<td><strong style="color: #1e3a5f;">Category:</strong> {{Buyer_Entity__r_Category__c}}</td>
+							</tr>
+							{% endif %}
+							{% if Buyer_Entity__r_Phone != 'UNKNOWN' %}
+							<tr>
+								<td><strong style="color: #1e3a5f;">Phone:</strong> {{Buyer_Entity__r_Phone}}</td>
+							</tr>
+							{% endif %}
+							{% if Buyer_Entity__r_Website != 'UNKNOWN' %}
+							<tr>
+								<td><strong style="color: #1e3a5f;">Website:</strong> <a href="{{Buyer_Entity__r_Website}}" target="_blank" style="color: #1e3a5f; text-decoration: none;">{{Buyer_Entity__r_Website}}</a></td>
+							</tr>
+							{% endif %}
+						</table>
+					{% endif %}
+
+					<!-- BUYER CONTACT ################################################  -->
+					{% if Buyer__r_Name %}
+					<h3 style="color: #1e3a5f; margin: 25px 0 10px 0;">
+						<a href="{{Buyer__r_url}}" style="color: #1e3a5f; text-decoration: none;">{% autoescape off %}{{Buyer__r_Name}}{% endautoescape %}</a>
+					</h3>
+					
+					<table cellpadding="5" cellspacing="0" border="0">
+						{% if BPRcity != 'UNKNOWN' %}
+						<tr>
+							<td><strong style="color: #1e3a5f;">Location:</strong></td>
+							<td>{{BPRcity}}, {{BPRstate}}</td>
+						</tr>
+						{% endif %}
+						<tr>
+							<td><strong style="color: #1e3a5f;">Phone:</strong></td>
+							<td>{{BPRphn}}</td>
+						</tr>
+						{% if BPRemail != 'UNKNOWN' %}
+						<tr>
+							<td><strong style="color: #1e3a5f;">Email:</strong></td>
+							<td>{{BPRemail}}</td>
+						</tr>
+						{% endif %}
+					</table>
+					{% endif %}
+				</td>
+
+				<!-- Right Column - SELLER -->
+				<td width="50%" valign="top" style="padding-left: 10px;">
+					<!-- SELLER ENTITY ################################################  -->
+					{% if slr_Owner_Entity__c != '' %}
+						<a href="https://client-dashboard.landadvisors.workers.dev/dashboard/{{slr_Owner_Entity__c}}" style="font-size: 20px; color: #1e3a5f; text-decoration: none;" target="_blank"><strong>{{slr_Owner_Entity__r_Name}}</strong></a>
+						
+						<table cellpadding="5" cellspacing="0" border="0" style="margin: 25px 0 10px 0;">
+							{% if slr_Owner_Entity__r_BillingStreet != 'UNKNOWN' %}
+							<tr>
+								<td style="color: #1e3a5f;">{{slr_Owner_Entity__r_BillingStreet}}</td>
+							</tr>
+							<tr>
+								<td style="color: #1e3a5f;">{{slr_Owner_Entity__r_BillingCity}}, {{slr_Owner_Entity__r_BillingState}} {{slr_Owner_Entity__r_BillingPostalCode}}</td>
+							</tr>
+							{% endif %}
+							{% if slr_Owner_Entity__r_Category__c != 'UNKNOWN' %}
+							<tr>
+								<td><strong style="color: #1e3a5f;">Category:</strong> {{slr_Owner_Entity__r_Category__c}}</td>
+							</tr>
+							{% endif %}
+							{% if slr_Owner_Entity__r_Phone != 'UNKNOWN' %}
+							<tr>
+								<td><strong style="color: #1e3a5f;">Phone:</strong> {{slr_Owner_Entity__r_Phone}}</td>
+							</tr>
+							{% endif %}
+							{% if slr_Owner_Entity__r_Website != 'UNKNOWN' %}
+							<tr>
+								<td><strong style="color: #1e3a5f;">Website:</strong> <a href="{{slr_Owner_Entity__r_Website}}" target="_blank" style="color: #1e3a5f; text-decoration: none;">{{slr_Owner_Entity__r_Website}}</a></td>
+							</tr>
+							{% endif %}
+						</table>
+					{% endif %}
+
+					<!-- SELLER CONTACT ################################################  -->
+					{% if slr_AccountId__r_Name %}
+					<h3 style="color: #1e3a5f; margin: 25px 0 10px 0;">
+						<a href="{{slr_AccountId__c_url}}" style="color: #1e3a5f; text-decoration: none;">{% autoescape off %}{{slr_AccountId__r_Name}}{% endautoescape %}</a>
+					</h3>
+					
+					<table cellpadding="5" cellspacing="0" border="0">
+						{% if SPRcity != 'UNKNOWN' %}
+						<tr>
+							<td><strong style="color: #1e3a5f;">Location:</strong></td>
+							<td>{{SPRcity}}, {{SPRstate}}</td>
+						</tr>
+						{% endif %}
+						<tr>
+							<td><strong style="color: #1e3a5f;">Phone:</strong></td>
+							<td>{{SPRphn}}</td>
+						</tr>
+						{% if SPRemail != 'UNKNOWN' %}
+						<tr>
+							<td><strong style="color: #1e3a5f;">Email:</strong></td>
+							<td>{{SPRemail}}</td>
+						</tr>
+						{% endif %}
+					</table>
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+	</td>
+</tr>
+
+		<!-- Financial Summary Section -->
+		{% if LBN %}
+		<tr>
+			<td style="padding: 20px;">
+				<h2 style="font-size: 28px; color: #1e3a5f; border-bottom: 3px solid #e9ecef; padding-bottom: 10px;">Financial Summary</h2>
+				
+				<table width="100%" cellpadding="20" cellspacing="0" border="0" bgcolor="#1e3a5f" style="margin: 20px 0;">
+					<tr align="center">
+						{% if AFF %}
+						<td style="color: white;">
+							<h3 style="font-size: 32px; margin: 0; color: white;">{{Weighted_Avg_Price_Per_FF__c}}</h3>
+							<p style="margin: 5px 0 0 0; font-size: 14px; color: #ccc;">AVG PRICE/FF</p>
+						</td>
+						{% endif %}
+						<td style="color: white;">
+							<h3 style="font-size: 32px; margin: 0; color: white;">{{LTC}}</h3>
+							<p style="margin: 5px 0 0 0; font-size: 14px; color: #ccc;">TOTAL LOTS</p>
+						</td>
+					</tr>
+				</table>
+
+				<table width="100%" cellpadding="10" cellspacing="0" border="1" style="border-collapse: collapse; margin: 20px 0;">
+					<tr bgcolor="#1e3a5f" style="color: white;">
+						<th align="left" style="padding: 15px; color: white;">&nbsp;</th>
+						<th align="left" style="padding: 15px; color: white;">Group</th>
+						<th align="left" style="padding: 15px; color: white;">Count</th>
+						<th align="left" style="padding: 15px; color: white;">Dimensions</th>
+						<th align="left" style="padding: 15px; color: white;">Price/Parcel</th>
+						<th align="left" style="padding: 15px; color: white;">Price/Lot</th>
+						<th align="left" style="padding: 15px; color: white;">Price/FF</th>
+					</tr>
+					{% autoescape off %}{{LST}}{% endautoescape %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+
+		<!-- Description Section -->
+		{% if CMM %}
+		<tr>
+			<td style="padding: 20px;">
+				<h2 style="font-size: 28px; color: #1e3a5f; border-bottom: 3px solid #e9ecef; padding-bottom: 10px;">Description</h2>
+				<div style="background-color: #f8fafc; border-left: 5px solid #1e3a5f; padding: 30px; margin: 20px 0;">
+					<p style="line-height: 1.7;">{{CMM}}</p>
+				</div>
+			</td>
+		</tr>
+		{% endif %}
+
+		<!-- Comparable Sales Section -->
+		<tr>
+			<td style="padding: 20px;">
+				<table width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td>
+							<h2 style="font-size: 28px; color: #1e3a5f; border-bottom: 3px solid #e9ecef; padding-bottom: 10px; margin: 0;">{{Classification__c}} Comparables</h2>
+						</td>
+						<td align="right">
+							<span style="background-color: #1e3a5f; color: white; padding: 10px 20px; font-size: 14px; font-weight: bold;">Within 10 Miles</span>
+						</td>
+					</tr>
+				</table>
+				
+				<table width="100%" cellpadding="10" cellspacing="0" border="1" style="border-collapse: collapse; margin: 20px 0;">
+					<tr bgcolor="#1e3a5f" style="color: white;">
+						<th align="left" style="padding: 15px; color: white;">PIR Link</th>
+						<th align="left" style="padding: 15px; color: white;">Sale Date</th>
+						<th align="left" style="padding: 15px; color: white;">Price</th>
+						<th align="left" style="padding: 15px; color: white;">Acres</th>
+						<th align="left" style="padding: 15px; color: white;">$/Acre</th>
+						<th align="left" style="padding: 15px; color: white;">L5 Link</th>
+					</tr>
+					{% autoescape off %}{{LISTINGCOMPSTABLE}}{% endautoescape %}
+				</table>
+			</td>
+		</tr>
+
+		<!-- Footer -->
+		<tr>
+			<td bgcolor="#1a202c" style="padding: 30px; color: white;">
+				<div style="background-color: rgba(255,255,255,0.1); padding: 20px; margin-bottom: 20px;">
+					<h3 style="color: white; margin: 0 0 10px 0;">Parcel List</h3>
+					<p style="font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; color: #ccc; margin: 0;">{{Parcels__c}}</p>
+				</div>
+				
+				<p style="font-size: 12px; line-height: 1.7; color: #ccc; margin: 0;">
+					The information contained herein was assembled by the Land Advisors Organization Research Department. The information has been obtained from sources deemed reliable. While we have no reason to doubt the accuracy of this information, Land Advisors Organization accepts no responsibility for any errors contained herein, or for any errors that may result from using this information. All information should be independently confirmed and verified. For more information on the Land Advisors Organization or for assistance with your land needs, please call us at 1-480-483-8100 © 2025.
+				</p>
+			</td>
+		</tr>
+	</table>
+
+</body>
+</html>

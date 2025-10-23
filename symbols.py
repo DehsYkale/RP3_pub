@@ -1,0 +1,15 @@
+# Graphic symbols for text output
+
+ALERT = "❗"
+DEAL = "🎯"
+DONE = "✔️"
+EMAIL = "📧"
+ERROR = "❌"
+INFO = "ℹ️"
+LOGIN = "📡"
+NEXT = "➡️"
+PROCESSING = "🔄"
+SEARCHING = "🔍"
+STAR = "⭐"
+SUCCESS = "✅"
+WARNING = "⚠️"
