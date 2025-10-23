@@ -84,7 +84,7 @@ def opr_map_aws_copy(PID, action='UP or DOWN'):
 	import os
 	
 	folder_aws = f's3://request-server/maps'
-	folder_user = f'C:/Users/Public/"Public Mapfiles"/M1_Files'
+	folder_user = f'C:/Users/Public/Public Mapfiles/M1_Files'
 	png_file = f'{PID}.png'
 	jpg_file = f'{PID}.jpg'
 	creation_flags = subprocess.CREATE_NO_WINDOW
