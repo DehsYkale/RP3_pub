@@ -629,6 +629,7 @@ def make_opr_map_api(service, PID, pause_it=True):
 		if os.path.exists(img_jpg):
 			from shutil import copyfile
 			copyfile(img_jpg, img_jpg_child)
+			lao.sleep(1)
 
 		
 		# Upload the jpg copy for the child Deal
