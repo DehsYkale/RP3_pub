@@ -101,25 +101,6 @@ def opr_map_aws_copy(PID, action='UP or DOWN'):
 		], creationflags=creation_flags, check=True)
 	elif action == 'UP':
 		print('\n Uploading OPR maps...')
-		# subprocess.run(f'aws s3 cp {folder_user}/{png_file} {folder_aws}/{png_file} --only-show-errors --acl public-read', creationflags=creation_flags, check=True)
-		result = subprocess.run([
-			'aws', 's3', 'cp',
-			f'{folder_user}/{png_file}',
-			f'{folder_aws}/{png_file}',
-			'--only-show-errors',
-			'--acl', 'public-read'
-		], creationflags=creation_flags, check=True)
-
-		if result.returncode != 0:
-			print(f"\n=== AWS CLI ERROR ===")
-			print(f"Return Code: {result.returncode}")
-			print(f"STDOUT: {result.stdout}")
-			print(f"STDERR: {result.stderr}")
-			print(f"Source: {folder_user}/{png_file}")
-			print(f"Destination: {folder_aws}/{png_file}")
-			print(f"====================\n")
-			raise subprocess.CalledProcessError(result.returncode, result.args, result.stdout, result.stderr)
-
 		# if os.path.exists(jpg_file_user):
 		subprocess.run([
 			'aws', 's3', 'cp',
@@ -128,7 +109,6 @@ def opr_map_aws_copy(PID, action='UP or DOWN'):
 			'--only-show-errors',
 			'--acl', 'public-read'
 		], creationflags=creation_flags, check=True)
-	# aws s3 sync "{0}" s3://request-server/maps/ --acl public-read
 
 def opr_map_aws_list_png():
 	import subprocess
