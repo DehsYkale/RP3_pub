@@ -1,3 +1,4 @@
+# Main ignores for Python projects
 __pycache__/
 *.py[cod]
 *$py.class
