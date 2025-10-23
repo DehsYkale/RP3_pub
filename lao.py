@@ -1,6 +1,6 @@
 #! python3
 
-# LAO Functions for Python3
+# LAO Functions for Python3 happy
 
 import csv
 from ctypes import windll, byref
