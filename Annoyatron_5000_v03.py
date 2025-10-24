@@ -9,6 +9,7 @@ from django.conf import settings
 import emailer
 import fun_text_date as td
 import smtplib
+import warnings
 
 
 # Send test email ###
@@ -273,6 +274,8 @@ def send_email(sender, recipient, msg):
 	s.quit()
 	print('\n Email sent...')
 	return True
+
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 # Set up Django templates
 TEMPLATES = [

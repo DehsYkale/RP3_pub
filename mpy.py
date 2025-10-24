@@ -485,11 +485,12 @@ def make_opr_map_api(service, PID, pause_it=True):
 	lao.print_function_name('mpy def make_opr_map_api')
 
 	print(f'\n Creating OPR Map of {PID}...')
+
+	# CHECK IF PID EXISTS IN TERRA FORCE ################################################
 	# TerraForce Query
 	fields = 'default'
 	wc = f"PID__c = '{PID}'"
 	results = bb.tf_query_3(service, rec_type='Deal', where_clause=wc, limit=None, fields=fields)
-	
 	# Check if the PID was found in TF
 	if results == []:
 		td.warningMsg(f'\n OPR map not created because the PID {PID} was not found in TerraForce.')
@@ -498,6 +499,7 @@ def make_opr_map_api(service, PID, pause_it=True):
 			if ui == '00':
 				exit('\n Terminating program...')
 		return 'PID not found'
+	#######################################################################################
 	
 	# Construct parcel layer name (stAbb_county)
 	if len(results[0]['State__c']) > 2:
@@ -507,6 +509,7 @@ def make_opr_map_api(service, PID, pause_it=True):
 	parcel_layer = f'{stAbb}_{results[0]['County__c']}'
 
 	# Make the API call to create the OPR map
+	lao.print_function_name('mpy def make_opr_map_api - Making map API Call Loop')
 	attempts_counter = 0
 	while 1:
 		is_map_created = False
@@ -523,7 +526,6 @@ def make_opr_map_api(service, PID, pause_it=True):
 				continue
 		
 		# Check if the map was created
-		#if r.text == 'OwnerIndex polygon not found':
 		if is_map_created is False:
 			td.warningMsg(f'\n OPR Map Not Created: {PID}')
 			if pause_it:

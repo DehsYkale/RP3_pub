@@ -33,8 +33,8 @@ settings.configure(TEMPLATES=TEMPLATES)
 from django.template import Template, Context
 django.setup()
 
-td.banner('OPR Mail PY3 v05', colorama=True)
-td.console_title('OPR Mailer v05')
+td.banner('OPR Mail PY3 v06', colorama=True)
+td.console_title('OPR Mailer v06')
 # Login to TerraForce
 service = fun_login.TerraForce()
 
@@ -70,7 +70,7 @@ def send_to():
 	lLAOOffices = dicts.get_staff_dict('marketfulllist')
 	
 	while 1:
-		td.banner('OPR Mailer PY3 v05', colorama=True)
+		td.banner('OPR Mailer PY3 v06', colorama=True)
 		
 		if oprType == 'NONE':
 			msg = \
@@ -86,7 +86,7 @@ def send_to():
 				'  [1] Comps (Comparable Sales)\n' \
 				'  [2] Competitor Listings\n' \
 				'  [3] Planning & Zoning Updates\n' \
-				'  [4] Top 100 Opportunities\n' \
+				'  [4] Requests\n' \
 				'  [5] Axio Pipeline\n' \
 				'  [6] PIR OPR\n' \
 				'  [7] PIR AI\n' \
@@ -177,7 +177,7 @@ def send_to():
 			
 		elif SENDLIST == 'T' or SENDLIST == '22':
 			SENDLIST = 'T'
-			td.banner('OPR Mailer PY3 v05', colorama=True)
+			td.banner('OPR Mailer PY3 v06', colorama=True)
 			print(' 🧪 Test mode selected - OPRs will be sent to you only')
 			recipients_to = ['{0} LAO <{1}@landadvisors.com>'.format(userName.upper(), userName)]
 			recipients_cc = []
@@ -186,7 +186,7 @@ def send_to():
 		
 		elif SENDLIST == 'Q' or SENDLIST == '11':
 			SENDLIST = 'Q'
-			td.banner('OPR Mailer PY3 v05', colorama=True)
+			td.banner('OPR Mailer PY3 v06', colorama=True)
 			print(' 🔍 Quality Control mode selected')
 			sender, recipients_to, recipients_cc = '', [], []
 			return recipients_to, recipients_cc, SENDLIST, sender, oprType
@@ -210,7 +210,7 @@ def send_to():
 			print(f'\n ✅ Selected: {oprType} OPRs')
 			
 		elif SENDLIST == '4':
-			oprType = 'TOP100'
+			oprType = 'Request'
 			print(f'\n ✅ Selected: {oprType} OPRs')
 			
 		elif SENDLIST == '5':
@@ -265,8 +265,8 @@ def create_query_string(service, sendlist, oprType):
 			wc = "OPR_Sent__c = 1965-01-11 AND (County__c LIKE '%Maricopa%' or County__c LIKE '%Pinal%') AND Sale_Date__c = NULL AND StageName__c != 'Top 100' "
 			market = 'Scottsdale'
 		# TESTING - Auto select market
-		elif oprType == 'PIR_OPR' or oprType == 'PIR_Comp':
-			market = 'Phoenix'
+		elif oprType == 'PIR_OPR' or oprType == 'PIR_Comp' or oprType == 'Comp':
+			market = 'Scottsdale'
 		# END TESTING
 		else:
 			# Select the market
@@ -279,7 +279,7 @@ def create_query_string(service, sendlist, oprType):
 			else:
 				wc = "{0} AND OPR_Sent__c = 1965-01-11".format(wc)
 
-			if oprType == 'TOP100':
+			if oprType == 'Request':
 				wc = "{0} AND StageName__c = 'Top 100'".format(wc)
 			elif oprType == 'Comp':
 				wc = "{0} AND StageName__c LIKE '%Closed%'".format(wc)
@@ -355,6 +355,9 @@ def get_universal_fields(row):
 	dHTML['Price_per_Lot__c'] = 0
 	dHTML['Price_per_parcel__c'] = 0
 	dHTML['Parcels__c'] = row['Parcels__c']
+	# Truncate Parcels to 100 characters for email
+	if len(dHTML['Parcels__c']) > 100:
+		dHTML['Parcels__c'] = f'{dHTML['Parcels__c'][:100]}...'
 	dHTML['Recorded_Instrument_Number__c '] = row['Recorded_Instrument_Number__c']
 	dHTML['Submarket__c'] = (row['Submarket__c']).title()
 	dHTML['StageName__c'] = row['StageName__c']
@@ -554,11 +557,11 @@ def get_comp_fields(row, recipients_to):
 
 	dHTML['Sale_Price__c'] = '$' + '{:,.0f}'.format(dHTML['Sale_Price__c'])
 
-def get_top100_fields():
-	lao.print_function_name('script get_top100_fields')
+def get_request_fields():
+	lao.print_function_name('script get_request_fields')
 	dHTML['Sale_Date__c '] = 'None'
 	dHTML['PNZ'] = 'None'
-	dHTML['Lot_Type__c'] = 'TOP100'
+	# dHTML['Lot_Type__c'] = 'TOP100'
 
 def get_pir_fields():
 	lao.print_function_name('script get_pir_fields')
@@ -914,7 +917,7 @@ def get_opr_title(oprType, recipients_to):
 	LANDTYPE = 'None'
 
 	# MVP OPR Title
-	if oprType == 'TOP100':
+	if oprType == 'Request':
 		dHTML['TITLE'] = 'LAO Opportunity: {0} Land in {1}'.format(subCLA, subCTY)
 		dHTML['TITLE'] = dHTML['TITLE'].replace('±', '+/-')
 	# P&Z OPR Title
@@ -1025,10 +1028,10 @@ def get_html_template(oprType):
 		return open(r'F:\Research Department\Code\RP3\templates\opr_listing_01.html', 'r').read()
 	elif oprType == 'P&Z':
 		return open(r'F:\Research Department\Code\RP3\templates\opr_planning_zoning_04.html', 'r').read()
-	elif oprType == 'TOP100':
+	elif oprType == 'Request':
 		# return open(r'F:\Research Department\Code\RP3\templates\top_100_02.html',
 					# 'r', encoding='utf-8').read()
-		return open(r'F:\Research Department\Code\RP3\templates\property_report_01.html', 'r', encoding='utf-8').read()
+		return open(r'F:\Research Department\Code\RP3\templates\pir_request_01.html', 'r', encoding='utf-8').read()
 	elif oprType == 'OPRNOTIFICATION':
 		return open(r'F:\Research Department\Code\RP3\templates\you_got_oprs.html',
 					'r').read()
@@ -1041,8 +1044,8 @@ def get_html_template(oprType):
 	elif oprType == 'PIR_Comp':
 		return open(r'F:\Research Department\Code\RP3\templates\pir_comps_02.html', 'r', encoding='utf-8').read()
 
-def get_recipient_top100(names):
-	lao.print_function_name('script get_recipient_top100')
+def get_recipient_request(names):
+	lao.print_function_name('script get_recipient_request')
 	recipients_to = ['Bill Landis <blandis@landadvisors.com>', 'Ethan Granger <egranger@landadvisors.com>', 'Alec Videla <avidela@landadvisors.com']
 	names = names.split(', ')
 	# Find Agents in Top 100 Commission list
@@ -1088,8 +1091,8 @@ def build_opr_message(recipients_to, SENDLIST, sender, oprType, html):
 	# msg['From'] = sender
 	# msg['Date'] = formatdate(localtime=True)
 
-	if oprType == 'TOP100' and SENDLIST.upper() != 'T':
-		recipients_to = get_recipient_top100(dHTML['AGENTNAMES'])
+	if oprType == 'Request' and SENDLIST.upper() != 'T':
+		recipients_to = get_recipient_request(dHTML['AGENTNAMES'])
 
 	# assign Template
 	t = Template(html)
@@ -1275,7 +1278,7 @@ def send_opr_sent_notification(oprType):
 		subjectOPRType = 'Competitor Listing'
 	elif oprType == 'P&Z':
 		subjectOPRType = 'Planning & Zoning'
-	elif oprType == 'TOP100':
+	elif oprType == 'Request':
 		subjectOPRType = 'Opportunity Property'
 
 	subject = 'You Got {0} OPRs'.format(subjectOPRType)
@@ -1350,9 +1353,9 @@ while 1:
 			# 	td.uInput('\n Skipped making OPR cuz missing Price per Lot in Lot Details...Continue...')
 			# 	continue
 
-		# Top 100 Fields
-		elif oprType == 'TOP100':
-			get_top100_fields()
+		# Request Fields
+		elif oprType == 'Request':
+			get_request_fields()
 			get_listing_comps_table(row, market)
 		# P&Z Fields
 		elif oprType == 'P&Z':

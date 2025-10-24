@@ -68,46 +68,20 @@
 									<td><strong style="color: #1e3a5f;">Subdivision:</strong> {{Subdivision__c}}</td>
 								</tr>
 							</table>
-							<!-- FINANCIAL INFO ################################################  -->
-							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3; border-bottom: 3px solid #d3d3d3;">
-								<tr>
-									<td><strong style="color: #1e3a5f;">Sale Price: </strong>{{Sale_Price__c}}</td>
-									<td><strong style="color: #1e3a5f;">Sale Date: </strong>{{Sale_Date__c}}</td>
-								</tr>
-								<tr>
-									<td><strong style="color: #1e3a5f;">Price per Acre: </strong>{{PPA}}</td>
-									<td><strong style="color: #1e3a5f;">Price per SqFt: </strong>{{PPSQFT}}</td>
-								</tr>
-							</table>
-							<!-- BUYER/SELLER ################################################  -->
-							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-bottom: 3px solid #d3d3d3;">
+							<!-- OWNER ################################################  -->
+							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-bottom: 3px solid #d3d3d3; border-top: 3px solid #d3d3d3;">
 								{% if slr_Owner_Entity__r_Name == "" %}
 									<tr>
-										<td><strong style="color: #1e3a5f;">Seller: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
+										<td><strong style="color: #1e3a5f;">Owner: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
 									</tr>
 								{% else %}
 									<tr>
-										<td><strong style="color: #1e3a5f;">Seller Entity: </strong><a href="{{slr_Owner_Entity__r_url}}" target="_blank">{{slr_Owner_Entity__r_Name}}</a> ({{slr_Owner_Entity__r_Category__c}})</td>
+										<td><strong style="color: #1e3a5f;">Owner Entity: </strong><a href="{{slr_Owner_Entity__r_url}}" target="_blank">{{slr_Owner_Entity__r_Name}}</a> ({{slr_Owner_Entity__r_Category__c}})</td>
 									</tr>
 									<tr>
 										<td><strong style="color: #1e3a5f;">Contact: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
 									</tr>
 								{% endif %}
-								{% if Buyer_Entity__r_Name == "" %}
-									<tr>
-										<td><strong style="color: #1e3a5f;">Buyer: </strong><a href='{{Buyer__r_url}}' target="_blank">{{Buyer__r_Name}}</a></td>
-									</tr>
-								{% else %}
-									<tr>
-										<td><strong style="color: #1e3a5f;">Buyer Entity: </strong><a href='{{Buyer_Entity__r_url}}' target="_blank">{{Buyer_Entity__r_Name}}</a> ({{Buyer_Entity__r_Category__c}})</td>
-									</tr>
-									<tr>
-										<td><strong style="color: #1e3a5f;">Contact: </strong><a href='{{Buyer__r_url}}' target="_blank">{{Buyer__r_Name}}</a></td>
-								</tr>
-								{% endif %}
-								<tr>
-									<td><strong style="color: #1e3a5f;">Buyer Acting As: </strong>{{Buyer_Acting_As__c}}</td>
-								</tr>
 							</table>
 							<!-- DESCRIPTION ################################################  -->
 							{% if Description__c != "None" %}

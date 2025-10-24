@@ -15,15 +15,12 @@ def crexi():
 	# Get the user name of the operator
 	# The username is used to find the password and token in the dStaff dictionary
 	user = lao.getUserName()
-	print(f' Logging into SalesForce as {user}...')
+	print(f'📡 Logging into Crexi as {user}...')
 	# Cycle through the staff dictionary (dStaff) to find the user and get their password and token
 	for person in dStaff:
 		if user == dStaff[person]['Email']:
 			password = dStaff[person]['Crexi Password']
 			break
-
-	print(' Logging into CREXi, please stand by...')
-
 
 	options = Options()
 	# Anti-bot blocking
@@ -120,7 +117,7 @@ def MailChimp():
 	# Load LAO_Staff_Db_v03.xlsx into a dictionary with the Names as keys
 	dStaff = dicts.get_staff_dict_2()
 	user = lao.getUserName(initials=False)
-	print(f' Logging into SalesForce as {user}...')
+	print(f'📡 Logging into MailChimp as {user}...')
 	# Cycle through the staff dictionary (dStaff) to find the user and get their password and token
 	for person in dStaff:
 		if user == dStaff[person]['Email']:
@@ -137,6 +134,7 @@ def MailChimp():
 
 	return client
 
+# RED News login
 def RED_News():
 	from lao import sleep
 	from selenium.webdriver.common.by import By
@@ -149,7 +147,7 @@ def RED_News():
 	username = os.getenv("RED_NEWS_USERNAME")
 	password = os.getenv("RED_NEWS_PASSWORD")
 
-	print(' Logging into RED News...')
+	print('📡 Logging into RED News...')
 	driver = getSeleniumDriver()
 	driver.get(r'https://realestatedaily-news.com/wp-login.php')
 	# //*[@id="user_login"]
@@ -174,7 +172,7 @@ def TerraForce():  #SalesForceService
 	# Get the user name of the operator
 	# The username is used to find the password and token in the dStaff dictionary
 	user = lao.getUserName()
-	print(f' Logging into SalesForce as {user}...')
+	print(f'📡 Logging into Terraforce as {user}...')
 	# Cycle through the staff dictionary (dStaff) to find the user and get their password and token
 	for person in dStaff:
 		if user == dStaff[person]['Email']:
@@ -182,7 +180,7 @@ def TerraForce():  #SalesForceService
 			password = dStaff[person]['SF Password']
 			token = dStaff[person]['SF Token']
 			break
-	print(f' User: {username}\n Password: {password} \nToken: {token}')
+	# print(f' User: {username}\n Password: {password} \nToken: {token}')
 	# Login to SalesForce using the simple_salesforce library
 	service = Salesforce(username, password, token)
 	return service

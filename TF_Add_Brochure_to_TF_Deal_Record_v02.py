@@ -20,7 +20,7 @@ def get_llr_dict():
 
 lao.banner("Add Brochure to TF Deal Recored v02")
 service = fun_login.TerraForce()
-brochure_path = 'F:/Research Department/CompListingBrochures/'
+
 
 
 # ADD PACKAGE  *****************************************************************
@@ -51,14 +51,20 @@ while 1:
 	# pprint(package_results)
 	if package_results != []:
 
-		print('\n No Package found for PID {0}...'.format(PID))
-		pprint(package_results)
-		ui = td.uInput('\n Continue [00]... > ')
+		td.warningMsg('\n Existing Package found for PID {0}...'.format(PID))
+		# pprint(package_results)
+		ui = td.uInput('\n Replace Package [0/1/00] > ')
 		if ui == '00':
 			exit('\n Terminating program...')
-		continue
-		
+		elif ui == '0':
+			print('\n Not updating package...')
+			lao.sleep(1)
+			continue
+		else:
+			td.warningMsg('\n You must manually delete existing package in the "Package" field on the Deal before adding a new one...')
+			exit('\n Terminating program...')
 	# User to select Brochure
+	brochure_path = 'F:/Research Department/CompListingBrochures/'
 	brochure_filename = lao.guiFileOpen(brochure_path, 'Select Brochure PDF', [('PDF', '.pdf'), ('all files', '.*')])
 	brochure_new_fileName = '{0}_competitors_package.pdf'.format(PID)
 	brochure_file_renamed = '{0}{1}'.format(brochure_path, brochure_new_fileName)
@@ -66,14 +72,24 @@ while 1:
 	while 1:
 		try:
 			rename(brochure_filename, brochure_file_renamed)
-			brochure_file_move_to = 'C:/Users/Public/Public Mapfiles/awsUpload/Listing/{0}'.format(brochure_new_fileName)
-			shutil.move(brochure_file_renamed, brochure_file_move_to)
-			break
-		except:
-			td.warningMsg('\n PDF is open in a viewer application like FoxIt Reader.\n\n Close the PDF viewer and try again.')
+		except FileExistsError:
+			td.warningMsg('\n File name already exists. Please continue...')
 			ui = td.uInput('\n Continue [00]...')
 			if ui == '00':
 				exit('\n Terminating program...')
+		brochure_file_move_to = 'C:/Users/Public/Public Mapfiles/awsUpload/Listings/{0}'.format(brochure_new_fileName)
+		shutil.move(brochure_file_renamed, brochure_file_move_to)
+		break
+		# except FileExistsError:
+		# 	rename(brochure_filename, brochure_file_renamed)
+		# 	brochure_file_move_to = 'C:/Users/Public/Public Mapfiles/awsUpload/Listing/{0}'.format(brochure_new_fileName)
+		# 	shutil.move(brochure_file_renamed, brochure_file_move_to)
+		# 	break
+		# except FileExistsError:
+		# 	td.warningMsg('\n File name already exists.\n\n')
+		# 	ui = td.uInput('\n Continue [00]...')
+		# 	if ui == '00':
+		# 		exit('\n Terminating program...')
 
 	# td.uInput('\n file moved to awsUpload\Listings Continue... > ')
 	print('\n Uploading {0}'.format(brochure_new_fileName))

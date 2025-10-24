@@ -2,10 +2,7 @@
 
 import aws
 import bb
-import csv
 import fun_login
-import fjson
-import json
 import fun_text_date as td
 import lao
 import mpy
@@ -105,6 +102,7 @@ while 1:
 	print('  7) Bulk Delete PNG OPR Maps')
 	print('\n 00) to quit')
 	PID = td.uInput('\n Enter PID > ')
+	
 	if PID == '00':
 		exit('\n Terminating program...')
 	# Create OPR Maps
