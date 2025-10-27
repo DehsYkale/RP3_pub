@@ -47,8 +47,11 @@
 						<!-- Left Content Panel -->
 						 <!-- TITLE ################################################  -->
 						<td width="60%" valign="top" style="padding: 20px;">
-							<h1 style="font-size: 22px; color: #1e3a5f; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
-
+							{% if Encumbrance_Rating__c %}
+								<h1 style="font-size: 22px; color: #ff0000; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
+							{% else %}
+								<h1 style="font-size: 22px; color: #1e3a5f; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
+							{% endif %}
 							<!-- PROPERTY DETAILS ########################################  -->
 							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
 								<tr>
@@ -68,6 +71,15 @@
 									<td><strong style="color: #1e3a5f;">Subdivision:</strong> {{Subdivision__c}}</td>
 								</tr>
 							</table>
+							<!-- DEBT INFO ################################################  -->
+							{% if Beneficiary__c_Name or Beneficiary_Contact__c_Name %}
+								<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
+									<tr>
+										<td><strong style="color: #1e3a5f;">Loan Amount: </strong>{{Loan_Amount__c}}</td>
+										<td><strong style="color: #1e3a5f;">Loan Date: </strong>{{Loan_Date__c}}</td>
+									</tr>
+								</table>
+							{% endif %}
 							<!-- OWNER ################################################  -->
 							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-bottom: 3px solid #d3d3d3; border-top: 3px solid #d3d3d3;">
 								{% if slr_Owner_Entity__r_Name == "" %}
@@ -82,6 +94,22 @@
 										<td><strong style="color: #1e3a5f;">Contact: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
 									</tr>
 								{% endif %}
+								<!-- BENEFICIARY ################################################  -->
+								{% if Beneficiary__c_Name %}
+									<tr>
+										<td><strong style="color: #1e3a5f;">Beneficiary: </strong><a href="{{Beneficiary__c_url}}" target="_blank">{{Beneficiary__c_Name}}</a></td>
+									</tr>
+								{% endif %}
+								{% if Beneficiary_Contact__c_Name %}
+									<tr>
+										<td><strong style="color: #1e3a5f;">Beneficiary Contact: </strong><a href="{{Beneficiary_Contact__c_url}}" target="_blank">{{Beneficiary_Contact__c_Name}}</a></td>
+									</tr>
+								{% endif %}
+								{% if Encumbrance_Rating__c %}
+									<tr>
+										<td style="color: #ff0000;"><strong>Encumbrance Rating: </strong>{{Encumbrance_Rating__c}}</td>
+									</tr>
+								{% endif %}
 							</table>
 							<!-- DESCRIPTION ################################################  -->
 							{% if Description__c != "None" %}
@@ -90,14 +118,13 @@
 						</td>
 						
 						<!-- Right Image Panel -->
-						 <!-- MAP ################################################  -->
+						<!-- MAP ################################################  -->
 						<td width="40%" valign="top" style="padding: 20px;">
 							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank">
 								<img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="100%" height="350" style="border: 2px solid #ccc; border-radius: 10px;">
 							</a>
 							<div style="font-size: 12px; margin: 2px 0;">{{Location__c}}, {{City__c}}</div>
-							<div style="font-size: 12px;">{{County__c}} County, {{State__c}}</div>
-							<div style="font-size: 12px;">Submarket: {{Submarket__c}}</div>
+							<div style="font-size: 12px;">{{County__c}} County, {{State__c}} - Submarket: {{Submarket__c}}</div>
 							<div style="font-size: 12px;">Parcels: {{Parcels__c}}</div>
 						</td>
 					</tr>
@@ -105,12 +132,13 @@
 			</td>
 		</tr>
 
-		<!-- LOT Section -->
+		<!-- BOTTOM SECTION -->
+		<!-- LOT DETAILS TABLE ################################################  -->
 		{% if Add_Lot_Table %}
 		<tr>
 			<td style="padding: 20px;">
 				<div ><strong>Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
-				<table width="50%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
+				<table width="100%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
 					<tr bgcolor="#1e3a5f" style="color: white;">
 						<th align="left" style="padding: 15px; color: white;">Group</th>
 						<th align="left" style="padding: 15px; color: white;">Count</th>
@@ -124,12 +152,44 @@
 			</td>
 		</tr>
 		{% endif %}
-		<!-- End LOT Section -->
+		<!-- COMPARABLE SALES ################################################  -->
+		 {% if Property_Comps_Table %}
+		<tr>
+			<td style="padding: 20px;">
+				<div ><strong>{{Classification__c}} Comparables</strong> {{Total_Lots_All_Groups}}</div>
+				<!-- <table width="50%" cellpadding="0" cellspacing="0" border="0">
+				
+					<tr>
+						<td>
+							<h2 style="font-size: 28px; color: #1e3a5f; border-bottom: 3px solid #e9ecef; padding-bottom: 10px; margin: 0;">{{Classification__c}} Comparables</h2>
+						</td>
+						<td align="right">
+							<span style="background-color: #1e3a5f; color: white; padding: 10px 20px; font-size: 14px; font-weight: bold;">Within 10 Miles</span>
+						</td>
+					</tr>
+				</table> -->
+				
+				<table width="100%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 5px 0;">
+				<!-- <table width="50%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;"></table> -->
+					<tr bgcolor="#1e3a5f" style="color: white;">
+						<th align="left" style="padding: 15px; color: white;">PID Link</th>
+						<th align="left" style="padding: 15px; color: white;">Sale Date</th>
+						<th align="left" style="padding: 15px; color: white;">Price</th>
+						<th align="left" style="padding: 15px; color: white;">Acres</th>
+						<th align="left" style="padding: 15px; color: white;">$/Acre</th>
+						<th align="left" style="padding: 15px; color: white;">L5 Link</th>
+					</tr>
+					{% autoescape off %}{{Property_Comps_Table}}{% endautoescape %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+		<!-- End Bottom Section -->
 
 		<!-- Footer -->
 		<tr>
 			<td style="padding: 30px; color: white;">
-				<p style="font-size: 12px; line-height: 1.7; color: #ccc; margin: 0;">
+				<p style="font-size: 8px; line-height: 1.0; color: #ccc; margin: 0;">
 					The information contained herein was assembled by the Land Advisors Organization Research Department. The information has been obtained from sources deemed reliable. While we have no reason to doubt the accuracy of this information, Land Advisors Organization accepts no responsibility for any errors contained herein, or for any errors that may result from using this information. All information should be independently confirmed and verified. For more information on the Land Advisors Organization or for assistance with your land needs, please call us at 1-480-483-8100 © 2025.
 				</p>
 			</td>

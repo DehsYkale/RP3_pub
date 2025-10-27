@@ -117,7 +117,7 @@ def get_recipients(is_a_test):
 		elif d['OFFICE'] == 'VOG':
 			recipient = ['Greg Vogel <gvogel@landadvisors.com>', 'Jennifer Bittner <jbittner@landadvisors.com>', 'Danielle Kirchner <dkirchner@landadvisors.com>']
 		elif d['OFFICE'] == 'WUE':
-			recipient = ['Bobby Wuertz <bwuertz@landadvisors.com>', 'Carlin Keck <ckeck@landadvisors.com>']
+			recipient = ['Bobby Wuertz <bwuertz@landadvisors.com>', 'Logan Kane <lkane@landadvisors.com>']
 		elif d['OFFICE'] == 'XAN':
 			recipient = ['Max Xander <mxander@landadvisors.com>']
 		else:

@@ -414,8 +414,6 @@ while 1:
 	# Get Location intersection
 	print(' Getting Location intersection...')
 	
-	
-	
 	dTF = mpy.get_intersection_from_lon_lat(dTF)
 
 	# Make Deal Name based on Seller Entity or Person
@@ -425,6 +423,9 @@ while 1:
 	# Add Researcher OwnerId to record
 	print(' Getting Researcher OwnerId...')
 	dTF['OwnerId'] = bb.createdByResearch(service)
+
+	# Set OPR Sent to Request date tag 10/01/1994
+	dTF['OPR_Sent__c'] = '1994-10-01'
 
 	td.banner('TF Record (PPP v02)')
 

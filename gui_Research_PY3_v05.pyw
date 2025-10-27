@@ -264,7 +264,7 @@ def buttonOwnershipToSale():
 
 # Launch Deal Updater
 def buttonOwershipUpdater():
-	scriptPath = 'F:/Research Department/Code/RP3/M1_Deal_Updater_v02.py'
+	scriptPath = 'F:/Research Department/Code/RP3/M1_Deal_Updater_v03.py'
 	fjson.createScriptToLauchFile(scriptPath)
 	startfile('F:/Research Department/Code/RP3/python_script_shell_v01.py')
 

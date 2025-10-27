@@ -86,7 +86,7 @@ def send_to():
 				'  [1] Comps (Comparable Sales)\n' \
 				'  [2] Competitor Listings\n' \
 				'  [3] Planning & Zoning Updates\n' \
-				'  [4] Requests\n' \
+				'  [4] Requests, Ownerships or Debt\n' \
 				'  [5] Axio Pipeline\n' \
 				'  [6] PIR OPR\n' \
 				'  [7] PIR AI\n' \
@@ -265,7 +265,7 @@ def create_query_string(service, sendlist, oprType):
 			wc = "OPR_Sent__c = 1965-01-11 AND (County__c LIKE '%Maricopa%' or County__c LIKE '%Pinal%') AND Sale_Date__c = NULL AND StageName__c != 'Top 100' "
 			market = 'Scottsdale'
 		# TESTING - Auto select market
-		elif oprType == 'PIR_OPR' or oprType == 'PIR_Comp' or oprType == 'Comp':
+		elif oprType == 'PIR_OPR' or oprType == 'PIR_Comp':
 			market = 'Scottsdale'
 		# END TESTING
 		else:
@@ -276,11 +276,13 @@ def create_query_string(service, sendlist, oprType):
 				wc = "{0} AND OPR_Sent__c = 1964-09-11".format(wc)
 			elif oprType == 'AXIOPIPE': # Listing uses different OPR Sent date
 				wc = "{0} AND OPR_Sent__c = 1929-10-02".format(wc)
+			elif oprType == 'Request':
+				wc = "{0} AND OPR_Sent__c = 1994-10-01".format(wc)
 			else:
 				wc = "{0} AND OPR_Sent__c = 1965-01-11".format(wc)
 
 			if oprType == 'Request':
-				wc = "{0} AND StageName__c = 'Top 100'".format(wc)
+				wc = "{0} AND (StageName__c = 'Top 100' or StageName__c = 'Lead')".format(wc)
 			elif oprType == 'Comp':
 				wc = "{0} AND StageName__c LIKE '%Closed%'".format(wc)
 
@@ -307,6 +309,13 @@ def create_query_string(service, sendlist, oprType):
 				exit('\n Terminating program...')
 			else:
 				td.warningMsg('\n Invalid entry, try again...', colorama=True)
+		
+		
+		# print('here1')
+		# pprint(wc)
+		# ui = td.uInput('\n Continue [00]... > ')
+		# if ui == '00':
+		# 	exit('\n Terminating program...')
 		
 		# TerraForce Query
 		fields = 'default'
@@ -341,6 +350,7 @@ def get_universal_fields(row):
 	dHTML['Name'] = row['Name']
 	dHTML['Encumbrance_Rating__c '] = ''
 	dHTML['Latitude__c'] = row['Latitude__c']
+	dHTML['Property_Comps_Table'] = False
 	dHTML['Location__c'] = lao.charactersToASCII(row['Location__c'], charCase='TITLE')
 	dHTML['Longitude__c'] = row['Longitude__c']
 	# Check for Lead Parcel
@@ -381,7 +391,7 @@ def make_opr_map(PID):
 
 def get_acres(row):
 	lao.print_function_name('script get_acres')
-	dHTML['Acres__c'] = row['Acres__c']
+	dHTML['Acres__c'] = f"{float(row['Acres__c'] or 0):,.2f}"
 	if dHTML['Acres__c'] == 0:
 		dHTML['Acres__c'] = 'N/A'
 		if row['Lots__c'] == 0 and row['Lot_Count_Rollup__c'] == 0:
@@ -637,8 +647,8 @@ def get_listing_fields(row):
 		dHTML['BROCHUREURL'] = False
 
 # Build Comps Table
-def get_listing_comps_table(row, market):
-	lao.print_function_name('script get_listing_comps_table')
+def get_property_comps_table(row, market):
+	lao.print_function_name('script get_property_comps_table')
 
 	# Calc min max coords
 	dCords = mpy.get_bounding_box_coords(row['Latitude__c'], row['Longitude__c'], 10)
@@ -681,6 +691,9 @@ def get_listing_comps_table(row, market):
 			break
 
 	# Build Comps Table
+	if results == []:
+		dHTML['Property_Comps_Table'] = False
+		return
 	compsTable = ''
 	for pid in results:
 		OPRLink = 'https://landadvisors.lightning.force.com/lightning/r/lda_Opportunity__c/{0}/view'.format(pid['Id'])
@@ -688,10 +701,16 @@ def get_listing_comps_table(row, market):
 		compPrice = '${:,.0f}'.format(pid['Sale_Price__c'])
 		compPricePerAcre = '${:,.0f}'.format(pid['Price_Per_Acre__c'])
 		compSaleDate = (td.date_engine(pid['Sale_Date__c'], outformat='opr', informat='TF'))
-		compsRow = "<tr><td><a href='{0}'>{1}</a></td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td><a href='{6}'>L5</a></td></tr>".format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
+		compsRow = "<tr><td><a href='{0}'>{1}</a></td><td align='center'>{2}</td><td align='right'>{3}</td><td align='right'>{4}</td><td align='right'>{5}</td><td align='center'><a href='{6}'>L5</a></td></tr>".format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
 		compsTable = '{0}{1}'.format(compsTable, compsRow)
 	compsTable = compsTable.replace(' /', '/')
-	dHTML['LISTINGCOMPSTABLE'] = compsTable
+	dHTML['Property_Comps_Table'] = compsTable
+	
+	# print('here2')
+	# pprint(dHTML['Property_Comps_Table'])
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 
 def get_seller_owner(row):
 	lao.print_function_name('script get_seller_owner')
@@ -811,12 +830,23 @@ def get_buyer(row):
 def get_beneficiary(row):
 	lao.print_function_name('script get_beneficiary')
 	if row['Beneficiary__c'] != 'None':
-		dHTML['BENEFICIARY'] = (row['Beneficiary__r']['Name'])
-		dHTML['BNFurl'] = 'https://landadvisors.my.salesforce.com/{0}'.format(row['Beneficiary__c'])
-		dHTML['LOANAMOUNT'] = '$' + '{:,.0f}'.format(row['Loan_Amount__c'])
-		dHTML['LOANDATE'] = row['Loan_Date__c']
+		dHTML['Beneficiary__c_Name'] = (row['Beneficiary__r']['Name'])
+		dHTML['Beneficiary__c_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(row['Beneficiary__c'])
 	else:
-		dHTML['BENEFICIARY'], dHTML['BNFurl'], dHTML['LOANAMOUNT'] = False, 'None', 'None'
+		dHTML['Beneficiary__c_Name'] = False
+	if row['Beneficiary_Contact__c'] != 'None':
+		dHTML['Beneficiary_Contact__c_Name'] = (row['Beneficiary_Contact__r']['Name'])
+		dHTML['Beneficiary_Contact__c_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(row['Beneficiary_Contact__c'])
+	else:
+		dHTML['Beneficiary_Contact__c_Name'] = False
+	if row['Loan_Amount__c'] != 'None':
+		dHTML['Loan_Amount__c'] = '$' + '{:,.0f}'.format(row['Loan_Amount__c'])
+	dHTML['Loan_Date__c'] = row['Loan_Date__c']
+	
+	if row['Encumbrance_Rating__c'] == 'None':
+		dHTML['Encumbrance_Rating__c'] = False
+	else:
+		dHTML['Encumbrance_Rating__c'] = row['Encumbrance_Rating__c']
 
 def get_lot_details():
 	lao.print_function_name('script get_lot_details')
@@ -918,7 +948,10 @@ def get_opr_title(oprType, recipients_to):
 
 	# MVP OPR Title
 	if oprType == 'Request':
-		dHTML['TITLE'] = 'LAO Opportunity: {0} Land in {1}'.format(subCLA, subCTY)
+		if dHTML['Encumbrance_Rating__c']:
+			dHTML['TITLE'] = 'Distressed: {0} Land in {1}'.format(subCLA, subCTY)
+		else:
+			dHTML['TITLE'] = 'Opportunity: {0} Land in {1}'.format(subCLA, subCTY)
 		dHTML['TITLE'] = dHTML['TITLE'].replace('±', '+/-')
 	# P&Z OPR Title
 	elif oprType == 'P&Z':
@@ -1356,17 +1389,17 @@ while 1:
 		# Request Fields
 		elif oprType == 'Request':
 			get_request_fields()
-			get_listing_comps_table(row, market)
+			get_property_comps_table(row, market)
 		# P&Z Fields
 		elif oprType == 'P&Z':
 			get_pnz_fields(row)
 		# Listing Fields
 		elif oprType == 'Listing':
 			get_listing_fields(row)
-			get_listing_comps_table(row, market)
+			get_property_comps_table(row, market)
 		elif oprType == 'AXIOPIPE':
 			get_axio_pipeline_fields()
-			get_listing_comps_table(row, market)
+			get_property_comps_table(row, market)
 		# PIR Fields
 		elif oprType == 'PIR_Comp':
 			get_pir_fields()
