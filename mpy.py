@@ -218,7 +218,13 @@ def get_lon_lat_from_address_or_intersection(address):
 
 # Given a lon/lat return the bounding box coordinates for a given distance in miles
 def get_bounding_box_coords(lat, lon, distance_miles=10):
+	lao.print_function_name('mpy def get_bounding_box_coords')
 	import math
+
+	# Check if lat/lon are valid
+	if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+		raise ValueError(" Invalid latitude or longitude values.")
+
 	# Earth radius in miles
 	R = 3960.0
 	
