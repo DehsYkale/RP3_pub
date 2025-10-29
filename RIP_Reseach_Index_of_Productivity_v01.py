@@ -68,6 +68,13 @@ def get_deals_created(dRIP):
 		owner_name = dStaff_TF_Ids[row['OwnerId'][:-3]]
 		created_by_name = dStaff_TF_Ids[row['CreatedById'][:-3]]
 		dRIP[created_by_name]['Deals Created'] += 1
+	
+	print('here1')
+	pprint(dRIP)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	
 	return dRIP
 
 def get_deals_edited(dRIP):
@@ -191,6 +198,7 @@ def get_contact_accounts_edited(dRIP):
 
 def get_comps_created(dRIP):
 	print('Getting Comps Created...')
+	# dRIP is False for getting team total only
 	if dRIP is False:
 		start = td.date_engine(date_start_1w, 'tf_query', 'six')
 		end = td.date_engine(date_end_1w, 'tf_query', 'six')
@@ -213,6 +221,7 @@ def get_comps_created(dRIP):
 
 def get_listings_created(dRIP):
 	print('Getting Listings Created...')
+	# dRIP is False for getting team total only
 	if dRIP is False:
 		start = td.date_engine(date_start_1w, 'tf_query', 'six')
 		end = td.date_engine(date_end_1w, 'tf_query', 'six')
@@ -260,6 +269,7 @@ def get_requests_made():
 
 def get_requests_completed(dRIP):
 	print('Getting Requests Completed...')
+	# dRIP is False for getting team total only
 	if dRIP is False:
 		start = td.date_engine(date_start_1w, 'tf_query', 'six')
 		end = td.date_engine(date_end_1w, 'tf_query', 'six')
@@ -345,7 +355,7 @@ def make_spreadsheet(dRIP, dEOS):
 					total_points = 0
 					row = [task]
 					# Index for researcher names in header
-					for i in range(1, 6):
+					for i in range(1, 7):
 						row.append(dRIP[header[i]][task])
 						total_points = total_points + dRIP[header[i]][task]
 					# Team Average: Total points divided by 6 researchers
@@ -369,7 +379,7 @@ def make_spreadsheet(dRIP, dEOS):
 					total_points = 0
 					row = [task]
 					# Index for researcher names in header
-					for i in range(1, 3):
+					for i in range(1, 4):
 						row.append(dRIP[header[i]][task])
 						total_points = total_points + dRIP[header[i]][task]
 					# Researcher Average: Total points divided by 4 researchers
@@ -442,6 +452,7 @@ while 1:
 	dEOS = make_spreadsheet(dRIP, dEOS)
 
 	# Make EOS Scorecard
+	# dRIP is False for getting team total only
 	dEOS['Entities Created'] = get_entity_accounts_created(dRIP=False)
 	dEOS['Persons Created'] = get_entity_accounts_created(dRIP=False)
 	dEOS['Accounts Created'] = dEOS['Entities Created'] + dEOS['Persons Created']

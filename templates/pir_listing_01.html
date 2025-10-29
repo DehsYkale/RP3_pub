@@ -17,6 +17,9 @@
 							<img src="https://request-server.s3.amazonaws.com/maps/laologo.png" alt="LAO Logo" width="100%""></a>
 						</td>
 						<td width="77%" align="right">
+							{% if Package_url %}
+								<a href="{{Package_url}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Package | </strong></a>
+							{% endif %}
 							<a href="{{L5L}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">L5 | </strong></a>
 							<a href="https://landadvisors.my.salesforce.com/{{Id}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">TerraForce | </strong></a>
 							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Google Maps | </strong></a>
@@ -47,11 +50,7 @@
 						<!-- Left Content Panel -->
 						 <!-- TITLE ################################################  -->
 						<td width="60%" valign="top" style="padding: 20px;">
-							{% if Encumbrance_Rating__c %}
-								<h1 style="font-size: 22px; color: #ff0000; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
-							{% else %}
-								<h1 style="font-size: 22px; color: #007204; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
-							{% endif %}
+							<h1 style="font-size: 22px; color: #00aeff; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
 							<!-- PROPERTY DETAILS ########################################  -->
 							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
 								<tr>
@@ -69,6 +68,17 @@
 								<tr>
 									<td><strong style="color: #1e3a5f;">Zoning:</strong> {{Zoning__c}}</td>
 									<td><strong style="color: #1e3a5f;">Subdivision:</strong> {{Subdivision__c}}</td>
+								</tr>
+							</table>
+							<!-- FINANCIAL INFO ################################################  -->
+							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
+								<tr>
+									<td><strong style="color: #1e3a5f;">List Price: </strong>{{List_Price__c}}</td>
+									<td><strong style="color: #1e3a5f;">List Date: </strong>{{List_Date__c}}</td>
+								</tr>
+								<tr>
+									<td><strong style="color: #1e3a5f;">Price per Acre: </strong>{{List_Price_Per_Acre__c}}</td>
+									<td><strong style="color: #1e3a5f;">Price per SqFt: </strong>{{List_Price_Per_SqFt__c}}</td>
 								</tr>
 							</table>
 							<!-- DEBT INFO ################################################  -->
@@ -98,6 +108,20 @@
 								{% if slr_AccountId__r_Top100 %}
 									<tr>
 										<td style="color: #434549; font-size: 14px; padding-left: 30px;">MVP of: {{slr_AccountId__r_Top100}}</td>
+									</tr>
+								{% endif %}
+								<!-- LAO ADVISORS ################################################  -->
+								{% if LAO_Advisor_Names %}
+									<td><strong style="color: #1e3a5f;">LAO Advisors: </strong>{{LAO_Advisor_Names}}</td>
+								{% endif %}
+								{% if List_Agent_r_Company %}
+									<tr>
+										<td><strong style="color: #1e3a5f;">Listing Entity: </strong><a href="{{List_Agent_r_Company_url}}" target="_blank">{{List_Agent_r_Company}}</a></td>
+									</tr>
+								{% endif %}
+								{% if List_Agent__c %}
+									<tr>
+										<td><strong style="color: #1e3a5f;">Listing Agent: </strong><a href="{{List_Agent_r_URL}}" target="_blank">{{List_Agent_r_Name}}</a></td>
 									</tr>
 								{% endif %}
 								<!-- BENEFICIARY ################################################  -->
@@ -143,15 +167,15 @@
 		{% if Add_Lot_Table %}
 		<tr>
 			<td style="padding: 20px;">
-				<div style="color: #1e3a5f;"><strong>Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
+				<div ><strong style="color: #1e3a5f;>Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
 				<table width="100%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
 					<tr bgcolor="#1e3a5f" style="color: white;">
-						<td align="center" style="padding: 3px; color: white;">PID Link</td>
-						<td align="center" style="padding: 3px; color: white;">Sale Date</td>
-						<td align="center" style="padding: 3px; color: white;">Price</td>
-						<td align="center" style="padding: 3px; color: white;">Acres</td>
-						<td align="center" style="padding: 3px; color: white;">$/Acre</td>
-						<td align="center" style="padding: 3px; color: white;">L5 Link</td>
+						<td align="center" style="padding: 3px; color: white;">Group</td>
+						<td align="center" style="padding: 3px; color: white;">Count</td>
+						<td align="center" style="padding: 3px; color: white;">Dimensions</td>
+						<td align="center" style="padding: 3px; color: white;">Price/Parcel</td>
+						<td align="center" style="padding: 3px; color: white;">Price/Lot</td>
+						<td align="center" style="padding: 3px; color: white;">Price/FF</td>
 					</tr>
 					{% autoescape off %}{{Lot_Table}}{% endautoescape %}
 				</table>
@@ -162,7 +186,19 @@
 		 {% if Property_Comps_Table %}
 		<tr>
 			<td style="padding: 20px;">
-				<div style="color: #1e3a5f;"><strong>{{Classification__c}} Comparables</strong> {{Total_Lots_All_Groups}}</div>
+				<div ><strong style="color: #1e3a5f;">{{Classification__c}} Comparables</strong> {{Total_Lots_All_Groups}}</div>
+				<!-- <table width="50%" cellpadding="0" cellspacing="0" border="0">
+				
+					<tr>
+						<td>
+							<h2 style="font-size: 28px; color: #1e3a5f; border-bottom: 3px solid #e9ecef; padding-bottom: 10px; margin: 0;">{{Classification__c}} Comparables</h2>
+						</td>
+						<td align="right">
+							<span style="background-color: #1e3a5f; color: white; padding: 10px 20px; font-size: 14px; font-weight: bold;">Within 10 Miles</span>
+						</td>
+					</tr>
+				</table> -->
+				
 				<table width="100%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 5px 0;">
 				<!-- <table width="50%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;"></table> -->
 					<tr bgcolor="#1e3a5f" style="color: white;">

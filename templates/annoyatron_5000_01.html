@@ -43,15 +43,13 @@
 				{% if STATUS == "Waiting for Changes" or STATUS == "Reminded" %}
 					<P span style="color:#000000;font-size:12pt;"><strong>Instructions</strong></span><br/>1] Download the 2026 poster using the "Download Poster" link below.<br/>2] Use the "Submit Aerial Poster Revisions" link to request changes.</span></P>
 					<P><a href='{{PDFLINK}}' style="color:#005695;font-size:12pt;">Download {{OFFICE}} Poster</a></P>
-					<P><a href='{{REVISIONLINK}}' style="color:#005695;font-size:12pt;">Submit Aerial Poster Revisions</a></P>
-					<P><a href='{{RQLINK}}' style="color:#005695;font-size:12pt;">Review the Request</a></P>
+					<P><a href='{{RQLINK}}' style="color:#005695;font-size:12pt;">Submit Aerial Poster Revisions</a></P>
 				{% endif %}
 				<!-- COMPLETED NEED APPROVAL -->
 				{% if STATUS == "Completed Need Approval" %}
 					<P><a href='{{PDFLINK}}' style="color:#005695;font-size:12pt;">Download {{OFFICE}} Poster</a></P>
 					<P>If you have any further changes use the revisions link bleow.</P>
-					<P><a href='{{REVISIONLINK}}' style="color:#005695;font-size:12pt;">Submit Aerial Poster Revisions</a></P>
-					<P><a href='{{RQLINK}}' style="color:#005695;font-size:12pt;">Review the Request</a></P>
+					<P><a href='{{RQLINK}}' style="color:#005695;font-size:12pt;">Submit Aerial Poster Revisions</a></P>
 				{% endif %}
 				<!-- APPROVED SEND TO PRINTER -->
 				{% if STATUS == "Approved Send to Printer" %}

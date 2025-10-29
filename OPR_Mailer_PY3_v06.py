@@ -465,7 +465,7 @@ def lao_activity(PID):
 	lao.print_function_name('script lao_activity')
 
 	# Get Agent Dict of TF Ids
-	dAgent_name = dicts.get_staff_dict('tfid')
+	# dAgent_name = dicts.get_staff_dict('tfid')
 
 	# TerraForce Query
 	fields = 'default'
@@ -475,53 +475,61 @@ def lao_activity(PID):
 
 	dHTML['StageName__c'] = results[0]['StageName__c']
 	dCommissions = results[0]['Commissions__r']
-	dHTML['AGENTNAMES'] = ''
-	dHTML['LISTAGENTID'] = ''
-	dHTML['LISTAGENTNAME'] = ''
-	dHTML['LISTAGENTPHONE'] = ''
-	dHTML['LISTAGENTPERSONEMAIL'] = ''
+	dHTML['LAO_Advisor_Names'] = []
+	dHTML['List_Agent__c'] = False
+	dHTML['List_Agent__r_Name'] = 'N/A'
+	dHTML['List_Agent__r_Phone'] = 'N/A'
+	dHTML['List_Agent__r_PersonEmail'] = 'N/A'
 	dHTML['LAOACT'] = 0
 
 	if dCommissions == 'None':
-		dHTML['AGENTNAMES'] = 'None'
+		dHTML['LAO_Advisor_Names'] = False
 	else:
 		dCommissions = dCommissions['records']
 
 		# Cycle through listing agents
 		for agent in dCommissions:
+			pprint(dCommissions)
+			ui = td.uInput('\n Continue [00]... > ')
+			if ui == '00':
+				exit('\n Terminating program...')
 			# LAO Agents
 			if agent['LAO_Agent__c'] == 1:
 				dHTML['LAOACT'] = 1
 				agentid = (agent['Agent__c'])[:-3]
-				name = dAgent_name.get(agentid)# .replace('_', ' ')
-				# Skip if non-LAO agent
-				try:
-					name = name.replace('.', '')
-				except AttributeError:
-					continue
+				# name = dAgent_name.get(agentid)# .replace('_', ' ')
+				name = agent['Agent__r']['Name']
+				print('LAO Agent: {0}'.format(name))
+				# # Skip if non-LAO agent
+				# try:
+				# 	name = name.replace('.', '')
+				# except AttributeError:
+				# 	continue
 				if name != 'None' and name != None:
-					dHTML['AGENTNAMES'] = '{0}, {1}'.format(dHTML['AGENTNAMES'], name)
+					dHTML['LAO_Advisor_Names'].append(name)
+
 			# Competitor Agents
 			else:
-				dHTML['LISTAGENTID'] = agent['Agent__c']# ['Id']
-				dHTML['LISTAGENTNAME'] = agent['Agent__r']['Name']
-				dHTML['LISTAGENTPHONE'] = agent['Agent__r']['Phone']
-				dHTML['LISTAGENTEMAIL'] = agent['Agent__r']['PersonEmail']
+				dHTML['List_Agent__c'] = agent['Agent__c']# ['Id']
+				dHTML['List_Agent_r_Name'] = agent['Agent__r']['Name']
+				dHTML['List_Agent_r_Phone'] = agent['Agent__r']['Phone']
+				dHTML['List_Agent_r_PersonEmail'] = agent['Agent__r']['PersonEmail']
+				dHTML['List_Agent_r_URL'] = 'https://landadvisors.my.salesforce.com/{0}'.format(dHTML['List_Agent__c'])
 				if agent['Agent__r']['Company__r'] == 'None':
-					dHTML['LISTAGENTCOMPANY'] = ''
+					dHTML['List_Agent_r_Company'] = False
 				else:
-					dHTML['LISTAGENTCOMPANY'] = agent['Agent__r']['Company__r']['Name']
-				dHTML['LISTAGENTURL'] = 'https://landadvisors.my.salesforce.com/%s' % dHTML['LISTAGENTID']
-
-		# Remove initial blank or none name from agent list
-		dHTML['AGENTNAMES'] = dHTML['AGENTNAMES'][2:]
+					dHTML['List_Agent_r_Company'] = agent['Agent__r']['Company__r']['Name']
+					dHTML['List_Agent_r_Company_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(agent['Agent__r']['Company__r']['Id'])
+				
 
 	# Remove single offers on non-lao deals with no activity
-	if dHTML['AGENTNAMES'] == 'None':
+	if dHTML['LAO_Advisor_Names'] is False:
 		dHTML['LAOACT'] = 0
 	# Exclude agents in the OPR for deals that may have LAO agents but are not LAO sales
 	elif dHTML['StageName__c'] == 'Closed Lost':
 		dHTML['LAOACT'] = 0
+	else:
+		dHTML['LAO_Advisor_Names'] = ', '.join(dHTML['LAO_Advisor_Names'])
 
 def get_comp_fields(row, recipients_to):
 	lao.print_function_name('script get_comp_fields')
@@ -623,28 +631,28 @@ def get_pnz_fields(row):
 
 def get_listing_fields(row):
 	lao.print_function_name('script get_listing_fields')
-	dHTML['Lot_Type__c'] = 'Listing'
-	dHTML['LISTPRC'] = row['List_Price__c']
-	if dHTML['LISTPRC'] == None or dHTML['LISTPRC'] == 10000:
-		dHTML['LISTPRC'] = 'N/A'
-		dHTML['LISTPPA'] = 'N/A'
+	# dHTML['Lot_Type__c'] = 'Listing'
+	dHTML['List_Price__c'] = row['List_Price__c']
+	
+	if dHTML['List_Price__c'] == 'None' or dHTML['List_Price__c'] == 10000:
+		dHTML['List_Price__c'] = 'N/A'
+		dHTML['List_Price_Per_Acre__c'] = 'N/A'
+		dHTML['List_Price_Per_SqFt__c'] = 'N/A'
 	else:
-		listPPA = dHTML['LISTPRC'] / dHTML['Acres__c']
-		dHTML['LISTPPA'] = '${:,.0f}'.format(listPPA)
-		dHTML['LISTPRC'] = '${:,.0f}'.format(dHTML['LISTPRC'])
-	dHTML['LISTDTE'] = row['List_Date__c']
-	dHTML['LISTEXPIRE'] = row['Listing_Expiration_Date__c']
+		list_price_per_acre = float(dHTML['List_Price__c']) / float(dHTML['Acres__c'])
+		dHTML['List_Price_Per_Acre__c'] = '${:,.0f}'.format(list_price_per_acre)
+		dHTML['List_Price__c'] = '${:,.0f}'.format(dHTML['List_Price__c'])
+		dHTML['List_Price_Per_SqFt__c'] = '${:,.2f}'.format(list_price_per_acre / 43560)
+	dHTML['List_Date__c'] = row['List_Date__c']
+	dHTML['Listing_Expiration_Date__c'] = row['Listing_Expiration_Date__c']
 
 	# Check if Package Exists
-	# try:
-		# code = urlopen('https://request-server.s3.amazonaws.com/listings/{0}_competitors_package.pdf'.format(dHTML['PID__c'])).code
-	# brochure_exists = webs.awsFileExists('{0}_competitors_package.pdf'.format(dHTML['PID__c']))
 	brochure_exists = aws.aws_file_exists(f'{dHTML['PID__c']}_competitors_package.pdf', extention='png', verbose=False)
 	if brochure_exists:
-		dHTML['BROCHUREURL'] = 'https://request-server.s3.amazonaws.com/listings/{0}_competitors_package.pdf'.format(dHTML['PID__c'])
+		dHTML['Package_url'] = 'https://request-server.s3.amazonaws.com/listings/{0}_competitors_package.pdf'.format(dHTML['PID__c'])
 	# except:
 	else:
-		dHTML['BROCHUREURL'] = False
+		dHTML['Package_url'] = False
 
 # Build Comps Table
 def get_property_comps_table(row, market):
@@ -769,11 +777,11 @@ def get_seller_owner(row):
 		# Add Top 100 link
 		if row['AccountId__r']['Top100__c'] == 'None':
 			# SPRT100 > slr_AccountId__r_Top100
-			dHTML['slr_AccountId__r_Top100'] = 'MAKE MVP'
+			dHTML['slr_AccountId__r_Top100'] = False
 		else:
 			str_top100_agents = row['AccountId__r']['Top100__c'].replace(';', ', ')
-			dHTML['slr_AccountId__r_Name'] = '{0} ({1})'.format(dHTML['slr_AccountId__r_Name'], str_top100_agents)
-			dHTML['slr_AccountId__r_Top100'] = 'EDIT MVP'
+			# dHTML['slr_AccountId__r_Name'] = '{0} ({1})'.format(dHTML['slr_AccountId__r_Name'])
+			dHTML['slr_AccountId__r_Top100'] = str_top100_agents
 
 		# Add City & State
 		if row['AccountId__r']['BillingCity'] != '':
@@ -806,13 +814,13 @@ def get_buyer(row):
 		
 		# Check Top 100
 		if row['Offers__r']['records'][0]['Buyer__r']['Top100__c'] == 'None':
-			dHTML['BPRT100'] = 'MAKE MVP'
+			dHTML['Buyer__r_Top100'] = False
 		else:
 			# Make Buyer Person Top100 link
 			dHTML['BPRT100url'] = 'https://landadvisors.my.salesforce.com/apex/Top100Account?Id={0}'.format(row['Offers__r']['records'][0]['Buyer__r']['Id'])
 			str_top100_agents = row['Offers__r']['records'][0]['Buyer__r']['Top100__c'].replace(';', ', ')
-			dHTML['Buyer__r_Name'] = '{0} ({1})'.format(dHTML['Buyer__r_Name'], str_top100_agents)
-			dHTML['BPRT100'] = 'EDIT MVP'
+			# dHTML['Buyer__r_Name'] = '{0} ({1})'.format(dHTML['Buyer__r_Name'], str_top100_agents)
+			dHTML['Buyer__r_Top100'] = str_top100_agents
 	
 	# Check for Buyer Entity
 	if row['Offers__r']['records'][0]['Buyer_Entity__r'] == 'None':
@@ -963,10 +971,11 @@ def get_opr_title(oprType, recipients_to):
 	# 	dHTML['TITLE'] = dHTML['TITLE'].replace('±', '+/-')
 	# LISTING OPR Title
 	elif oprType == 'Listing':
-		if dHTML['LISTPRC'] == 'N/A':
-			dHTML['TITLE'] = 'For Sale: {0} Land in {1}'.format(subCLA, subCTY)
+		if dHTML['List_Price__c'] == 'N/A':
+			if dHTML['LAO_Advisor_Names']:
+				dHTML['TITLE'] = 'LAO Listing: {0} Land in {1}'.format(subCLA, subCTY)
 		else:
-			listPriceFloat = dHTML['LISTPRC'].replace('$', '').replace(',', '')
+			listPriceFloat = dHTML['List_Price__c'].replace('$', '').replace(',', '')
 			listPriceFloat = float(listPriceFloat)
 			if listPriceFloat == 10000:
 				DOLLARS = 'None'
@@ -1058,7 +1067,7 @@ def get_html_template(oprType):
 	if oprType == 'Comp':
 		return open(r'F:\Research Department\Code\RP3\templates\pir_comps_02.html', 'r').read()
 	elif oprType == 'Listing':
-		return open(r'F:\Research Department\Code\RP3\templates\opr_listing_01.html', 'r').read()
+		return open(r'F:\Research Department\Code\RP3\templates\pir_listing_01.html', 'r').read()
 	elif oprType == 'P&Z':
 		return open(r'F:\Research Department\Code\RP3\templates\opr_planning_zoning_04.html', 'r').read()
 	elif oprType == 'Request':
@@ -1125,7 +1134,7 @@ def build_opr_message(recipients_to, SENDLIST, sender, oprType, html):
 	# msg['Date'] = formatdate(localtime=True)
 
 	if oprType == 'Request' and SENDLIST.upper() != 'T':
-		recipients_to = get_recipient_request(dHTML['AGENTNAMES'])
+		recipients_to = get_recipient_request(dHTML['LAO_Advisor_Names'])
 
 	# assign Template
 	t = Template(html)
@@ -1178,7 +1187,7 @@ def qc(oprType, market):
 		errorVar = errorVar + '{0} Missing Lot Details<br>'.format(dHTML['Lot_Type__c'])
 	if oprType != 'Listing' and dHTML['Location__c'] == '':
 		errorVar = errorVar + 'Missing Location<br>'
-	if oprType == 'Listing' and dHTML['BROCHUREURL'] is False:
+	if oprType == 'Listing' and dHTML['Package_url'] is False:
 		if not dHTML['PID__c'][:2] == 'ID': # Skip Idaho
 			errorVar = errorVar + 'Missing Listing Brochure<br>'
 	if dHTML['City__c'] == '':

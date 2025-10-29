@@ -33,46 +33,23 @@ settings.configure(TEMPLATES=TEMPLATES)
 from django.template import Template, Context
 django.setup()
 
-td.banner('OPR Mail PY3 v05', colorama=True)
-td.console_title('OPR Mailer v05')
+td.banner('OPR Mail PY3 v07', colorama=True)
+td.console_title('OPR Mailer v07')
 # Login to TerraForce
 service = fun_login.TerraForce()
 
-# get Agent Dict
+# get Staff Dict
 dStaff = dicts.get_staff_dict(dict_type='full')
-
-def selectMarket(includeUSA = False):
-	lMarkets = lao.getCounties('Market')
-	count = 1
-	td.banner('Select LAO Market')
-	for market in lMarkets:
-		print(' {0:2}) {1}'.format(count, market))
-		count += 1
-
-	# Include USA for GV National Report
-	if includeUSA:
-		print(' {0:2}) {1}'.format(count, 'USA'))
-	print(' 00) Quit')
-	ui = td.uInput('\n Select Market > ')
-	# Quit program
-	if ui == '00':
-		exit(' Terminating program...')
-	# GV Whale Sales report which covers multiple USA markets
-	elif int(ui) == count:
-		return 'USA'
-	ui = int(ui) - 1
-	market = lMarkets[ui]
-	return market
 
 def send_to():
 	lao.print_function_name('script send_to')
-	oprType = 'NONE'
+	oprType = 'None'
 	lLAOOffices = dicts.get_staff_dict('marketfulllist')
 	
 	while 1:
-		td.banner('OPR Mailer PY3 v05', colorama=True)
+		td.banner('OPR Mailer PY3 v07', colorama=True)
 		
-		if oprType == 'NONE':
+		if oprType == 'None':
 			msg = \
 				' ---------------------------------------\n' \
 				'  🛠️  UTILITIES\n' \
@@ -86,10 +63,9 @@ def send_to():
 				'  [1] Comps (Comparable Sales)\n' \
 				'  [2] Competitor Listings\n' \
 				'  [3] Planning & Zoning Updates\n' \
-				'  [4] Top 100 Opportunities\n' \
-				'  [5] Axio Pipeline\n' \
-				'  [6] PIR OPR\n' \
-				'  [7] PIR AI\n' \
+				'  [4] Requests, Ownerships\n' \
+				'  [5] Debt or Foreclosure\n' \
+				'  [6] Axio Pipeline\n' \
 				'\n' \
 				' [00] Quit\n'
 
@@ -177,7 +153,7 @@ def send_to():
 			
 		elif SENDLIST == 'T' or SENDLIST == '22':
 			SENDLIST = 'T'
-			td.banner('OPR Mailer PY3 v05', colorama=True)
+			td.banner('OPR Mailer PY3 v07', colorama=True)
 			print(' 🧪 Test mode selected - OPRs will be sent to you only')
 			recipients_to = ['{0} LAO <{1}@landadvisors.com>'.format(userName.upper(), userName)]
 			recipients_cc = []
@@ -186,13 +162,13 @@ def send_to():
 		
 		elif SENDLIST == 'Q' or SENDLIST == '11':
 			SENDLIST = 'Q'
-			td.banner('OPR Mailer PY3 v05', colorama=True)
+			td.banner('OPR Mailer PY3 v07', colorama=True)
 			print(' 🔍 Quality Control mode selected')
 			sender, recipients_to, recipients_cc = '', [], []
 			return recipients_to, recipients_cc, SENDLIST, sender, oprType
 			
 		elif SENDLIST == 'R':
-			oprType = 'NONE'
+			oprType = 'None'
 			
 		elif SENDLIST == '00':
 			sys.exit('\n Program terminated...')
@@ -210,24 +186,20 @@ def send_to():
 			print(f'\n ✅ Selected: {oprType} OPRs')
 			
 		elif SENDLIST == '4':
-			oprType = 'TOP100'
+			oprType = 'Request'
 			print(f'\n ✅ Selected: {oprType} OPRs')
 			
 		elif SENDLIST == '5':
-			oprType = 'AXIOPIPE'
+			oprType = 'Debt'
 			print(f'\n ✅ Selected: {oprType} OPRs')
-
+			
 		elif SENDLIST == '6':
-			oprType = 'PIR_OPR'
-			print(f'\n ✅ Selected: {oprType} OPRs')
-		
-		elif SENDLIST == '7':
-			oprType = 'PIR_Comp'
+			oprType = 'AXIOPIPE'
 			print(f'\n ✅ Selected: {oprType} OPRs')
 
 		elif SENDLIST in lLAOOffices:
 			print(f'\n 📤 Preparing to send {oprType} OPRs to {SENDLIST} market...')
-			recipients_to, recipients_cc = recipientComps(SENDLIST)
+			recipients_to, recipients_cc = get_lao_staff_recipients(SENDLIST)
 			sender = '{0} {1} <research@landadvisors.com>'.format(SENDLIST, oprType)
 			return recipients_to, recipients_cc, SENDLIST, sender, oprType
 			
@@ -236,8 +208,8 @@ def send_to():
 			td.warningMsg(' "{0}" is not a valid option.'.format(SENDLIST), colorama=True)
 			td.uInput('\n Enter to continue...')
 
-def recipientComps(sendListMarket):
-	lao.print_function_name('script recipientComps')
+def get_lao_staff_recipients(sendListMarket):
+	lao.print_function_name('script get_lao_staff_recipients')
 	lDoNotSendRolls = ['Marketing', 'Management', 'Capital', 'Events', 'DA', 'IT', 'Escrow', 'Mapping']
 	recipients_to, recipients_cc = [], []
 	for staff in dStaff:
@@ -255,6 +227,17 @@ def recipientComps(sendListMarket):
 	# Return recipient
 	return recipients_to, recipients_cc
 
+def add_capital_recipients(recipients_to):
+	lao.print_function_name('script add_capital_recipients')
+	if 'Distressed' in dHTML['TITLE']:
+		recipients_to.append('mzarola@landadvisorscapital.com')
+		recipients_to.append('lembry@landadvisorscapital.com')
+		if 'mstratz@landadvisorscapital.com' not in recipients_to:
+			recipients_to.append('mstratz@landadvisors.com')
+		if 'gvogel@landadvisors.com' not in recipients_to:
+			recipients_to.append('gvogel@landadvisors.com')
+	return recipients_to
+
 def create_query_string(service, sendlist, oprType):
 	lao.print_function_name('script create_query_string')
 	
@@ -266,7 +249,7 @@ def create_query_string(service, sendlist, oprType):
 			market = 'Scottsdale'
 		# TESTING - Auto select market
 		elif oprType == 'PIR_OPR' or oprType == 'PIR_Comp':
-			market = 'Phoenix'
+			market = 'Scottsdale'
 		# END TESTING
 		else:
 			# Select the market
@@ -276,11 +259,13 @@ def create_query_string(service, sendlist, oprType):
 				wc = "{0} AND OPR_Sent__c = 1964-09-11".format(wc)
 			elif oprType == 'AXIOPIPE': # Listing uses different OPR Sent date
 				wc = "{0} AND OPR_Sent__c = 1929-10-02".format(wc)
+			elif oprType == 'Request':
+				wc = "{0} AND OPR_Sent__c = 1994-10-01".format(wc)
 			else:
 				wc = "{0} AND OPR_Sent__c = 1965-01-11".format(wc)
 
-			if oprType == 'TOP100':
-				wc = "{0} AND StageName__c = 'Top 100'".format(wc)
+			if oprType == 'Request':
+				wc = "{0} AND (StageName__c = 'Top 100' or StageName__c = 'Lead')".format(wc)
 			elif oprType == 'Comp':
 				wc = "{0} AND StageName__c LIKE '%Closed%'".format(wc)
 
@@ -341,6 +326,7 @@ def get_universal_fields(row):
 	dHTML['Name'] = row['Name']
 	dHTML['Encumbrance_Rating__c '] = ''
 	dHTML['Latitude__c'] = row['Latitude__c']
+	dHTML['Property_Comps_Table'] = False
 	dHTML['Location__c'] = lao.charactersToASCII(row['Location__c'], charCase='TITLE')
 	dHTML['Longitude__c'] = row['Longitude__c']
 	# Check for Lead Parcel
@@ -348,13 +334,16 @@ def get_universal_fields(row):
 	dHTML['Lot_Width__c'] = 0
 	dHTML['Lead_Parcel__c'] = (row['Lead_Parcel__c']).upper()
 	dHTML['Lead_Parcel__c'] = dHTML['Lead_Parcel__c'].strip()
-	if dHTML['Lead_Parcel__c'] == 'NONE' or dHTML['Lead_Parcel__c'] == '':
+	if dHTML['Lead_Parcel__c'] == 'None' or dHTML['Lead_Parcel__c'] == '':
 		dHTML['Lead_Parcel__c'] = bb.addLeadParcel(service, dHTML['Id'])
 	dHTML['Lots__c'] = int(row['Lots__c'])
 	dHTML['PID__c'] = row['PID__c']
 	dHTML['Price_per_Lot__c'] = 0
 	dHTML['Price_per_parcel__c'] = 0
 	dHTML['Parcels__c'] = row['Parcels__c']
+	# Truncate Parcels to 100 characters for email
+	if len(dHTML['Parcels__c']) > 100:
+		dHTML['Parcels__c'] = f'{dHTML['Parcels__c'][:100]}...'
 	dHTML['Recorded_Instrument_Number__c '] = row['Recorded_Instrument_Number__c']
 	dHTML['Submarket__c'] = (row['Submarket__c']).title()
 	dHTML['StageName__c'] = row['StageName__c']
@@ -378,7 +367,7 @@ def make_opr_map(PID):
 
 def get_acres(row):
 	lao.print_function_name('script get_acres')
-	dHTML['Acres__c'] = row['Acres__c']
+	dHTML['Acres__c'] = f"{float(row['Acres__c'] or 0):,.2f}"
 	if dHTML['Acres__c'] == 0:
 		dHTML['Acres__c'] = 'N/A'
 		if row['Lots__c'] == 0 and row['Lot_Count_Rollup__c'] == 0:
@@ -436,7 +425,6 @@ def get_source(row):
 	if dHTML['SOURCE'] == 'Vizzda':
 		dHTML['SOURCELINK'] = 'https://www2.vizzda.com/detail/{0}'.format(row['Source_ID__c'])
 	elif dHTML['SOURCE'] == 'RED News':
-		# OLD dHTML['SOURCELINK'] = 'https://www.redailycomps.com/REDC/Comp.asp?ID={0}&NoComment='.format(row['Source_ID__c'])
 		dHTML['SOURCELINK'] = 'https://realestatedaily-news.com/displaycomp/?ID={0}&NoComment='.format(row['Source_ID__c'])
 	elif dHTML['SOURCE'] == 'Reonomy':
 		dHTML['SOURCELINK'] = row['Source_ID__c']
@@ -452,7 +440,7 @@ def lao_activity(PID):
 	lao.print_function_name('script lao_activity')
 
 	# Get Agent Dict of TF Ids
-	dAgent_name = dicts.get_staff_dict('tfid')
+	# dAgent_name = dicts.get_staff_dict('tfid')
 
 	# TerraForce Query
 	fields = 'default'
@@ -462,53 +450,62 @@ def lao_activity(PID):
 
 	dHTML['StageName__c'] = results[0]['StageName__c']
 	dCommissions = results[0]['Commissions__r']
-	dHTML['AGENTNAMES'] = ''
-	dHTML['LISTAGENTID'] = ''
-	dHTML['LISTAGENTNAME'] = ''
-	dHTML['LISTAGENTPHONE'] = ''
-	dHTML['LISTAGENTPERSONEMAIL'] = ''
+	dHTML['LAO_Advisor_Names'] = []
+	dHTML['List_Agent__c'] = False
+	dHTML['List_Agent__r_Name'] = 'N/A'
+	dHTML['List_Agent__r_Phone'] = 'N/A'
+	dHTML['List_Agent__r_PersonEmail'] = 'N/A'
 	dHTML['LAOACT'] = 0
 
 	if dCommissions == 'None':
-		dHTML['AGENTNAMES'] = 'None'
+		dHTML['LAO_Advisor_Names'] = False
 	else:
 		dCommissions = dCommissions['records']
 
 		# Cycle through listing agents
 		for agent in dCommissions:
+			# print('here7')
+			# pprint(dCommissions)
+			# ui = td.uInput('\n Continue [00]... > ')
+			# if ui == '00':
+			# 	exit('\n Terminating program...')
 			# LAO Agents
 			if agent['LAO_Agent__c'] == 1:
 				dHTML['LAOACT'] = 1
 				agentid = (agent['Agent__c'])[:-3]
-				name = dAgent_name.get(agentid)# .replace('_', ' ')
-				# Skip if non-LAO agent
-				try:
-					name = name.replace('.', '')
-				except AttributeError:
-					continue
+				# name = dAgent_name.get(agentid)# .replace('_', ' ')
+				name = agent['Agent__r']['Name']
+				print('LAO Agent: {0}'.format(name))
+				# # Skip if non-LAO agent
+				# try:
+				# 	name = name.replace('.', '')
+				# except AttributeError:
+				# 	continue
 				if name != 'None' and name != None:
-					dHTML['AGENTNAMES'] = '{0}, {1}'.format(dHTML['AGENTNAMES'], name)
+					dHTML['LAO_Advisor_Names'].append(name)
+
 			# Competitor Agents
 			else:
-				dHTML['LISTAGENTID'] = agent['Agent__c']# ['Id']
-				dHTML['LISTAGENTNAME'] = agent['Agent__r']['Name']
-				dHTML['LISTAGENTPHONE'] = agent['Agent__r']['Phone']
-				dHTML['LISTAGENTEMAIL'] = agent['Agent__r']['PersonEmail']
+				dHTML['List_Agent__c'] = agent['Agent__c']# ['Id']
+				dHTML['List_Agent_r_Name'] = agent['Agent__r']['Name']
+				dHTML['List_Agent_r_Phone'] = agent['Agent__r']['Phone']
+				dHTML['List_Agent_r_PersonEmail'] = agent['Agent__r']['PersonEmail']
+				dHTML['List_Agent_r_URL'] = 'https://landadvisors.my.salesforce.com/{0}'.format(dHTML['List_Agent__c'])
 				if agent['Agent__r']['Company__r'] == 'None':
-					dHTML['LISTAGENTCOMPANY'] = ''
+					dHTML['List_Agent_r_Company'] = False
 				else:
-					dHTML['LISTAGENTCOMPANY'] = agent['Agent__r']['Company__r']['Name']
-				dHTML['LISTAGENTURL'] = 'https://landadvisors.my.salesforce.com/%s' % dHTML['LISTAGENTID']
-
-		# Remove initial blank or none name from agent list
-		dHTML['AGENTNAMES'] = dHTML['AGENTNAMES'][2:]
+					dHTML['List_Agent_r_Company'] = agent['Agent__r']['Company__r']['Name']
+					dHTML['List_Agent_r_Company_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(agent['Agent__r']['Company__r']['Id'])
+				
 
 	# Remove single offers on non-lao deals with no activity
-	if dHTML['AGENTNAMES'] == 'None':
+	if dHTML['LAO_Advisor_Names'] is False:
 		dHTML['LAOACT'] = 0
 	# Exclude agents in the OPR for deals that may have LAO agents but are not LAO sales
 	elif dHTML['StageName__c'] == 'Closed Lost':
 		dHTML['LAOACT'] = 0
+	else:
+		dHTML['LAO_Advisor_Names'] = ', '.join(dHTML['LAO_Advisor_Names'])
 
 def get_comp_fields(row, recipients_to):
 	lao.print_function_name('script get_comp_fields')
@@ -554,11 +551,11 @@ def get_comp_fields(row, recipients_to):
 
 	dHTML['Sale_Price__c'] = '$' + '{:,.0f}'.format(dHTML['Sale_Price__c'])
 
-def get_top100_fields():
-	lao.print_function_name('script get_top100_fields')
+def get_request_fields():
+	lao.print_function_name('script get_request_fields')
 	dHTML['Sale_Date__c '] = 'None'
 	dHTML['PNZ'] = 'None'
-	dHTML['Lot_Type__c'] = 'TOP100'
+	# dHTML['Lot_Type__c'] = 'TOP100'
 
 def get_pir_fields():
 	lao.print_function_name('script get_pir_fields')
@@ -610,32 +607,32 @@ def get_pnz_fields(row):
 
 def get_listing_fields(row):
 	lao.print_function_name('script get_listing_fields')
-	dHTML['Lot_Type__c'] = 'Listing'
-	dHTML['LISTPRC'] = row['List_Price__c']
-	if dHTML['LISTPRC'] == None or dHTML['LISTPRC'] == 10000:
-		dHTML['LISTPRC'] = 'N/A'
-		dHTML['LISTPPA'] = 'N/A'
+	# dHTML['Lot_Type__c'] = 'Listing'
+	dHTML['List_Price__c'] = row['List_Price__c']
+	
+	if dHTML['List_Price__c'] == 'None' or dHTML['List_Price__c'] == 10000:
+		dHTML['List_Price__c'] = 'N/A'
+		dHTML['List_Price_Per_Acre__c'] = 'N/A'
+		dHTML['List_Price_Per_SqFt__c'] = 'N/A'
 	else:
-		listPPA = dHTML['LISTPRC'] / dHTML['Acres__c']
-		dHTML['LISTPPA'] = '${:,.0f}'.format(listPPA)
-		dHTML['LISTPRC'] = '${:,.0f}'.format(dHTML['LISTPRC'])
-	dHTML['LISTDTE'] = row['List_Date__c']
-	dHTML['LISTEXPIRE'] = row['Listing_Expiration_Date__c']
+		list_price_per_acre = float(dHTML['List_Price__c']) / float(dHTML['Acres__c'])
+		dHTML['List_Price_Per_Acre__c'] = '${:,.0f}'.format(list_price_per_acre)
+		dHTML['List_Price__c'] = '${:,.0f}'.format(dHTML['List_Price__c'])
+		dHTML['List_Price_Per_SqFt__c'] = '${:,.2f}'.format(list_price_per_acre / 43560)
+	dHTML['List_Date__c'] = row['List_Date__c']
+	dHTML['Listing_Expiration_Date__c'] = row['Listing_Expiration_Date__c']
 
 	# Check if Package Exists
-	# try:
-		# code = urlopen('https://request-server.s3.amazonaws.com/listings/{0}_competitors_package.pdf'.format(dHTML['PID__c'])).code
-	# brochure_exists = webs.awsFileExists('{0}_competitors_package.pdf'.format(dHTML['PID__c']))
 	brochure_exists = aws.aws_file_exists(f'{dHTML['PID__c']}_competitors_package.pdf', extention='png', verbose=False)
 	if brochure_exists:
-		dHTML['BROCHUREURL'] = 'https://request-server.s3.amazonaws.com/listings/{0}_competitors_package.pdf'.format(dHTML['PID__c'])
+		dHTML['Package_url'] = 'https://request-server.s3.amazonaws.com/listings/{0}_competitors_package.pdf'.format(dHTML['PID__c'])
 	# except:
 	else:
-		dHTML['BROCHUREURL'] = False
+		dHTML['Package_url'] = False
 
 # Build Comps Table
-def get_listing_comps_table(row, market):
-	lao.print_function_name('script get_listing_comps_table')
+def get_property_comps_table(row, market):
+	lao.print_function_name('script get_property_comps_table')
 
 	# Calc min max coords
 	dCords = mpy.get_bounding_box_coords(row['Latitude__c'], row['Longitude__c'], 10)
@@ -678,6 +675,9 @@ def get_listing_comps_table(row, market):
 			break
 
 	# Build Comps Table
+	if results == []:
+		dHTML['Property_Comps_Table'] = False
+		return
 	compsTable = ''
 	for pid in results:
 		OPRLink = 'https://landadvisors.lightning.force.com/lightning/r/lda_Opportunity__c/{0}/view'.format(pid['Id'])
@@ -685,10 +685,16 @@ def get_listing_comps_table(row, market):
 		compPrice = '${:,.0f}'.format(pid['Sale_Price__c'])
 		compPricePerAcre = '${:,.0f}'.format(pid['Price_Per_Acre__c'])
 		compSaleDate = (td.date_engine(pid['Sale_Date__c'], outformat='opr', informat='TF'))
-		compsRow = "<tr><td><a href='{0}'>{1}</a></td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td><a href='{6}'>L5</a></td></tr>".format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
+		compsRow = "<tr><td><a href='{0}'>{1}</a></td><td align='center'>{2}</td><td align='right'>{3}</td><td align='right'>{4}</td><td align='right'>{5}</td><td align='center'><a href='{6}'>L5</a></td></tr>".format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
 		compsTable = '{0}{1}'.format(compsTable, compsRow)
 	compsTable = compsTable.replace(' /', '/')
-	dHTML['LISTINGCOMPSTABLE'] = compsTable
+	dHTML['Property_Comps_Table'] = compsTable
+	
+	# print('here2')
+	# pprint(dHTML['Property_Comps_Table'])
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 
 def get_seller_owner(row):
 	lao.print_function_name('script get_seller_owner')
@@ -747,11 +753,11 @@ def get_seller_owner(row):
 		# Add Top 100 link
 		if row['AccountId__r']['Top100__c'] == 'None':
 			# SPRT100 > slr_AccountId__r_Top100
-			dHTML['slr_AccountId__r_Top100'] = 'MAKE MVP'
+			dHTML['slr_AccountId__r_Top100'] = False
 		else:
 			str_top100_agents = row['AccountId__r']['Top100__c'].replace(';', ', ')
-			dHTML['slr_AccountId__r_Name'] = '{0} ({1})'.format(dHTML['slr_AccountId__r_Name'], str_top100_agents)
-			dHTML['slr_AccountId__r_Top100'] = 'EDIT MVP'
+			# dHTML['slr_AccountId__r_Name'] = '{0} ({1})'.format(dHTML['slr_AccountId__r_Name'])
+			dHTML['slr_AccountId__r_Top100'] = str_top100_agents
 
 		# Add City & State
 		if row['AccountId__r']['BillingCity'] != '':
@@ -784,13 +790,13 @@ def get_buyer(row):
 		
 		# Check Top 100
 		if row['Offers__r']['records'][0]['Buyer__r']['Top100__c'] == 'None':
-			dHTML['BPRT100'] = 'MAKE MVP'
+			dHTML['Buyer__r_Top100'] = False
 		else:
 			# Make Buyer Person Top100 link
 			dHTML['BPRT100url'] = 'https://landadvisors.my.salesforce.com/apex/Top100Account?Id={0}'.format(row['Offers__r']['records'][0]['Buyer__r']['Id'])
 			str_top100_agents = row['Offers__r']['records'][0]['Buyer__r']['Top100__c'].replace(';', ', ')
-			dHTML['Buyer__r_Name'] = '{0} ({1})'.format(dHTML['Buyer__r_Name'], str_top100_agents)
-			dHTML['BPRT100'] = 'EDIT MVP'
+			# dHTML['Buyer__r_Name'] = '{0} ({1})'.format(dHTML['Buyer__r_Name'], str_top100_agents)
+			dHTML['Buyer__r_Top100'] = str_top100_agents
 	
 	# Check for Buyer Entity
 	if row['Offers__r']['records'][0]['Buyer_Entity__r'] == 'None':
@@ -808,12 +814,23 @@ def get_buyer(row):
 def get_beneficiary(row):
 	lao.print_function_name('script get_beneficiary')
 	if row['Beneficiary__c'] != 'None':
-		dHTML['BENEFICIARY'] = (row['Beneficiary__r']['Name'])
-		dHTML['BNFurl'] = 'https://landadvisors.my.salesforce.com/{0}'.format(row['Beneficiary__c'])
-		dHTML['LOANAMOUNT'] = '$' + '{:,.0f}'.format(row['Loan_Amount__c'])
-		dHTML['LOANDATE'] = row['Loan_Date__c']
+		dHTML['Beneficiary__c_Name'] = (row['Beneficiary__r']['Name'])
+		dHTML['Beneficiary__c_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(row['Beneficiary__c'])
 	else:
-		dHTML['BENEFICIARY'], dHTML['BNFurl'], dHTML['LOANAMOUNT'] = False, 'None', 'None'
+		dHTML['Beneficiary__c_Name'] = False
+	if row['Beneficiary_Contact__c'] != 'None':
+		dHTML['Beneficiary_Contact__c_Name'] = (row['Beneficiary_Contact__r']['Name'])
+		dHTML['Beneficiary_Contact__c_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(row['Beneficiary_Contact__c'])
+	else:
+		dHTML['Beneficiary_Contact__c_Name'] = False
+	if row['Loan_Amount__c'] != 'None':
+		dHTML['Loan_Amount__c'] = '$' + '{:,.0f}'.format(row['Loan_Amount__c'])
+	dHTML['Loan_Date__c'] = row['Loan_Date__c']
+	
+	if row['Encumbrance_Rating__c'] == 'None':
+		dHTML['Encumbrance_Rating__c'] = False
+	else:
+		dHTML['Encumbrance_Rating__c'] = row['Encumbrance_Rating__c']
 
 def get_lot_details():
 	lao.print_function_name('script get_lot_details')
@@ -914,8 +931,11 @@ def get_opr_title(oprType, recipients_to):
 	LANDTYPE = 'None'
 
 	# MVP OPR Title
-	if oprType == 'TOP100':
-		dHTML['TITLE'] = 'LAO Opportunity: {0} Land in {1}'.format(subCLA, subCTY)
+	if oprType == 'Request':
+		if dHTML['Encumbrance_Rating__c']:
+			dHTML['TITLE'] = 'Distressed: {0} Land in {1}'.format(subCLA, subCTY)
+		else:
+			dHTML['TITLE'] = 'Opportunity: {0} Land in {1}'.format(subCLA, subCTY)
 		dHTML['TITLE'] = dHTML['TITLE'].replace('±', '+/-')
 	# P&Z OPR Title
 	elif oprType == 'P&Z':
@@ -927,10 +947,11 @@ def get_opr_title(oprType, recipients_to):
 	# 	dHTML['TITLE'] = dHTML['TITLE'].replace('±', '+/-')
 	# LISTING OPR Title
 	elif oprType == 'Listing':
-		if dHTML['LISTPRC'] == 'N/A':
-			dHTML['TITLE'] = 'For Sale: {0} Land in {1}'.format(subCLA, subCTY)
+		if dHTML['List_Price__c'] == 'N/A':
+			if dHTML['LAO_Advisor_Names']:
+				dHTML['TITLE'] = 'LAO Listing: {0} Land in {1}'.format(subCLA, subCTY)
 		else:
-			listPriceFloat = dHTML['LISTPRC'].replace('$', '').replace(',', '')
+			listPriceFloat = dHTML['List_Price__c'].replace('$', '').replace(',', '')
 			listPriceFloat = float(listPriceFloat)
 			if listPriceFloat == 10000:
 				DOLLARS = 'None'
@@ -1022,13 +1043,13 @@ def get_html_template(oprType):
 	if oprType == 'Comp':
 		return open(r'F:\Research Department\Code\RP3\templates\pir_comps_02.html', 'r').read()
 	elif oprType == 'Listing':
-		return open(r'F:\Research Department\Code\RP3\templates\opr_listing_01.html', 'r').read()
+		return open(r'F:\Research Department\Code\RP3\templates\pir_listing_01.html', 'r').read()
 	elif oprType == 'P&Z':
 		return open(r'F:\Research Department\Code\RP3\templates\opr_planning_zoning_04.html', 'r').read()
-	elif oprType == 'TOP100':
+	elif oprType == 'Request':
 		# return open(r'F:\Research Department\Code\RP3\templates\top_100_02.html',
 					# 'r', encoding='utf-8').read()
-		return open(r'F:\Research Department\Code\RP3\templates\property_report_01.html', 'r', encoding='utf-8').read()
+		return open(r'F:\Research Department\Code\RP3\templates\pir_request_01.html', 'r', encoding='utf-8').read()
 	elif oprType == 'OPRNOTIFICATION':
 		return open(r'F:\Research Department\Code\RP3\templates\you_got_oprs.html',
 					'r').read()
@@ -1041,8 +1062,8 @@ def get_html_template(oprType):
 	elif oprType == 'PIR_Comp':
 		return open(r'F:\Research Department\Code\RP3\templates\pir_comps_02.html', 'r', encoding='utf-8').read()
 
-def get_recipient_top100(names):
-	lao.print_function_name('script get_recipient_top100')
+def get_recipient_request(names):
+	lao.print_function_name('script get_recipient_request')
 	recipients_to = ['Bill Landis <blandis@landadvisors.com>', 'Ethan Granger <egranger@landadvisors.com>', 'Alec Videla <avidela@landadvisors.com']
 	names = names.split(', ')
 	# Find Agents in Top 100 Commission list
@@ -1088,8 +1109,8 @@ def build_opr_message(recipients_to, SENDLIST, sender, oprType, html):
 	# msg['From'] = sender
 	# msg['Date'] = formatdate(localtime=True)
 
-	if oprType == 'TOP100' and SENDLIST.upper() != 'T':
-		recipients_to = get_recipient_top100(dHTML['AGENTNAMES'])
+	if oprType == 'Request' and SENDLIST.upper() != 'T':
+		recipients_to = get_recipient_request(dHTML['LAO_Advisor_Names'])
 
 	# assign Template
 	t = Template(html)
@@ -1120,9 +1141,9 @@ def qc(oprType, market):
 		transLink = '{0}<a href="{1}"><font color="red">Reonomy Link</font></a><br>'.format(transLink,dHTML['SOURCELINK'])
 	errorVar = transLink
 
-	if dHTML['Lead_Parcel__c'] == '' or dHTML['Lead_Parcel__c'].upper() == 'NONE':
+	if dHTML['Lead_Parcel__c'] == '' or dHTML['Lead_Parcel__c'] == 'None':
 		errorVar = errorVar + 'Lead Parcel is Missing<br>'
-	if dHTML['Parcels__c'] == '' or dHTML['Parcels__c'].upper() == 'NONE':
+	if dHTML['Parcels__c'] == '' or dHTML['Parcels__c'] == 'None':
 		errorVar = errorVar + 'Parcels are Missing<br>'
 	if dHTML['Subdivision__c'] == '' and dHTML['Classification__c'] == '%RESIDENTIAL%':
 		errorVar = errorVar + 'Missing Subdivision<br>'
@@ -1142,7 +1163,7 @@ def qc(oprType, market):
 		errorVar = errorVar + '{0} Missing Lot Details<br>'.format(dHTML['Lot_Type__c'])
 	if oprType != 'Listing' and dHTML['Location__c'] == '':
 		errorVar = errorVar + 'Missing Location<br>'
-	if oprType == 'Listing' and dHTML['BROCHUREURL'] is False:
+	if oprType == 'Listing' and dHTML['Package_url'] is False:
 		if not dHTML['PID__c'][:2] == 'ID': # Skip Idaho
 			errorVar = errorVar + 'Missing Listing Brochure<br>'
 	if dHTML['City__c'] == '':
@@ -1159,7 +1180,7 @@ def qc(oprType, market):
 		errorVar = errorVar + '--- DO NOT EMAIL --- City or Town in Zoning --- DO NOT EMAIL ---<br>'
 	if dHTML['slr_Owner_Entity__r_Category__c'] == '' and dHTML['slr_Owner_Entity__r_Name'] != '':
 		errorVar = errorVar + '<a href="https://landadvisors.my.salesforce.com/%s"><font color="red">Seller Entity</font></a> missing Category<br>' % dHTML['slr_Owner_Entity__c']
-	if dHTML['Classification__c'] == '' or dHTML['Classification__c'] == 'NONE':
+	if dHTML['Classification__c'] == '' or dHTML['Classification__c'] == 'None':
 		errorVar = errorVar + 'Missing Classification<br>'
 	if 'Closed' in dHTML['StageName__c']:
 		if 'AGRICULTURAL' in dHTML['Classification__c'] and dHTML['PPAraw'] > 40000:
@@ -1234,36 +1255,24 @@ def assemble_error_mail_string(errorMail, errorVar, transLink):
 		transLink = '<a href="https://landadvisors.my.salesforce.com/{0}"><font color="green">{1} -- {2}</font></a><br>'.format(dHTML['Id'], dHTML['Lot_Type__c'], dHTML['PID__c'])
 		errorMail = '{0}{1}'.format(errorMail, transLink)
 	if dHTML['Description__c'] != '':
-		errorMail = '{0}<font color="gray">Comment:   {1}</font><br><br>'.format(errorMail, dHTML['Description__c'])
+		errorMail = '{0}<font color="gray">Description:   {1}</font><br><br>'.format(errorMail, dHTML['Description__c'])
 	else:
 		errorMail = '{0}<br>'.format(errorMail)
 
 	return errorMail
 
-def sendQCEmail(errorMail, qcCount, userName):
-	lao.print_function_name('script sendQCEmail')
-	qcHeader = '<head><title>OPR QC Results</title></head>'
-	errorMail = qcHeader + 'OPR QC Results (' + str(qcCount) + ' transfers)<br><br>' + errorMail
-	sender = 'OPR QC Results <research@landadvisors.com>'
-	# sender = 'OPR QC Results <blandis@landadvisors.com>'
-	recipients_to = ['{0} LAO <{1}@landadvisors.com>'.format(userName.upper(), userName)]
+def send_qc_email(errorMail, qcCount, userName):
+	lao.print_function_name('script send_qc_email')
+	qcHeader = '<head><title>QC RESULTS</title></head>'
+	errorMail = qcHeader + 'QC RESULTS (' + str(qcCount) + ' transfers)<br><br>' + errorMail
+	sender = 'QC RESULTS <research@landadvisors.com>'
+	recipients_to = ['{0} <{1}@landadvisors.com>'.format(userName.upper(), userName)]
 
-	# msg = MIMEMultipart('alternative')
-	# msg['Subject'] = 'OPR QC Results'
-	# msg['From'] = sender
-	# msg['To'] = ','.join(recipients_to)
-	# msg['Date'] = formatdate(localtime=True)
-
-	#create body of the message as plain text and html
-	# text = ''
-	html = errorMail
-
-	qc_subject = 'OPR QC Results'
+	qc_subject = 'QC RESULTS'
 	qc_body = errorMail
 	qc_sender_email = sender
-	qc_recipients = recipients_to
 
-	return qc_subject, qc_body, qc_sender_email, qc_recipients
+	return qc_subject, qc_body, qc_sender_email, recipients_to
 
 def send_opr_sent_notification(oprType):
 	lao.print_function_name('script send_opr_sent_notification')
@@ -1275,7 +1284,7 @@ def send_opr_sent_notification(oprType):
 		subjectOPRType = 'Competitor Listing'
 	elif oprType == 'P&Z':
 		subjectOPRType = 'Planning & Zoning'
-	elif oprType == 'TOP100':
+	elif oprType == 'Request':
 		subjectOPRType = 'Opportunity Property'
 
 	subject = 'You Got {0} OPRs'.format(subjectOPRType)
@@ -1326,6 +1335,7 @@ while 1:
 		# HTML Django Dictionary
 		dHTML = {}
 
+		# Universal Fields
 		get_universal_fields(row)
 		make_opr_map(dHTML['PID__c'])
 		get_acres(row)
@@ -1337,33 +1347,32 @@ while 1:
 		get_seller_owner(row)
 		get_beneficiary(row)
 
+		# OPR type specific fields
 		# Comp fields
-		
 		if oprType == 'Comp':
 			get_comp_fields(row, recipients_to)
 			get_buyer(row)
 			# Lot Details
 			if dHTML['Lots__c'] > 0 and not 'Apartment' in dHTML['Classification__c']:
 				get_lot_details()
-			
-			# if get_lot_details() == False:  # Skip temporarily to figure out fix
-			# 	td.uInput('\n Skipped making OPR cuz missing Price per Lot in Lot Details...Continue...')
-			# 	continue
-
-		# Top 100 Fields
-		elif oprType == 'TOP100':
-			get_top100_fields()
-			get_listing_comps_table(row, market)
+		# Request Fields
+		elif oprType == 'Request':
+			get_request_fields()
+			get_property_comps_table(row, market)
+		# Debt Fields
+		elif oprType == 'Debt':
+			get_request_fields()
+			get_property_comps_table(row, market)
 		# P&Z Fields
 		elif oprType == 'P&Z':
 			get_pnz_fields(row)
 		# Listing Fields
 		elif oprType == 'Listing':
 			get_listing_fields(row)
-			get_listing_comps_table(row, market)
+			get_property_comps_table(row, market)
 		elif oprType == 'AXIOPIPE':
 			get_axio_pipeline_fields()
-			get_listing_comps_table(row, market)
+			get_property_comps_table(row, market)
 		# PIR Fields
 		elif oprType == 'PIR_Comp':
 			get_pir_fields()
@@ -1376,15 +1385,9 @@ while 1:
 		html = get_html_template(oprType)
 
 		
-		print('here1')
+		print('here10')
 		pprint(dHTML)
-		# ui = td.uInput('\n Continue [00]... > ')
-		# if ui == '00':
-		# 	exit('\n Terminating program...')
-		
 
-		
-		
 		# Send OPR to Market recipients
 		if SENDLIST.upper() != 'Q': # Skip sending OPRs if sending QC
 			# Check if OPR has been QC'd
@@ -1400,21 +1403,22 @@ while 1:
 					if ui != '1':
 						exit('\n Terminating program...')
 					break
+
+			# Add Capital Recipients if needed
+			recipients_to = add_capital_recipients(recipients_to)
+
 			# Build OPR Message
 			subject, body, sender_email, recipients_to = build_opr_message(recipients_to, SENDLIST, sender, oprType, html)
 
 			# Save body as html file for reference
-			html_filename = f'C:/TEMP/{dHTML["PID__c"]}_{dHTML["Lot_Type__c"]}_OPR.html'
-			with open(html_filename, 'w', encoding='utf-8') as f:
-				f.write(body)
-			print(f'\n Saved {html_filename} file.')
 			if lao.getUserName().lower() == 'blandis':
+				html_filename = f'C:/TEMP/{dHTML["PID__c"]}_{dHTML["Lot_Type__c"]}_OPR.html'
+				with open(html_filename, 'w', encoding='utf-8') as f:
+					f.write(body)
+				print(f'\n Saved {html_filename} file.')
 				openbrowser(html_filename)
 
-			# TEST PIR ###############################################################
-			# if oprType == 'PIR_OPR' or oprType == 'PIR_Comp':
-			# 	pass
-			# else:
+			
 			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients_to, cc=recipients_cc, bcc=None, attachments=None)
 			# Change OPR Sent date to today if OPR successfuly sent
 			if SENDLIST.upper() != 'T' and dSend_results['success'] is True:
@@ -1422,8 +1426,6 @@ while 1:
 			# Add OPR to QC list
 			if SENDLIST.upper() == 'T':
 				qc_complete_verification(dHTML['PID__c'], 'Write')
-				# if dHTML['PID__c'] not in lOPR_qc:
-				# 	lOPR_qc.append(dHTML['PID__c'])
 
 		# Build Error Message if sending QC or Test
 		if SENDLIST.upper() == 'Q' or SENDLIST.upper() == 'T':
@@ -1434,7 +1436,7 @@ while 1:
 	
 	# Send QC Email Message if sending QC or Test
 	if SENDLIST.upper() == 'Q' or SENDLIST.upper() == 'T':
-			qc_subject, qc_body, qc_sender_email, qc_recipients = sendQCEmail(errorMail, qcCount, userName)
+			qc_subject, qc_body, qc_sender_email, qc_recipients = send_qc_email(errorMail, qcCount, userName)
 			emailer.send_email_ses(qc_subject, qc_body, qc_sender_email, qc_recipients, cc=None, bcc=None, attachments=None)
 	else:
 		# Send You Got OPRs email

@@ -2322,7 +2322,7 @@ def get_TF_deal_query_fields():
 
 	# Add other TF objects to fields
 	fields_accounts_receivable = "(SELECT Id FROM Accounts_Receivable__r )"
-	fields_commissions = "(SELECT Agent__c, Agent__r.Name, LAO_Agent__c, Agent__r.Phone, Agent__r.PersonEmail, Agent__r.Company__r.Name FROM Commissions__r)"
+	fields_commissions = "(SELECT Agent__c, Agent__r.Name, LAO_Agent__c, Agent__r.Phone, Agent__r.PersonEmail, Agent__r.Company__r.Id, Agent__r.Company__r.Name FROM Commissions__r)"
 	fields_lot_details = "(Select Name, Acres__c, Lot_Count__c, Lot_Width__c, Lot_Depth__c, Price_per_parcel__c, Price_per_Front_Foot__c, Price_per_Lot__c From Lot_Details__r WHERE RecordTypeID != '012a0000001ZSieAAG')"
 	fields_offer = "(SELECT Buyer__r.Id, Buyer__r.Name,  Buyer__r.Phone,  Buyer__r.PersonMobilePhone,  Buyer__r.PersonEmail,  Buyer__r.Top100__c, Buyer_Entity__r.Id, Buyer_Entity__r.Name, Buyer_Entity__r.Category__c, Offer_Status__c FROM Offers__r where Offer_Status__c = 'Accepted')"
 	fields_notes = "(Select Id, LastModifiedDate, Title, Body From Notes)"
