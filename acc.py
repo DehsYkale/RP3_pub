@@ -1531,6 +1531,9 @@ def print_dAcc_info(dAcc, highlight='None'):
 
 # Open website menu to research contact info
 # search_for values: Entity Address, Entity Phone, General, Person Address, Person Name, Person Phone
+#########################################################################################
+# Calls fuction in webs.open_contact_websites ###########################################
+#########################################################################################
 def open_contact_websites_menu(dAcc, search_for='None'):
 	lao.print_function_name('acc def open_contact_websites_menu')
 	

@@ -27,7 +27,7 @@ if __name__ == "__main__":
 	
 	# Send the test email
 #  result = send_email_ses(subject, body, recipient)
-	result = emailer.send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, attachments=None)
+	result = emailer.send_email_ses(subject, body, sender_email, recipients=recipients, cc=None, bcc=None, attachments=None)
 
 	if result.get("success"):
 		print(f"✅ Email sent successfully! Message ID: {result['message_id']}")

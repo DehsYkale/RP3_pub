@@ -120,7 +120,7 @@ for office in lFileNameOffice:
 	print('\n Sending LLR to {0}...'.format(office))
 	for row in recipients:
 		print(' {0}'.format(row))
-	emailer.send_email_ses(subject, body, sender_email, recipients, cc=cc_recipients, bcc=None, attachments=lAttachments)
+	emailer.send_email_ses(subject, body, sender_email, recipients=recipients, cc=cc_recipients, bcc=None, attachments=lAttachments)
 
 	print('\n Pausing for 2 seconds...')
 	sleep(2)

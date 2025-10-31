@@ -330,7 +330,7 @@ for annoy in dAnnoys:
 			print_info()
 			ui = td.uInput('\n Send {0} [0/1/00] > '.format(d['OFFICE']))
 			if ui == '1':
-				emailer.send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, attachments=attachments)
+				emailer.send_email_ses(subject, body, sender_email, recipients=recipients, cc=None, bcc=None, attachments=attachments)
 				break
 			elif ui == '0':
 				print(' {0} not sent...'.format(d['OFFICE']))
@@ -342,7 +342,7 @@ for annoy in dAnnoys:
 				lao.sleep(2)
 	else:
 		print_info()
-		emailer.send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, attachments=attachments)
+		emailer.send_email_ses(subject, body, sender_email, recipients=recipients, cc=None, bcc=None, attachments=attachments)
 		lao.sleep(1)
 	# Append market to sent list
 	lSentMarkets.append(d['OFFICE'])

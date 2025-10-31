@@ -31,4 +31,4 @@ recipients = ['Bill Landis <blandis@landadvisors.com>']
 filename = 'F:/Research Department/Lot Comps Components/DFW_Land_Lot_Report_2025-09-07.xlsx'
 attachments = [filename]
 
-emailer.send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, attachments=attachments)
+emailer.send_email_ses(subject, body, sender_email, recipients=recipients, cc=None, bcc=None, attachments=attachments)

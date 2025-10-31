@@ -170,6 +170,9 @@ for l in dMCLists['lists']:
 		
 		# pprint(dListMembers[0])
 		# pprint(member)
+		# ui = td.uInput('\n Continue [00]... > ')
+		# if ui == '00':
+		# 	exit('\n Terminating program...')
 		# Set variable values
 		fname = dListMembers[0][member]['firstName']
 		lname = dListMembers[0][member]['lastName']

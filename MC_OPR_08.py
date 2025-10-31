@@ -513,7 +513,7 @@ while 1:
 		
 		print('\n Sending email report for\n\n {0}'.format(campTitle))
 
-		emailer.send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, attachments=attachments)
+		emailer.send_email_ses(subject, body, sender_email, recipients=recipients, cc=None, bcc=None, attachments=attachments)
 
 		##########################################################################
 		write_soft_bounces_to_file = False

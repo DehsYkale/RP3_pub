@@ -392,7 +392,7 @@ menuCounties.grid(row=0, column=2, padx=(0, 0), pady=3)
 # Textbox
 txtbox_PID_LID_APN = tk.Entry(root)
 txtbox_PID_LID_APN.insert(tk.END, 'PID_LeadID_APN_Gmap_Co_Person')
-txtbox_PID_LID_APN.config(width=30, bg='black', fg='cyan')
+txtbox_PID_LID_APN.config(width=30, bg='black', fg='cyan', insertbackground='cyan')
 txtbox_PID_LID_APN.grid(row=0, column=3, padx=5, pady=2)
 
 # Submit button

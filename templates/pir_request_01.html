@@ -119,7 +119,11 @@
 							</table>
 							<!-- DESCRIPTION ################################################  -->
 							{% if Description__c != "None" %}
-							<div style="padding: 0px; margin: 5px 0;">{{Description__c}}</div>
+								<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
+									<tr>
+										<td><strong style="color: #1e3a5f;">Description: </strong>{{Description__c}}</td>
+									</tr>
+								</table>
 							{% endif %}
 						</td>
 						

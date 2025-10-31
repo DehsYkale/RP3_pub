@@ -574,29 +574,31 @@ def get_pnz_fields(row):
 	
 	dHTML['Lot_Type__c'] = 'P&Z'
 	dHTML['PNZ'] = 'PNZ'
-	dHTML['PNZAPPLICANTID'] = row['Zoning_Applicant__c']
+	dHTML['Zoning_Applicant__c'] = row['Zoning_Applicant__c']
 	try:
-		dHTML['PNZAPPLICANT'] = (row['Zoning_Applicant__r']['Name'])
+		dHTML['Zoning_Applicant__r_Name'] = (row['Zoning_Applicant__r']['Name'])
 	except TypeError:
 		td.warningMsg(' Zoning Applicant field cannot be blank!', colorama=True)
 		url = 'https://landadvisors.my.salesforce.com/{0}'.format(dHTML['Id'])
 		webbrowser.open(url)
 		exit('\n Terminating Program...')
-	dHTML['PNZAPPLICANTurl'] = 'https://landadvisors.my.salesforce.com/%s' % dHTML['PNZAPPLICANTID']
+	dHTML['Zoning_Applicant__c_url'] = 'https://landadvisors.my.salesforce.com/%s' % dHTML['Zoning_Applicant__c']
 	# PNZCASE > Case_Plan__c
 	dHTML['Case_Plan__c'] = row['Case_Plan__c']
 	# PNZCITYPLANNER = 'None'
 	# PNZCITYPLANNERID = City_Planner__c
 	dHTML['City_Planner__c'] = row['City_Planner__c']
-	if dHTML['City_Planner__c'] != '':
+	if dHTML['City_Planner__c'] != 'None':
 		# PNZCITYPLANNER = City_Planner__r_Name
 		dHTML['City_Planner__r_Name'] = (row['City_Planner__r']['Name'])
-	else:
-		dHTML['City_Planner__r_Name'] = ''
+	# else:
+	# 	dHTML['City_Planner__r_Name'] = False
 	# PNZCITYPLANNERurl > City_Planner__c_url
 	dHTML['City_Planner__c_url'] = 'https://landadvisors.my.salesforce.com/{0}'.format(dHTML['City_Planner__c'])
 	# PNZDES > P_Z_Description__c
 	dHTML['P_Z_Description__c'] = row['P_Z_Description__c'].replace('±', '+/-').replace('—', '-')
+	# Proper case description sentences
+	dHTML['P_Z_Description__c'] = '. '.join(s.capitalize() for s in dHTML['P_Z_Description__c'].lower().split('. '))
 	# PNZDTE > P_Z_Last_Event_Date__c
 	dHTML['P_Z_Last_Event_Date__c'] = row['P_Z_Last_Event_Date__c']
 	dHTML['Sale_Date__c '] = 'None'
@@ -1045,7 +1047,7 @@ def get_html_template(oprType):
 	elif oprType == 'Listing':
 		return open(r'F:\Research Department\Code\RP3\templates\pir_listing_01.html', 'r').read()
 	elif oprType == 'P&Z':
-		return open(r'F:\Research Department\Code\RP3\templates\opr_planning_zoning_04.html', 'r').read()
+		return open(r'F:\Research Department\Code\RP3\templates\pir_pnz_01.html', 'r').read()
 	elif oprType == 'Request':
 		# return open(r'F:\Research Department\Code\RP3\templates\top_100_02.html',
 					# 'r', encoding='utf-8').read()
@@ -1243,7 +1245,7 @@ def qc(oprType, market):
 			pass
 
 	if oprType == 'P&Z':
-		if dHTML['PNZCITYPLANNER'] == '':
+		if dHTML['City_Planner__r_Name'] == 'None':
 			errorVar = errorVar + 'No City Planner<br>'
 	return errorVar, transLink
 
@@ -1417,9 +1419,8 @@ while 1:
 					f.write(body)
 				print(f'\n Saved {html_filename} file.')
 				openbrowser(html_filename)
-
 			
-			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients_to, cc=recipients_cc, bcc=None, attachments=None)
+			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients=None, cc=recipients_cc, bcc=recipients_to, attachments=None)
 			# Change OPR Sent date to today if OPR successfuly sent
 			if SENDLIST.upper() != 'T' and dSend_results['success'] is True:
 				mark_deal_as_sent(today)
@@ -1436,13 +1437,13 @@ while 1:
 	
 	# Send QC Email Message if sending QC or Test
 	if SENDLIST.upper() == 'Q' or SENDLIST.upper() == 'T':
-			qc_subject, qc_body, qc_sender_email, qc_recipients = send_qc_email(errorMail, qcCount, userName)
-			emailer.send_email_ses(qc_subject, qc_body, qc_sender_email, qc_recipients, cc=None, bcc=None, attachments=None)
+		qc_subject, qc_body, qc_sender_email, qc_recipients = send_qc_email(errorMail, qcCount, userName)
+		emailer.send_email_ses(qc_subject, qc_body, qc_sender_email, recipients=None, cc=None, bcc=qc_recipients, attachments=None)
 	else:
 		# Send You Got OPRs email
 		if 'Rick Hildreth <rhildreth@landadvisors.com>' in recipients_to:
 			sender_email, subject, body = send_opr_sent_notification(oprType)
-			emailer.send_email_ses(subject, body, sender_email, recipients_to, cc=recipients_cc, bcc=None, attachments=None)
+			emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=recipients_cc, bcc=None, attachments=None)
 
 exit('\n Fin')
 

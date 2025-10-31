@@ -103,7 +103,7 @@ def create_mime_message(sender, destination, subject, body, attachments):
 	
 	return msg
 
-def send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, attachments=None):
+def send_email_ses(subject, body, sender_email, recipients=None, cc=None, bcc=None, attachments=None):
 	lao.print_function_name('emailer def send_email_ses')
 	"""
 	Send an email using AWS SES with optional attachments
@@ -147,14 +147,15 @@ def send_email_ses(subject, body, sender_email, recipients, cc=None, bcc=None, a
 		destination = {}
 		
 		# Handle TO recipients (can be string or list)
-		if isinstance(recipients, str):
-			destination['ToAddresses'] = [recipients]
-		elif isinstance(recipients, list):
-			destination['ToAddresses'] = recipients
-		else:
-			error_msg = "Recipients must be a string or list of email addresses"
-			logger.error(error_msg)
-			return {"error": error_msg}
+		if recipients:
+			if isinstance(recipients, str):
+				destination['ToAddresses'] = [recipients]
+			elif isinstance(recipients, list):
+				destination['ToAddresses'] = recipients
+			else:
+				error_msg = "Recipients must be a string or list of email addresses"
+				logger.error(error_msg)
+				return {"error": error_msg}
 		
 		# Handle CC recipients (can be string or list)
 		if cc:

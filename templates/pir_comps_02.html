@@ -147,14 +147,18 @@
 
 							<!-- DESCRIPTION ################################################  -->
 							{% if Description__c != "None" %}
-							<div style="padding: 0px; margin: 5px 0;">{{Description__c}}</div>
+								<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
+									<tr>
+										<td><strong style="color: #1e3a5f;">Description: </strong>{{Description__c}}</td>
+									</tr>
+								</table>
 							{% endif %}
 						</td>
 						
 						<!-- Right Image Panel -->
 						 <!-- MAP ################################################  -->
 						<td width="40%" valign="top" style="padding: 20px;">
-							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank">
+							<a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank">
 								<img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="100%" height="350" style="border: 2px solid #ccc; border-radius: 10px;">
 							</a>
 							<div style="font-size: 12px; margin: 2px 0;">{{Location__c}}, {{City__c}}</div>
@@ -170,8 +174,8 @@
 		{% if Add_Lot_Table %}
 		<tr>
 			<td style="padding: 20px;">
-				<div ><strong>Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
-				<table width="50%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
+				<div><strong style="color: #1e3a5f;">Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
+				<table width="100%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
 					<tr bgcolor="#1e3a5f" style="color: white;">
 						<td align="center" style="padding: 3px; color: white;">PID Link</td>
 						<td align="center" style="padding: 3px; color: white;">Sale Date</td>

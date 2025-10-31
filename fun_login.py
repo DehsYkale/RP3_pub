@@ -1,5 +1,18 @@
 # Login to various LAO services
 
+# ArcGIS Online login
+def LAO_ArcGIS_portal():
+	from arcgis.gis import GIS
+	from dotenv import load_dotenv
+	import os
+
+	load_dotenv()
+	username = os.getenv("ARCGIS_USERNAME")
+	password = os.getenv("ARCGIS_PASSWORD")
+
+	gis = GIS("https://maps.landadvisors.com/portal", username, password, verify_cert=False)
+	return gis
+
 # Crexi login
 def crexi():
 	import dicts

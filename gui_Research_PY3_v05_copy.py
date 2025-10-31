@@ -119,8 +119,12 @@ def buttonSubmit():
 			messagebox.showerror('ERROR', 'PID not found.')
 		else:
 			# Create Zoom to Polygon json file for PID
+			btnSubmit.config(text='Stand By', bg='orange', fg='black')
+			root.update()  # Force GUI update
 			fjson.create_ZoomToPolygon_json_file(fieldname='pid', polyId=PID, polyinlayer='OwnerIndex', lon=None, lat=None, market=None)
 			# Create PIDOID json file
+			btnSubmit.config(text='Stand By', bg='blue', fg='white')
+			root.update()  # Force GUI update
 			aws.read_Write_PID_OID(PID=PID, OID='Write')
 	
 	# LON/LAT: Copied from TF
@@ -137,9 +141,6 @@ def buttonSubmit():
 		lon = corrdinates[0].strip()
 		lat = corrdinates[1].strip()
 		fjson.create_ZoomToPolygon_json_file(fieldname=None, polyId=None, polyinlayer=None, lon=lon, lat=lat, market=market)
-	
-	
-
 	
 	# APN: Else textvalue1 is an APN and create Zoom to Polygon json file
 	else:
@@ -263,7 +264,7 @@ def buttonOwnershipToSale():
 
 # Launch Deal Updater
 def buttonOwershipUpdater():
-	scriptPath = 'F:/Research Department/Code/RP3/M1_Deal_Updater_v02.py'
+	scriptPath = 'F:/Research Department/Code/RP3/M1_Deal_Updater_v03.py'
 	fjson.createScriptToLauchFile(scriptPath)
 	startfile('F:/Research Department/Code/RP3/python_script_shell_v01.py')
 
@@ -391,7 +392,7 @@ menuCounties.grid(row=0, column=2, padx=(0, 0), pady=3)
 # Textbox
 txtbox_PID_LID_APN = tk.Entry(root)
 txtbox_PID_LID_APN.insert(tk.END, 'PID_LeadID_APN_Gmap_Co_Person')
-txtbox_PID_LID_APN.config(width=30, bg='black', fg='cyan')
+txtbox_PID_LID_APN.config(width=30, bg='black', fg='cyan', insertbackground='cyan')
 txtbox_PID_LID_APN.grid(row=0, column=3, padx=5, pady=2)
 
 # Submit button

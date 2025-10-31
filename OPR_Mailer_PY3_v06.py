@@ -1459,7 +1459,7 @@ while 1:
 			# if oprType == 'PIR_OPR' or oprType == 'PIR_Comp':
 			# 	pass
 			# else:
-			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients_to, cc=recipients_cc, bcc=None, attachments=None)
+			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=recipients_cc, bcc=None, attachments=None)
 			# Change OPR Sent date to today if OPR successfuly sent
 			if SENDLIST.upper() != 'T' and dSend_results['success'] is True:
 				mark_deal_as_sent(today)
@@ -1479,12 +1479,12 @@ while 1:
 	# Send QC Email Message if sending QC or Test
 	if SENDLIST.upper() == 'Q' or SENDLIST.upper() == 'T':
 			qc_subject, qc_body, qc_sender_email, qc_recipients = sendQCEmail(errorMail, qcCount, userName)
-			emailer.send_email_ses(qc_subject, qc_body, qc_sender_email, qc_recipients, cc=None, bcc=None, attachments=None)
+			emailer.send_email_ses(qc_subject, qc_body, qc_sender_email, recipients=qc_recipients, cc=None, bcc=None, attachments=None)
 	else:
 		# Send You Got OPRs email
 		if 'Rick Hildreth <rhildreth@landadvisors.com>' in recipients_to:
 			sender_email, subject, body = send_opr_sent_notification(oprType)
-			emailer.send_email_ses(subject, body, sender_email, recipients_to, cc=recipients_cc, bcc=None, attachments=None)
+			emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=recipients_cc, bcc=None, attachments=None)
 
 exit('\n Fin')
 
