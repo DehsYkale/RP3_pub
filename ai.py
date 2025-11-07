@@ -1,11 +1,13 @@
 # Chat GPT AI Functions
 
+from dotenv import load_dotenv
+import json
 import lao
 import pyperclip
+import requests
 import os
 from openai import OpenAI
 from pprint import pprint
-import json
 
 def get_ai_message(role_system=None, role_user=None):
 
@@ -79,3 +81,20 @@ def copy_ai_prompt_to_clipboard(dAcc):
 	except Exception as e:
 		print(f"Unexpected error: {e}")
 		return False
+
+# Ask Kablewy AI
+def ask_kablewy_ai(payload):
+	load_dotenv()
+	ORG_ID = os.getenv("KABLEWY_ORG_ID")
+	USER_ID = os.getenv("KABLEWY_USER_ID")
+	API_KEY = os.getenv("KABLEWY_API_KEY")
+	BASE = f"https://kablewy.ai/v1/mcp-jsonrpc/{ORG_ID}/users/{USER_ID}"
+ 
+	headers = {
+	"Authorization": f"Bearer {API_KEY}",
+	"Content-Type": "application/json",
+	"Accept": "application/json"
+	}
+	resp = requests.post(f"{BASE}/mcp/jsonrpc", headers=headers, json=payload)
+	resp.raise_for_status()
+	return resp.json()

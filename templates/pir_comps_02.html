@@ -158,9 +158,10 @@
 						<!-- Right Image Panel -->
 						 <!-- MAP ################################################  -->
 						<td width="40%" valign="top" style="padding: 20px;">
-							<a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank">
+							<a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank" style="display: block; max-width: 350px;"><img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="350" height="350" style="border: 2px solid #ccc; border-radius: 10px; max-width: 100%; height: auto; display: block;"></a>
+							<!-- <a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank">
 								<img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="100%" height="350" style="border: 2px solid #ccc; border-radius: 10px;">
-							</a>
+							</a> -->
 							<div style="font-size: 12px; margin: 2px 0;">{{Location__c}}, {{City__c}}</div>
 							<div style="font-size: 12px;">{{County__c}} County, {{State__c}} - Submarket: {{Submarket__c}}</div>
 							<div style="font-size: 12px;">Lead Parcel: {{Lead_Parcel__c}}</div>
@@ -177,12 +178,12 @@
 				<div><strong style="color: #1e3a5f;">Lot Summary:</strong> {{Total_Lots_All_Groups}} total lots</div>
 				<table width="100%" cellpadding="1" cellspacing="0" border="1" style="border-collapse: collapse; margin: 1px;">
 					<tr bgcolor="#1e3a5f" style="color: white;">
-						<td align="center" style="padding: 3px; color: white;">PID Link</td>
-						<td align="center" style="padding: 3px; color: white;">Sale Date</td>
-						<td align="center" style="padding: 3px; color: white;">Price</td>
-						<td align="center" style="padding: 3px; color: white;">Acres</td>
-						<td align="center" style="padding: 3px; color: white;">$/Acre</td>
-						<td align="center" style="padding: 3px; color: white;">L5 Link</td>
+						<td align="center" style="padding: 3px; color: white;">Group</td>
+						<td align="center" style="padding: 3px; color: white;">Count</td>
+						<td align="center" style="padding: 3px; color: white;">Dimensions</td>
+						<td align="center" style="padding: 3px; color: white;">Price/Parcel</td>
+						<td align="center" style="padding: 3px; color: white;">Price/Lot</td>
+						<td align="center" style="padding: 3px; color: white;">Price/FF</td>
 					</tr>
 					{% autoescape off %}{{Lot_Table}}{% endautoescape %}
 				</table>

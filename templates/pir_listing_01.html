@@ -154,9 +154,10 @@
 						<!-- Right Image Panel -->
 						<!-- MAP ################################################  -->
 						<td width="40%" valign="top" style="padding: 20px;">
-							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank">
+							<a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank" style="display: block; max-width: 350px;"><img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="350" height="350" style="border: 2px solid #ccc; border-radius: 10px; max-width: 100%; height: auto; display: block;"></a>
+							<!-- <a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank">
 								<img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="100%" height="350" style="border: 2px solid #ccc; border-radius: 10px;">
-							</a>
+							</a> -->
 							<div style="font-size: 12px; margin: 2px 0;">{{Location__c}}, {{City__c}}</div>
 							<div style="font-size: 12px;">{{County__c}} County, {{State__c}} - Submarket: {{Submarket__c}}</div>
 							<div style="font-size: 12px;">Lead Parcel: {{Lead_Parcel__c}}</div>
