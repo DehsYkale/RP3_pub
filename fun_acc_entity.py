@@ -5,6 +5,7 @@ import bb
 import lao
 import fun_text_date as td
 from pprint import pprint
+import re
 
 # Get the Name of the Entity from dAcc or have the user enter if 'None'
 def get_entity_name(dAcc):
@@ -62,14 +63,14 @@ def is_entity(dAcc):
 # Build Entity NAME query string
 def get_entity_name_query_string(dAcc):
 	lao.print_function_name('fae def get_entity_name_query_string')
-	NAMECLEAN = dAcc['ENTITY'].replace(',','')
+	NAMECLEAN = remove_business_suffixes(dAcc['ENTITY'].replace(',',''))
 	NAMESPLIT = NAMECLEAN.split()
 
+	# Use the first two words of the company name to build query with excepttions
+	# for &, AND, City of
+	# & or AND exception
 	if len(NAMESPLIT) > 2:
-		# Remove 'The'
-		if (NAMESPLIT[0]).upper() == 'THE':
-			NAMEQUERY = '%{0} {1}'.format(NAMESPLIT[1], NAMESPLIT[2])
-		elif NAMESPLIT[1] == '&' or NAMESPLIT[1] == 'AND':
+		if NAMESPLIT[1] == '&' or NAMESPLIT[1].upper() == 'AND':
 			NAMEQUERY = '{0} {1} {2}'.format(NAMESPLIT[0], NAMESPLIT[1], NAMESPLIT[2])
 		elif (NAMESPLIT[0].upper() == 'CITY' or NAMESPLIT[0].upper() == 'TOWN') and NAMESPLIT[1].upper() == 'OF':
 			NAMEQUERY = '{0} {1} {2}'.format(NAMESPLIT[0], NAMESPLIT[1], NAMESPLIT[2])
@@ -85,8 +86,39 @@ def get_entity_name_query_string(dAcc):
 			NAMEQUERY = '{0} {1}'.format(NAMESPLIT[0], NAMESPLIT[1])
 	else:
 		NAMEQUERY = NAMESPLIT[0]
-	
+	print('\n Entity Name Query String: {0}\n'.format(NAMEQUERY))
+
 	return NAMEQUERY
+
+def remove_business_suffixes(name):
+	"""Remove common business suffixes like Inc, LLC, Corp, etc. and 'The' prefix."""
+	# Common business suffixes
+	suffixes = [
+		r',?\s+Inc\.?$',
+		r',?\s+LLC\.?$',
+		r',?\s+L\.L\.C\.?$',
+		r',?\s+Corp\.?$',
+		r',?\s+Corporation$',
+		r',?\s+Ltd\.?$',
+		r',?\s+Limited$',
+		r',?\s+Co\.?$',
+		r',?\s+Company$',
+		r',?\s+LP\.?$',
+		r',?\s+LLP\.?$',
+		r',?\s+LLLP\.?$',
+		r',?\s+P\.C\.?$',
+	]
+	
+	result = name
+	
+	# Remove business suffixes
+	for suffix in suffixes:
+		result = re.sub(suffix, '', result, flags=re.IGNORECASE)
+	
+	# Remove "The" prefix
+	result = re.sub(r'^The\s+', '', result, flags=re.IGNORECASE)
+	
+	return result.strip()
 
 # Query TF to see if Entity record exists returning results
 def query_tf_for_entity_name(service, NAMEQUERY):
@@ -95,22 +127,10 @@ def query_tf_for_entity_name(service, NAMEQUERY):
 	# Select Entities based on Name
 	while 1:
 		# TerraForce Query
-		wc = f"IsPersonAccount != TRUE AND Name LIKE '{NAMEQUERY}%'"
+		wc = f"IsPersonAccount != TRUE AND Name LIKE '%{NAMEQUERY}%'"
 		results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None)
 		business_dict = results
 		# If results are null then search only the first word in name
-		# if firsttime and results == []:
-		# 	NAMESPLIT = NAMEQUERY.split()
-		# 	if len(NAMESPLIT) > 1:
-		# 		NAMESPLIT = NAMESPLIT[:-1]
-		# 		NAMEQUERY = ' '.join(NAMESPLIT)
-		# 	if len(NAMESPLIT[0]) <= 5: # Skip 1 name search short first words
-		# 		break
-		# 	else:
-		# 		NAMEQUERY = NAMESPLIT[0]
-		# 		firsttime = False
-		# else:
-		# 	break
 		if results == []:
 			NAMESPLIT = NAMEQUERY.split()
 			NAMESPLIT = NAMESPLIT[:-1]

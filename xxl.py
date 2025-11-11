@@ -248,13 +248,23 @@ def llrCompsLineMaker(dLine):
 			buyer = dLine['Offers__r']['records'][0]['Buyer__r']['Name']
 	else:
 		buyer = dLine['Offers__r']['records'][0]['Buyer_Entity__r']['Name']
-	
-	# Determine Seller
-	if dLine['Owner_Entity__r'] == 'None':
-		# print(dLine['PID__c'])
-		seller = dLine['AccountId__r']['Name']
-	else:
-		seller = dLine['Owner_Entity__r']['Name']
+
+	try:	
+		# Determine Seller
+		if dLine['Owner_Entity__r'] == 'None':
+			# print(dLine['PID__c'])
+			seller = dLine['AccountId__r']['Name']
+		else:
+			seller = dLine['Owner_Entity__r']['Name']
+	except TypeError:
+		td.uInput('TypeError on seller for PID: {0}'.format(dLine['PID__c']))
+		
+		print('here1')
+		pprint(dLine)
+		ui = td.uInput('\n Continue [00]... > ')
+		if ui == '00':
+			exit('\n Terminating program...')
+		
 	
 	# Determine Beneficiary & Loan Amount
 	beneficiary, loanAmount = '', ''

@@ -4,12 +4,13 @@ import lao
 import bb
 import cpypg
 import dicts
+import fun_text_date as td
 import mc
 from pprint import pprint
 import pyperclip
 import re
+from rapidfuzz import fuzz, process
 from sys import exit
-import fun_text_date as td
 from webbrowser import open as openbrowser
 import webs
 
@@ -937,36 +938,6 @@ def parse_person(dAcc):
 	dAcc['NF'] = PFN
 	dAcc['NL'] = PLN
 	return dAcc
-
-# Clear screen and print user input progress
-def parcePersonzzz(dAcc):
-	td.banner('Contact Info')
-	lao.print_function_name('acc def parcePersonzzz')
-
-	msg = \
-		'\n Entity             {0}\n' \
-		' Contact Name       {1}\n\n' \
-		' Address            {2}\n' \
-		'                    {3}, {4} {5}\n\n' \
-		' Phone              {6}\n' \
-		' Mobile             {7}\n\n' \
-		' MC Audience        {8}\n' \
-		' Email              {9}\n' \
-		' Category           {10}\n' \
-		' ---------------------------------------------------------\n' \
-	.format(
-		dAcc['ENTITY'],
-		dAcc['NAME'],
-		dAcc['STREET'],
-		dAcc['CITY'],
-		dAcc['STATE'],
-		dAcc['ZIPCODE'],
-		dAcc['PHONE'],
-		dAcc['MOBILE'],
-		dAcc['MCAUDNAME'],
-		dAcc['EMAIL'],
-		dAcc['CATEGORY'])
-	print(msg)
 
 # Search for existing Person Account in TF and create one if it does not exist
 def find_create_account_person(service, dAcc):
@@ -1956,3 +1927,329 @@ def make_person_mvp_and_market_mailer(service, AID='None', didpid='None', make_m
 		dAcc['CATEGORY'] = ['Market Mailer']
 
 	dAcc = update_existing_contact(service, dAcc)
+
+#####################################################################
+# AI Company/Contact functions
+#####################################################################
+
+def select_company_from_json(json_data):
+	"""
+	Lists all companies from the JSON data and prompts user to select one.
+	
+	Args:
+		json_data: Dictionary containing the company search results
+		
+	Returns:
+		Dictionary containing the selected company's data
+	"""
+	companies_list = []
+	
+	# Add primary company
+	if json_data['companies']['primary']:
+		primary = json_data['companies']['primary'].copy()
+		primary['company_type'] = 'Primary'
+		companies_list.append(primary)
+	
+	# Add parent company
+	if json_data['companies']['parent_company']:
+		parent = json_data['companies']['parent_company'].copy()
+		parent['company_type'] = 'Parent'
+		companies_list.append(parent)
+	
+	# Add subsidiaries
+	for subsidiary in json_data['companies']['subsidiaries']:
+		sub = subsidiary.copy()
+		sub['company_type'] = 'Subsidiary'
+		companies_list.append(sub)
+	
+	# Add affiliates
+	for affiliate in json_data['companies']['affiliates']:
+		aff = affiliate.copy()
+		aff['company_type'] = 'Affiliate'
+		companies_list.append(aff)
+	
+	# Display companies
+	print("\n" + "="*80)
+	print("AVAILABLE COMPANIES")
+	print("="*80)
+	
+	for idx, company in enumerate(companies_list, 1):
+		print(f"\n[{idx}] {company['company_type'].upper()}: {company['Name']}")
+		print(f"    Address: {company.get('BillingStreet', '')}, {company.get('BillingCity', '')}, {company.get('BillingState', '')} {company.get('BillingPostalCode', '')}")
+		print(f"    Category: {company.get('Category__c', 'N/A')}")
+		print(f"    Phone: {company.get('Phone', 'N/A')}")
+		print(f"    Website: {company.get('Website', 'N/A')}")
+		print(f"    LinkedIn: {company.get('LinkedIn_Url__c', 'N/A')}")
+		print(f"    Relationship: {company.get('relationship', 'N/A')}")
+		if company.get('ownership_percentage'):
+			print(f"    Ownership %: {company['ownership_percentage']}")
+		print(f"    Description: {company.get('Description', 'N/A')}...")
+	
+	# Display search metadata
+	print("\n" + "="*80)
+	print("SEARCH METADATA")
+	print("="*80)
+	
+	metadata = json_data.get('search_metadata', {})
+	
+	print(f"\nConfidence Level: {metadata.get('confidence_level', 'N/A')}")
+	
+	print(f"\nCorporate Structure Notes:")
+	print(f"{metadata.get('corporate_structure_notes', 'N/A')}")
+	
+	print(f"\nNotes:")
+	print(f"{metadata.get('notes', 'N/A')}")
+	
+	print("\n" + "="*80)
+	
+	# Get user selection
+	while True:
+		ui = td.uInput(f"\nSelect a company (1-{len(companies_list)}): ").strip()
+		if ui.isdigit() and 1 <= int(ui) <= len(companies_list):
+			selected_company = companies_list[int(ui) - 1]
+			print(f"\nSelected: {selected_company['Name']} ({selected_company['company_type']})")
+			return selected_company
+		print(f"Invalid selection. Please enter a number between 1 and {len(companies_list)}.")
+
+
+def fuzzy_search_company(service, company_name, threshold=70, limit=10):
+	"""
+	Search Salesforce for companies using fuzzy matching logic with intelligent parsing
+	
+	Handles complex names like "Dynasty Farms, Inc. dba Pacific International Marketing (PIM)"
+	by breaking them into searchable components
+	
+	Parameters:
+	- service: Salesforce client object from fun_login.Terraforce()
+	- company_name: The company name to search for
+	- threshold: Minimum similarity score (0-100) to include in results. Default 70.
+	- limit: Maximum number of results to return per component. Default 10.
+	
+	Returns:
+	- List of tuples: (similarity_score, record_dict, matched_component)
+	"""
+	
+	# Parse the company name into searchable components
+	search_components = parse_company_name(company_name)
+	
+	# Query all companies from TF
+	where_clause = "IsPersonAccount = false"
+	all_companies = bb.tf_query_3(service, rec_type='Entity', where_clause=where_clause, limit=None, fields='default')
+	
+	if not all_companies:
+		return []
+	
+	# Create a mapping of company names to records
+	company_map = {record['Name']: record for record in all_companies if record.get('Name')}
+	
+	# Search for each component
+	all_results = []
+	seen_ids = set()  # Track IDs to avoid duplicates
+	
+	for component in search_components:
+		matches = process.extract(
+			component,
+			company_map.keys(),
+			scorer=fuzz.token_sort_ratio,
+			score_cutoff=threshold,
+			limit=limit
+		)
+		
+		for match_name, score, _ in matches:
+			record = company_map[match_name]
+			record_id = record['Id']
+			
+			# Only add if not already found (keep highest score)
+			if record_id not in seen_ids:
+				seen_ids.add(record_id)
+				all_results.append((score, record, component))
+	
+	# Sort by score descending
+	all_results.sort(key=lambda x: x[0], reverse=True)
+	
+	return all_results
+
+def xxxxparse_company_name(company_name):
+	"""
+	Parse a complex company name into searchable components
+	
+	Handles patterns like:
+	- "Company A dba Company B"
+	- "Company A d/b/a Company B"
+	- "Company (Acronym)"
+	- "Company, Inc."
+	"""
+	components = []
+	
+	# Split on common separators for multiple business names
+	# dba, d/b/a, aka, a/k/a, fka, f/k/a
+	separators = r'\s+(?:dba|d/b/a|aka|a/k/a|fka|f/k/a)\s+'
+	parts = re.split(separators, company_name, flags=re.IGNORECASE)
+	
+	for part in parts:
+		# Remove parenthetical content (often acronyms)
+		part_no_parens = re.sub(r'\([^)]*\)', '', part).strip()
+		
+		# Remove common business suffixes for better matching
+		cleaned = remove_business_suffixes(part_no_parens)
+		
+		if cleaned:
+			components.append(cleaned)
+		
+		# Also add the version with parenthetical content removed but suffixes intact
+		if part_no_parens and part_no_parens != cleaned:
+			components.append(part_no_parens)
+	
+	# Remove duplicates while preserving order
+	seen = set()
+	unique_components = []
+	for comp in components:
+		comp_lower = comp.lower()
+		if comp_lower not in seen:
+			seen.add(comp_lower)
+			unique_components.append(comp)
+	
+	return unique_components
+
+def remove_business_suffixes(name):
+	"""Remove common business suffixes like Inc, LLC, Corp, etc."""
+	# Common business suffixes
+	suffixes = [
+		r',?\s+Inc\.?$',
+		r',?\s+LLC\.?$',
+		r',?\s+L\.L\.C\.?$',
+		r',?\s+Corp\.?$',
+		r',?\s+Corporation$',
+		r',?\s+Ltd\.?$',
+		r',?\s+Limited$',
+		r',?\s+Co\.?$',
+		r',?\s+Company$',
+		r',?\s+LP\.?$',
+		r',?\s+LLP\.?$',
+		r',?\s+LLLP\.?$',
+		r',?\s+P\.C\.?$',
+	]
+	
+	result = name
+	for suffix in suffixes:
+		result = re.sub(suffix, '', result, flags=re.IGNORECASE)
+	
+	return result.strip()
+
+def fuzzy_search_company_debug(service, company_name, threshold=70, limit=10):
+	"""
+	Debug version to see what's happening at each step
+	"""
+	print(f"\n=== DEBUGGING FUZZY SEARCH ===")
+	print(f"Original search: '{company_name}'")
+	print(f"Threshold: {threshold}")
+	
+	# Parse the company name into searchable components
+	search_components = parse_company_name(company_name)
+	print(f"\nParsed components: {search_components}")
+	
+	# Query all companies from TF
+	where_clause = "IsPersonAccount = false"
+	print(f"\nQuerying TF with: {where_clause}")
+	all_companies = bb.tf_query_3(service, rec_type='Entity', where_clause=where_clause, limit=None, fields='default')
+	
+	print(f"Retrieved {len(all_companies) if all_companies else 0} companies")
+	
+	if not all_companies:
+		print("No companies retrieved from TF!")
+		return []
+	
+	# Show a few sample company names
+	print(f"\nSample company names from TF:")
+	for i, rec in enumerate(all_companies[:5]):
+		print(f"  {i+1}. {rec.get('Name', 'NO NAME')}")
+	
+	# Create a mapping of company names to records
+	company_map = {record['Name']: record for record in all_companies if record.get('Name')}
+	print(f"\nTotal companies with names: {len(company_map)}")
+	
+	# Search for each component
+	all_results = []
+	seen_ids = set()
+	
+	for component in search_components:
+		print(f"\n--- Searching for component: '{component}' ---")
+		
+		# Try different matching algorithms
+		matches_token = process.extract(
+			component,
+			company_map.keys(),
+			scorer=fuzz.token_sort_ratio,
+			score_cutoff=threshold,
+			limit=limit
+		)
+		print(f"token_sort_ratio matches: {len(matches_token)}")
+		
+		matches_partial = process.extract(
+			component,
+			company_map.keys(),
+			scorer=fuzz.partial_ratio,
+			score_cutoff=threshold,
+			limit=limit
+		)
+		print(f"partial_ratio matches: {len(matches_partial)}")
+		
+		# Show top matches even if below threshold
+		all_scores = [(fuzz.token_sort_ratio(component, name), name) for name in list(company_map.keys())[:100]]
+		all_scores.sort(reverse=True)
+		print(f"Top 5 matches (no threshold):")
+		for score, name in all_scores[:5]:
+			print(f"  {score}% - {name}")
+		
+		for match_name, score, _ in matches_token:
+			record = company_map[match_name]
+			record_id = record['Id']
+			
+			if record_id not in seen_ids:
+				seen_ids.add(record_id)
+				all_results.append((score, record, component))
+	
+	# Sort by score descending
+	all_results.sort(key=lambda x: x[0], reverse=True)
+	
+	print(f"\n=== FINAL RESULTS: {len(all_results)} matches ===")
+	return all_results
+
+
+def parse_company_name(company_name):
+	"""Parse a complex company name into searchable components"""
+	components = []
+	
+	# Split on common separators for multiple business names
+	separators = r'\s+(?:dba|d/b/a|aka|a/k/a|fka|f/k/a)\s+'
+	parts = re.split(separators, company_name, flags=re.IGNORECASE)
+	
+	for part in parts:
+		# Remove parenthetical content
+		part_no_parens = re.sub(r'\([^)]*\)', '', part).strip()
+		
+		# Remove common business suffixes
+		cleaned = remove_business_suffixes(part_no_parens)
+		
+		if cleaned:
+			components.append(cleaned)
+		
+		# Also add the version with suffixes intact
+		if part_no_parens and part_no_parens != cleaned:
+			components.append(part_no_parens)
+	
+	# Remove duplicates while preserving order
+	seen = set()
+	unique_components = []
+	for comp in components:
+		comp_lower = comp.lower()
+		if comp_lower not in seen:
+			seen.add(comp_lower)
+			unique_components.append(comp)
+	
+	return unique_components
+
+
+
+	
+	return result.strip()
