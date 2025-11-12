@@ -23,16 +23,16 @@ for row in dContacts:
 	dAcc['ENTITY'] = dContacts[row].get('Company', '')
 	dAcc['EMAIL'] = dContacts[row].get('Email', '')
 
-	pprint(dAcc)
+	# pprint(dAcc)
 
 	dAcc = acc.find_create_account_entity(service, dAcc)
-	dAcc = acc.find_create_account_person(service, dAcc)
+	dAcc['CATEGORY'] = 'Government;Dan Whitney;Market Mailer'
+	name, AID, dAcc = acc.find_create_account_person(service, dAcc)
 
-	acc.print_dAcc_info(dAcc)
+	
+	# webs.openTFAccId(dAcc['EID'])
+	# webs.openTFAccId(dAcc['AID'])
 
-	webs.openTFAccId(dAcc['EID'])
-	webs.openTFAccId(dAcc['AID'])
-
-	ui = td.uInput('\n Continue [00]... > ')
-	if ui == '00':
-		exit('\n Terminating program...')
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')

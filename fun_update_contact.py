@@ -189,10 +189,6 @@ def update_category(dAcc, dTFCon, dup):
 				str_category = 'None'
 			else:
 				str_category = dTFCon['Category__c']
-			# elif ';' in dTFCon['Category__c']:
-			# 	# lCategory_dTFCon = dTFCon['Category__c'].split(';')
-			# else: 
-			# 	lCategory_dTFCon = [dTFCon['Category__c']]
 
 			# Write Categories to dup
 			# dup['Category__c'] = ';'.join(lCategory_dAcc)
@@ -267,6 +263,7 @@ def update_entity(dAcc, dTFCon, dup):
 	# Update Company
 	if dAcc['EID'] != 'None' and dTFCon['Company__c'] == 'None':
 		dup['Company__c'] = dAcc['EID']
+		dAcc['UPDATERECORD'] = True
 	elif dAcc['ENTITY'] != 'None' and dTFCon['Company__c'] == 'None':
 		import fun_login
 		service = fun_login.TerraForce()
@@ -287,6 +284,7 @@ def update_entity(dAcc, dTFCon, dup):
 			ui = td.uInput('\n Update company in TF [0/1/00] > ')
 			if ui == '1':
 				dup['Company__c'] = dAcc['EID']
+				dAcc['UPDATERECORD'] = True
 			elif ui == '00':
 				exit('\n Terminating program...')
 	

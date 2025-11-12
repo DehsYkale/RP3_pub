@@ -2137,7 +2137,7 @@ def get_market_abbreviation(market, county='None'):
 		print('\n Market: {0}'.format(market))
 		print(' County: {0}'.format(county))
 		td.warningMsg('\n Terminating program...')
-		lao.holdup()
+		holdup()
 		exit()
 
 	return marketAbb, stateAbb

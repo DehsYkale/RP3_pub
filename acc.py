@@ -123,7 +123,7 @@ def enterContactName(d):
 
 # Let the user change the name of the contact
 def changeNameOption(dAcc):
-	td.banner('Confirm Contact Name')
+	# td.banner('Confirm Contact Name')
 	lao.print_function_name('acc def changeNameOption')
 	
 	while 1:
@@ -131,7 +131,7 @@ def changeNameOption(dAcc):
 		# print_dAcc_info(dAcc, highlight='PERSON')
 		print(' Confirm or Change Contact Name')
 		td.colorText('\n {0}'.format(dAcc['NAME']), 'ORANGE')
-		ui = (td.uInput('\n - Type a different Name\n - [Enter] to use this one\n - Quit [00]\n\n --> ')).upper()
+		ui = (td.uInput('\n - Type a different Name\n   - [Enter] to use this one\n   - Quit [00]\n\n --> ')).upper()
 		print(ui)
 		if ui == '':
 			dAcc['AUTOFORMAT'] = True
@@ -954,7 +954,7 @@ def find_create_account_person(service, dAcc):
 
 		if dAcc['AID'] != 'None':
 			dContact = getContactTFInfo(service, dAcc['AID'] )
-			dAcc = upcon.update_contact(service, dAcc, dContact)
+			print(f"DEBUG: dAcc type = {type(dAcc)}, value = {dAcc}")
 			return dAcc['NAME'], dAcc['AID'], dAcc # (RTY)
 		
 	# Have user enter a contact name if none given
