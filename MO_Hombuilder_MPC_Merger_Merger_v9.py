@@ -383,6 +383,8 @@ while 1:
 			if ui == '00':
 				exit('\n Terminating program...')
 			if ui == '1':
+				# Get dGDF for LAO geoinfo
+				dGDF = mpy.get_gpf_for_LAO_geoinfo()
 				# Make backup of the Master csv
 				if dataSource == 'RLB COE':
 					csvRLB = '{0}RLB COE Master Database.csv'.format(lao.getPath('rlb'))
@@ -407,7 +409,7 @@ while 1:
 						if d['KEYID'] in lKeyID:
 							continue
 						# Get LAO Submarket
-						dLAO_geoinfo = mpy.get_LAO_geoinfo(dTF='None', lon=d['LONGITUDE'], lat=d['LATITUDE'])
+						dLAO_geoinfo = mpy.get_LAO_geoinfo(dTF='None', dGDF=dGDF, lon=d['LONGITUDE'], lat=d['LATITUDE'])
 						submarket = dLAO_geoinfo['submarket']
 						# Get Field values
 						lin = make_COE_Permit_Field_List(dataSource)
