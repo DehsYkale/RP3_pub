@@ -482,8 +482,10 @@ def get_blank_account_dict():
 		'ENTITY':'None',			# Company
 		'FASTMODE': False,
 		'FAX':'None',
+		'FOXENTITYTYPE':'None',		# Primary, Parent, Affiliate, Subsidiary
 		'IP':'None', 				# MC New Subscriber IP
-		'LINKEDIN': 'None',			# Is Account Active
+		'LINKEDINENTITY': 'None',
+		'LINKEDIN': 'None',	
 		'ISBROWSEROPEN': False,		# Track if browser opened for Enitity in Google/Entity domain
 		'MCAUDID': 'None',			# MC Audience ID
 		'MCAUDNAME': 'None',		# MC Audience Name
@@ -503,6 +505,7 @@ def get_blank_account_dict():
 		'PHONEENTITY':'None',
 		'PHONEHOME':'None',
 		'PHONEOTHER':'None',
+		'PHONEPERSONAL':'None',
 		'SOURCE': 'None',			# Source of the date (i.e. parcel, TPS, DnB...)
 		'STATE':'None',
 		'STATEOFORIGIN':'None',
@@ -565,21 +568,6 @@ def get_blank_tf_deal_dict():
 		'Zoning__c': 'None'
 	}
 	return dTF
-
-# Get Buyer Seller (dbS) dict
-def get_blank_buyer_seller_dict():
-	dBS = {
-		'BUYERENTITYID': 'None',
-		'BUYERENTITYNAME':  'None',
-		'BUYERPERSONID': 'None',
-		'BUYERPERSONNAME': 'None',
-		'SELLERENTITYID': 'None',
-		'SELLERENTITYNAME': 'None',
-		'SELLERPERSPNID': 'None',
-		'SELLERPERSONNAME': 'None',
-		}
-
-	return dBS
 
 # Raw Data Deal Classification Dictionary for Phoenix
 def get_phx_raw_data_deal_classification_dict():
@@ -836,7 +824,7 @@ def get_foreclosure_processor_dicts():
 def get_blank_buyer_seller_dict():
 	dBS = {
 		'BUYERENTITYID': 'None',
-		'BUYERENTITYNAME':  'None',
+		'BUYERENTITYNAME': 'None',
 		'BUYERPERSONID': 'None',
 		'BUYERPERSONNAME': 'None',
 		'SELLERENTITYID': 'None',

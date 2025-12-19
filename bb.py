@@ -1378,7 +1378,7 @@ def tf_delete_3(service, tf_object_id, tf_object_type):
 		return 'Delete Failed'
 
 # SalesForce Update record object
-def tf_update_3(service, object_dict):
+def tf_update_3_old(service, object_dict):
 	from simple_salesforce.exceptions import SalesforceResourceNotFound
 	from simple_salesforce.exceptions import SalesforceMalformedRequest
 	import lao
@@ -1445,6 +1445,65 @@ def tf_update_3(service, object_dict):
 		tf_fail_message(e.content, object_dict, tf_object_type)
 		return 'Update Failed'
 
+def tf_update_3(service, object_dict):
+	"""Modified version of tf_update_3 that bypasses duplicate detection"""
+	from simple_salesforce.exceptions import SalesforceResourceNotFound, SalesforceMalformedRequest
+	
+	# CLEAN DICT
+	object_dict_cleaned = {}
+	for key in object_dict.keys():
+		if key == 'Owner_Entity__c':
+			if object_dict['Owner_Entity__c'] == 'None' or object_dict['Owner_Entity__c'] == None:
+				object_dict_cleaned['Owner_Entity__c'] = ''
+		if key == 'AccountId__c':
+			if object_dict['AccountId__c'] == 'None' or object_dict['AccountId__c'] == None:
+				object_dict_cleaned['AccountId__c'] = ''
+		elif object_dict[key] == 'None' or object_dict[key] == 'Skip' or object_dict[key] == 0:
+			continue
+		else:
+			object_dict_cleaned[key] = object_dict[key]
+	
+	# Get the account type and object id
+	tf_object_type = object_dict_cleaned['type']
+	del object_dict_cleaned['type']
+	tf_object_id = object_dict_cleaned.get('Id') or object_dict_cleaned.get('id')
+	if 'Id' in object_dict_cleaned:
+		del object_dict_cleaned['Id']
+	elif 'id' in object_dict_cleaned:
+		del object_dict_cleaned['id']
+	
+	# Add custom headers to bypass duplicate detection
+	custom_headers = {
+		'Sforce-Duplicate-Rule-Header': 'allowSave=true'
+	}
+	
+	# Update with custom headers
+	try:
+		# Dynamically select the correct object type
+		if tf_object_type == 'lda_Opportunity__c':
+			results = service.lda_Opportunity__c.update(tf_object_id, object_dict_cleaned, headers=custom_headers)
+		elif tf_object_type == 'Account':
+			results = service.Account.update(tf_object_id, object_dict_cleaned, headers=custom_headers)
+		elif tf_object_type == 'lda_Offer__c':
+			results = service.lda_Offer__c.update(tf_object_id, object_dict_cleaned, headers=custom_headers)
+		elif tf_object_type == 'lda_Commission__c':
+			results = service.lda_Commission__c.update(tf_object_id, object_dict_cleaned, headers=custom_headers)
+		elif tf_object_type == 'lda_Lot_Detail__c':
+			results = service.lda_Lot_Detail__c.update(tf_object_id, object_dict_cleaned, headers=custom_headers)
+		else:
+			td.warningMsg(f'\n Unsupported object type: {tf_object_type}')
+			return 'Update Failed'
+			
+		if results == 204:
+			td.colorText('\n Update successful...', 'GREEN')
+			return tf_object_id
+	except (SalesforceResourceNotFound, SalesforceMalformedRequest) as e:
+		print(f'\n⚠️ {tf_object_type} update failed...')
+		print(e.content)
+		print(f'Object ID: {tf_object_id}')
+		pprint(object_dict_cleaned)
+		return 'Update Failed'
+	
 # SelesForce Query
 def tf_query_3(service, rec_type, where_clause, limit=None, fields='default'):
 	import acc
@@ -2747,6 +2806,7 @@ def select_from_list(dTF, tf_field):
 def deals_details_menu(dTF, title, stage_name='Closed'):
 	td.banner(f'Select {title}')
 	# Print the values of all fields
+	print('\n Stage Name:     {0}'.format(dTF['StageName__c']))
 	if title == 'Classification':
 		td.colorText('\n Classification:     {0}'.format(dTF['Classification__c']), 'YELLOW')
 	else:
@@ -2812,6 +2872,22 @@ def populate_deal_details(dTF, is_sale_record):
 			dTF, start_over  = select_from_list(dTF, 'Buyer_Acting_As__c')
 			if start_over:
 				continue
+		
+		# Ask to make Deal MVP (Top 100)
+		if is_sale_record is False:
+			while 1:
+				ui = td.uInput('\n Make Deal MVP? [0/1/00] > ')
+				if ui == '00':
+					exit('\n Terminating program...')
+				elif ui == '1':
+					dTF['StageName__c'] = 'Top 100'
+					break
+				elif ui == '0':
+					break
+				else:
+					td.warningMsg('\n Invalid input...try again...')
+					lao.sleep(1)
+					continue
 
 		# User to confirm selections
 		if is_sale_record:

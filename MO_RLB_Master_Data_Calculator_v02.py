@@ -48,7 +48,7 @@ def printDataForMOSpreadsheet():
 	# PHX XLSX HOUSING SALES
 	lao.banner('MO RLB Master Data Calculator')
 	td.instrMsg('\n Copy to PHX MO Spreadsheet\n')
-	td.warningMsg('\n   $ Resale  : {0:.0f}'.format(dRLB['RESALE_PHX_MEDIAN_PRICE']))
+	td.warningMsg('\n    $ Resale  : {0:.0f}'.format(dRLB['RESALE_PHX_MEDIAN_PRICE']))
 	td.warningMsg('   $ New     : {0:.0f}'.format(dRLB['NEW_PHX_MEDIAN_PRICE']))
 	td.warningMsg('   # Resale  : {0:.0f}'.format(dRLB['RESALE_PHX_COUNT']))
 	td.warningMsg('   # New     : {0:.0f}'.format(dRLB['NEW_PHX_COUNT']))
@@ -104,7 +104,7 @@ def printDataForMOSpreadsheet():
 	print('   Pinal COE Count:            {0:,.0f}'.format(dRLB['NEW_PIN_COUNT'] ))
 	lao.holdup()
 
-lao.banner('MO RLB Master Data Calculator')
+lao.banner('MO RLB Master Data Calculator v02')
 
 # Assemble dicts
 dCOE, dPermits, dResale, fileDate = rlb.getRLBData()
@@ -133,5 +133,5 @@ lHBActiveSubs = rlb.make_builder_acitve_subs(dCOE, dPermits)
 # Create csv of data for PHX MO Spreadsheet
 rlb.make_hb_results_csv(lHBPermits, lHBCOE, lHBAvgPriceUnits, lHBRevenue, lHBActiveSubs)
 
-lao.banner('MO RLB Master Data Calculator')
+lao.banner('MO RLB Master Data Calculator v02')
 exit('\n Fin') 

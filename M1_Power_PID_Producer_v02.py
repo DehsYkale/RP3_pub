@@ -427,6 +427,8 @@ while 1:
 	# Set OPR Sent to Request date tag 10/01/1994
 	dTF['OPR_Sent__c'] = '1994-10-01'
 
+
+
 	td.banner('TF Record (PPP v02)')
 
 	# Make Ownership TF Deal Record

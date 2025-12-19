@@ -79,12 +79,19 @@ def buttonSubmit():
 	textValue1 = textValue1.strip()
 	if 'PID_LeadID_APN_Gmap_Co_Person' in textValue1 or textValue1 == '':
 		messagebox.showerror('ERROR', 'Invalid entry...\n\nEnter a\n\nPID,\nLead ID\nParcel APN\nGoogle Map Link\nLon Lat\nCompany Name\nPerson\n\nin the text box.')
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
+		return
 	
 	# VIZZDA: Check if Vizzda ID and open Vizzda record
 	elif market == 'Vizzda':
 		textValue1 = bb.openVizzdaReturnPID(service, textValue1)
 		if textValue1 == 'None':
 			messagebox.showerror('ERROR', 'Vizzda ID not found.')
+			# Reset Submit button
+			btnSubmit.config(text='Submit', bg='black', fg='cyan')
+			root.update()  # Force GUI update
 			return
 	
 		#  https://www.google.com/maps/@33.5006434,-111.9403254,6204m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI1MDYyMy4wIKXMDSoASAFQAw%3D%3D
@@ -95,12 +102,19 @@ def buttonSubmit():
 		lat = str(textValue1.split('@')[1].split(',')[0].strip())
 		lon = str(textValue1.split('@')[1].split(',')[1].strip())
 		fjson.create_ZoomToPolygon_json_file(fieldname=None, polyId=None, polyinlayer=None, lon=lon, lat=lat, market=market)
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
+		return
 
 	# LEAD: Check if Lead ID (LID) and create Zoom to Polygon json file
 	elif '_' in textValue1:
 		LID = textValue1
 		dLID = getLIDDict(LID)
 		fjson.create_ZoomToPolygon_json_file(fieldname='leadid', polyId=LID, polyinlayer=dLID['leadLayerName'], lon=None, lat=None)
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
 		return
 	
 	# Enter Enity or Person into TF
@@ -109,6 +123,9 @@ def buttonSubmit():
 		# Create json file with the contact name
 		fjson.create_tf_contact_entry_file(textValue1)
 		fjson.createScriptToLauchFile(scriptPath)
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
 		startfile('F:/Research Department/Code/RP3/python_script_shell_v01.py')
 		
 	# PID: Check if PID and create Zoom to Polygon json file and open PID in browser
@@ -117,6 +134,10 @@ def buttonSubmit():
 		DID = bb.openTFPID(service, PID)
 		if DID == 'None':
 			messagebox.showerror('ERROR', 'PID not found.')
+			# Reset Submit button
+			btnSubmit.config(text='Submit', bg='black', fg='cyan')
+			root.update()  # Force GUI update
+			return
 		else:
 			# Create Zoom to Polygon json file for PID
 			btnSubmit.config(text='Stand By', bg='orange', fg='black')
@@ -126,6 +147,10 @@ def buttonSubmit():
 			btnSubmit.config(text='Stand By', bg='blue', fg='white')
 			root.update()  # Force GUI update
 			aws.read_Write_PID_OID(PID=PID, OID='Write')
+			# Reset Submit button
+			btnSubmit.config(text='Submit', bg='black', fg='cyan')
+			root.update()  # Force GUI update
+			return
 	
 	# LON/LAT: Copied from TF
 	elif 'Latitude' in textValue1:
@@ -134,6 +159,10 @@ def buttonSubmit():
 		lon = corrdinates[0].strip()
 		lat = corrdinates[1].strip()
 		fjson.create_ZoomToPolygon_json_file(fieldname=None, polyId=None, polyinlayer=None, lon=lon, lat=lat, market=market)
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
+		return
 		
 	# LON/LAT: Create zoom to Polygon json file for longitude and latitude
 	elif textValue1[0] == '-' and textValue1[1].isdigit():
@@ -141,6 +170,10 @@ def buttonSubmit():
 		lon = corrdinates[0].strip()
 		lat = corrdinates[1].strip()
 		fjson.create_ZoomToPolygon_json_file(fieldname=None, polyId=None, polyinlayer=None, lon=lon, lat=lat, market=market)
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
+		return
 	
 	# APN: Else textvalue1 is an APN and create Zoom to Polygon json file
 	else:
@@ -149,9 +182,15 @@ def buttonSubmit():
 		
 		if market == 'Market' or market == 'Vizzda':
 			messagebox.showerror('ERROR', 'Market not selected.')
+			# Reset Submit button
+			btnSubmit.config(text='Submit', bg='black', fg='cyan')
+			root.update()  # Force GUI update
 			return
 		elif county == 'County':
 			messagebox.showerror('ERROR', 'County not selected.')
+			# Reset Submit button
+			btnSubmit.config(text='Submit', bg='black', fg='cyan')
+			root.update()  # Force GUI update
 			return
 		dCounties = getCounties('FullDict')
 		for row in dCounties:
@@ -164,6 +203,10 @@ def buttonSubmit():
 		APN = APN.upper()
 		# Make Zoom to Polygon json file
 		fjson.create_ZoomToPolygon_json_file(fieldname='apn', polyId=APN, polyinlayer=polyinlayer, lon=None, lat=None, market=market)
+		# Reset Submit button
+		btnSubmit.config(text='Submit', bg='black', fg='cyan')
+		root.update()  # Force GUI update
+		return
 	# Reset Submit button
 	btnSubmit.config(text='Submit', bg='black', fg='cyan')
 	root.update()  # Force GUI update

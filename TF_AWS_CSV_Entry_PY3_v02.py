@@ -834,10 +834,10 @@ for line in dFin:
 		while 1:
 			print('\n Zoom to Polygon file created for M1/ArcMap...\n')
 			print(' DEAL ENTRY OPTIONS:\n')
-			print('  [Type in an existing PID]')
-			print('  [1] Create a new PID')
-			print('  [2] Process Deal Later (go to next record)')
-			print('  [3] Skip Deal for All Enternity')
+			print(' [Type in an existing PID]')
+			print(' [1] Create a new PID')
+			print(' [2] Process Deal Later (go to next record)')
+			print(' [3] Skip Deal for All Enternity')
 			# If existing PID is not found then ask user if they want to use it
 			if dPnt['PID'] != 'None' and dPnt['PID'] != 'New':
 				td.colorText(' [4] Use Existing PID: {0}'.format(dPnt['PID']), 'GREEN')

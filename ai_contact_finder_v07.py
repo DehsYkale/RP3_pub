@@ -12,9 +12,9 @@ from pprint import pprint
 import time
 
 
-def load_company_structure_prompt(company_name, company_address):
+def load_company_structure_prompt(company_name, company_address, model):
 	"""Load and format the AI prompt for company structure search."""
-	with open('F:/Research Department/Code/Databases/Find_Company_Structure_AI_Prompt_v02.txt', 'r', encoding='utf-8') as file:
+	with open('F:/Research Department/Code/Prompts/Find_Company_Structure_AI_Prompt_v02.txt', 'r', encoding='utf-8') as file:
 		prompt = file.read()
 	
 	prompt = prompt.replace('**[COMPANY_NAME]**', company_name).replace('**[COMPANY_ADDRESS]**', company_address)
@@ -22,7 +22,7 @@ def load_company_structure_prompt(company_name, company_address):
 
 def load_contacts_prompt(companies_data):
 	"""Load and format the AI prompt for contacts search based on discovered companies."""
-	with open('F:/Research Department/Code/Databases/Find_Contacts_AI_Prompt_v02.txt', 'r', encoding='utf-8') as file:
+	with open('F:/Research Department/Code/Prompts/Find_Contacts_AI_Prompt_v02.txt', 'r', encoding='utf-8') as file:
 		prompt = file.read()
 	
 	# Build company list for the prompt
@@ -206,18 +206,19 @@ def strip_to_json(results):
 		traceback.print_exc()
 		return None
 
-def run_company_structure_search(company_name, company_address):
+def run_company_structure_search(company_name, company_address, model):
 	"""
 	Part 1: Search for company structure only.
 	
 	Args:
 		company_name (str): Name of the company to search
 		company_address (str): Address of the company
+		model (str): AI model to use for the search
 		
 	Returns:
 		dict: Company structure data (primary, parent, subsidiaries, affiliates)
 	"""
-	prompt = load_company_structure_prompt(company_name, company_address)
+	prompt = load_company_structure_prompt(company_name, company_address, model)
 	
 	payload = {
 		"jsonrpc": "2.0",
@@ -226,8 +227,8 @@ def run_company_structure_search(company_name, company_address):
 		"params": {
 			"name": "process_chat",
 			"arguments": {
-				"model": "claude-sonnet-4-5-20250929",
-				"max_tokens": 12000,  # Increased for comprehensive company structure research
+				"model": model,
+				"max_tokens": 32000,  # Increased for comprehensive company structure research
 				"messages": [
 					{
 						"role": "system",
@@ -274,7 +275,7 @@ def run_company_structure_search(company_name, company_address):
 		traceback.print_exc()
 		return None
 
-def run_contacts_search(companies_data):
+def run_contacts_search(companies_data, model):
 	"""
 	Part 2: Search for contacts based on discovered companies.
 	
@@ -293,8 +294,8 @@ def run_contacts_search(companies_data):
 		"params": {
 			"name": "process_chat",
 			"arguments": {
-				"model": "claude-sonnet-4-5-20250929",
-				"max_tokens": 12000,  # Increased for comprehensive contact research
+				"model": model,
+				"max_tokens": 32000,  # Increased for comprehensive contact research
 				"messages": [
 					{
 						"role": "system",
@@ -323,6 +324,7 @@ def run_contacts_search(companies_data):
 	# Wait 30 seconds between requests to avoid rate limiting
 	print("⏳ Waiting 30 seconds before Part 2 to avoid rate limits...")
 	time.sleep(30)
+	print("▶️  Starting Part 2 now...")
 	
 	ai_start_time = time.time()
 	
@@ -631,12 +633,12 @@ def save_results_to_file(data, company_name):
 		print(f"❌ Error saving file: {e}")
 		return None
 
-def main(company, address):
+def main(company, address, model):
 	"""Main execution function using two-part search."""
 	
 	# PART 1: Get company structure
 	print("🔍 Starting two-part search process...")
-	companies_data = run_company_structure_search(company, address)
+	companies_data = run_company_structure_search(company, address, model)
 	
 	if not companies_data:
 		print("\n❌ Part 1 failed - cannot continue to Part 2")
@@ -661,7 +663,7 @@ def main(company, address):
 		print(f"  • Affiliates: {len(comp_obj['affiliates'])}")
 	
 	# PART 2: Get contacts for all discovered companies
-	contacts_data = run_contacts_search(comp_obj if 'companies' not in companies_data else companies_data['companies'])
+	contacts_data = run_contacts_search(comp_obj if 'companies' not in companies_data else companies_data['companies'], model)
 	
 	if not contacts_data:
 		print("\n⚠️  Part 2 failed - but we have company structure")
@@ -715,8 +717,8 @@ if __name__ == "__main__":
 	overall_start_time = time.time()
 	
 	# Example search
-	company = "Virgin Farms Partners"
-	address = "P.O. Box 3737, Salinas, CA 93912"
+	company = "Hartford Investments, LLC"
+	address = "4801 Goodman St, Timnath CO 80547"
 
 	ui = td.uInput('\n Company Name [00] > ')
 	if ui.strip() != '':
@@ -729,10 +731,13 @@ if __name__ == "__main__":
 	elif ui == '00':
 			exit('\n Terminating program...')
 	
+	# Get AI model
+	model = ai.get_ai_model()
+
 	print(f"\n Searching for company: {company}\n Address: {address}\n")
 
 	# Run the search
-	dContact_info = main(company, address)
+	dContact_info = main(company, address, model)
 	
 	# Calculate and display total execution time
 	total_duration = time.time() - overall_start_time

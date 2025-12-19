@@ -759,3 +759,158 @@ def populate_dacc_from_enformion(dEGO: Dict[str, Any],
 	# Note: User will need to fill in the CATEGORY field
 	
 	return dAcc
+
+# Run EnformionGO Person Search by Address
+def run_EnformionGO_person_search_by_address(dAcc, return_all=False):
+	"""
+	Search for persons at a specific address using EnformionGO PersonSearch API.
+	Used when no contacts found but address appears residential.
+	
+	Args:
+		dAcc: Dictionary with address information (STREET, CITY, STATE)
+		return_all: If True, returns list of all persons found. If False, returns only first person.
+	
+	Returns:
+		If return_all=False: Single dAcc dictionary with person data (or original dAcc if no results)
+		If return_all=True: List of dAcc dictionaries, one per person found
+	"""
+	# Construct the API URL
+	api_url = "https://devapi.enformion.com/Address/Id"
+	
+	# Get the request headers
+	headers = get_ego_header(SEARCH_TYPE="DevAPIAddressID")
+	
+	# Build the payload with address information
+	city = dAcc.get('CITY', '')
+	state = dAcc.get('STATE', '')
+	payload = {
+		"addressLine1": f"{dAcc.get("STREET", "")}",
+		"addressLine2": f"{city}, {state}"
+	}
+
+	print('here3')
+	pprint(headers)
+	print('here4')
+	pprint(payload)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	
+	# Make the API request
+	dEGO = ego_api_post(api_url, headers, payload)
+	
+	print('here1')
+	pprint(dEGO)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	
+	
+	# Check if results were found
+	if not dEGO or dEGO.get('message') == 'No strong matches' or not dEGO.get('persons'):
+		td.warningMsg('No persons found at this address in EnformionGO API.')
+		return dAcc if not return_all else []
+	
+	# Process results
+	persons = dEGO.get('persons', [])
+	if not persons:
+		return dAcc if not return_all else []
+	
+	if return_all:
+		# Return list of all persons found
+		result_list = []
+		for person in persons:
+			person_dict = process_person_search_result(person, dAcc.copy())
+			result_list.append(person_dict)
+		return result_list
+	else:
+		# Return only first person found
+		return process_person_search_result(persons[0], dAcc)
+
+# Process a single person from PersonSearch results
+def process_person_search_result(person, dAcc):
+	"""
+	Process a single person record from PersonSearch results into dAcc format.
+	
+	Args:
+		person: Single person record from EnformionGO PersonSearch response
+		dAcc: Base dictionary to populate with person data
+	
+	Returns:
+		dAcc dictionary populated with person information
+	"""
+	# Names
+	names = person.get('names', [])
+	if names:
+		primary_name = names[0]  # Use first name record
+		dAcc['NF'] = primary_name.get('firstName', 'None')
+		dAcc['NM'] = primary_name.get('middleName', 'None')
+		dAcc['NL'] = primary_name.get('lastName', 'None')
+		dAcc['NAME'] = f"{dAcc['NF']} {dAcc['NL']}".strip()
+	
+	# Phone numbers - prioritize mobile, then landline
+	phones = person.get('phones', [])
+	if phones:
+		# Separate mobile and landline
+		mobile_phones = [p for p in phones if p.get('phoneType', '').upper() in ['MOBILE', 'WIRELESS', 'CELL']]
+		landline_phones = [p for p in phones if p.get('phoneType', '').upper() in ['LANDLINE', 'HOME']]
+		
+		# Use mobile first, then landline
+		if mobile_phones:
+			dAcc['PHONEMOBILE'] = mobile_phones[0].get('phoneNumber', 'None')
+			dAcc['PHONE'] = mobile_phones[0].get('phoneNumber', 'None')
+		elif landline_phones:
+			dAcc['PHONE'] = landline_phones[0].get('phoneNumber', 'None')
+		elif phones:
+			# Use any phone if type not specified
+			dAcc['PHONE'] = phones[0].get('phoneNumber', 'None')
+	
+	# Email addresses
+	emails = person.get('emails', [])
+	if emails:
+		dAcc['EMAIL'] = emails[0].get('emailAddress', 'None')
+	
+	# Addresses - get the matching address or most recent
+	addresses = person.get('addresses', [])
+	if addresses:
+		# Try to find address matching search address
+		matching_address = None
+		for addr in addresses:
+			addr_line1 = addr.get('street', '').strip().upper()
+			search_line1 = dAcc.get('STREET', '').strip().upper()
+			if addr_line1 and search_line1 and addr_line1 == search_line1:
+				matching_address = addr
+				break
+		
+		# If no exact match, use most recent address
+		if not matching_address:
+			try:
+				matching_address = max(addresses, key=lambda x: datetime.strptime(x.get('lastReportedDate', '1/1/1900'), '%m/%d/%Y'))
+			except (ValueError, TypeError):
+				matching_address = addresses[0]
+		
+		if matching_address:
+			dAcc['STREET'] = matching_address.get('street', dAcc.get('STREET', 'None'))
+			dAcc['CITY'] = matching_address.get('city', dAcc.get('CITY', 'None'))
+			dAcc['STATE'] = matching_address.get('state', dAcc.get('STATE', 'None'))
+			dAcc['ZIPCODE'] = matching_address.get('zip', dAcc.get('ZIPCODE', 'None'))
+			
+			# Build full address
+			address_parts = [
+				matching_address.get('street', ''),
+				matching_address.get('unit', ''),
+				matching_address.get('city', ''),
+				matching_address.get('state', ''),
+				matching_address.get('zip', '')
+			]
+			full_address = ', '.join(filter(None, address_parts))
+			dAcc['ADDRESSFULL'] = full_address if full_address else dAcc.get('ADDRESSFULL', 'None')
+	
+	# Add source
+	dAcc['SOURCE'] = 'EnformionGO PersonSearch'
+	
+	# Add person ID if available
+	if person.get('tahoeId'):
+		dAcc['TAHOEID'] = person.get('tahoeId')
+	
+	return dAcc

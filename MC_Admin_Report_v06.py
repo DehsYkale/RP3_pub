@@ -114,7 +114,7 @@ def write_to_Excel(lin, header, num_cols, sheet_name, sheet_title):
 	xxl.mailchimp_admin_report_formatter(wb, sht, num_cols, rows=num_rows, group=group)
 
 client = fun_login.MailChimp()
-outFilePath = 'F:/Research Department/MailChimp/'
+outFilePath = 'F:/Research Department/MailChimp/Admin Reports/'
 todaydate = td.today_date()
 skipLists = 'Land Sale Notification, Market Insights Subscribers, LAO Staff, Schwab Personal, New Mexico, Events, Resort Solutions, Tony Lang, Thunderbird, Ryan Garlick'
 

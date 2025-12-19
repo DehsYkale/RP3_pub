@@ -101,16 +101,16 @@ results = bb.tf_query_3(service, rec_type='Deal', where_clause=wc, limit=None, f
 
 for row in results:
 	dAcc = dicts.get_blank_account_dict()
+	# Add PID, Deal Name and Deal ID (DID) to dAcc
+	dAcc['PID'] = row['PID__c']
+	print(f' {dAcc["PID"]}')
+	dAcc['DID'] = row['Id']
+	dAcc['Deal Name'] = row['Name']
 	dAcc['AID'] = row['AccountId__c']
 	if dAcc['AID'] == 'None':
 		continue
 	# Skip Deals without Person contact
 	dAcc = acc.populate_dAcc_from_tf(service, dAcc['AID'], dAcc=dAcc)
-
-	# Add PID, Deal Name and Deal ID (DID) to dAcc
-	dAcc['PID'] = row['PID__c']
-	dAcc['DID'] = row['Id']
-	dAcc['Deal Name'] = row['Name']
 
 	# Skip PIDs in skip list
 	if dAcc['PID'] in lSkip_pids:

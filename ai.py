@@ -2,6 +2,7 @@
 
 from dotenv import load_dotenv
 import json
+import fun_text_date as td
 import lao
 import pyperclip
 import requests
@@ -32,7 +33,6 @@ def get_ai_message(role_system=None, role_user=None):
 		message = [role_user]
 	
 	return message
-
 
 def copy_ai_prompt_to_clipboard(dAcc):
 	"""
@@ -83,13 +83,13 @@ def copy_ai_prompt_to_clipboard(dAcc):
 		return False
 
 # Ask Kablewy AI
-def ask_kablewy_ai(payload):
+def ask_kablewy_ai(payload, model="default"):
 	load_dotenv()
 	ORG_ID = os.getenv("KABLEWY_ORG_ID")
 	USER_ID = os.getenv("KABLEWY_USER_ID")
 	API_KEY = os.getenv("KABLEWY_API_KEY")
 	BASE = f"https://kablewy.ai/v1/mcp-jsonrpc/{ORG_ID}/users/{USER_ID}"
- 
+
 	headers = {
 	"Authorization": f"Bearer {API_KEY}",
 	"Content-Type": "application/json",
@@ -98,3 +98,27 @@ def ask_kablewy_ai(payload):
 	resp = requests.post(f"{BASE}/mcp/jsonrpc", headers=headers, json=payload)
 	resp.raise_for_status()
 	return resp.json()
+
+# Get the AI model
+def get_ai_model():
+	
+	print("\n Select a model:\n")
+	print("  1) gpt-5.1")
+	print("  2) gemini-3-pro-preview")
+	print("  3) gemini-2.5-flash")
+	print("  4) claude-sonnet-4-5-20250929")
+	print(" 00) Quit")
+
+	ui = td.uInput('\n Select > ')
+	if ui == '1':
+		model = "gpt-5.1"
+	elif ui == '2':
+		model = "gemini-3-pro-preview"
+	elif ui == '3':
+		model = "gemini-2.5-flash"
+	elif ui == '4':
+		model = "claude-sonnet-4-5-20250929"
+	elif ui == '00':
+		exit(' Terminating program...')
+
+	return model

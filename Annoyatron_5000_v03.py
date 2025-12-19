@@ -98,8 +98,8 @@ def get_recipients(is_a_test):
 			recipient = ['Greg Vogel <gvogel@landadvisors.com>', 'Bret Rinehart <brinehart@landadvisors.com>', 'Max Xander <mxander@landadvisors.com>', 'Michael Schwab Jr. <mjrschwab@landadvisors.com>', 'Trey Davis <tdavis@landadvisors.com>']
 		elif d['OFFICE'] == 'CAM':
 			recipient = ['Wesley Campbell <wcampbell@landadvisors.com>']
-		elif d['OFFICE'] == 'JAX':
-			recipient = ['Mike Ripley <mripley@landadvisors.com>', 'David Moore <dmoore@landadvisors.com>', 'Ashley Popowski <apopowski@landadvisors.com>']
+		# elif d['OFFICE'] == 'JAX':
+		# 	recipient = ['Mike Ripley <mripley@landadvisors.com>', 'David Moore <dmoore@landadvisors.com>', 'Ashley Popowski <apopowski@landadvisors.com>']
 		elif d['OFFICE'] == 'HEG':
 			recipient = ['Ben Heglie <bheglie@landadvisors.com>']
 		elif d['OFFICE'] == 'HNT':
@@ -112,6 +112,8 @@ def get_recipients(is_a_test):
 			recipient = ['Capri Barney <cbarney@landadvisors.com>', 'Hunter Kotoske <hkotoske@landadvisors.com>']
 		elif d['OFFICE'] == 'SCH':
 			recipient = ['Mike Schwab <mschwab@landadvisors.com>', 'Michael Schwab Jr <mjrschwab@landadvisors.com>']
+		elif d['OFFICE'] == 'SLC':
+			recipient = ['Zach Hartman <zhartman@landadvisors.com>', 'Rachel Day <rday@landadvisors.com>', 'Julie Norris <jnorris@landadvisors.com>']
 		elif d['OFFICE'] == 'SRQ':
 			recipient = ['Nancy Surak <nsurak@landadvisors.com>']
 		elif d['OFFICE'] == 'VOG':

@@ -303,6 +303,7 @@ def research_pto(dRIP, dPTO):
 		'Bill Landis': 0,
 		'Mike Wifler': 0,
 		'Connor Cox': 0,
+		'Ian Newling': 0,
 		'Michael Klingen': 0,
 		'Taylor Jacobson': 0
 		}
@@ -348,7 +349,7 @@ def make_spreadsheet(dRIP, dEOS):
 
 				# Team Totals
 				# header determines the order of the columns in the spreadsheet
-				header = ['Task', 'Alec Videla', 'Bill Landis', 'Connor Cox', 'Mike Wifler', 'Michael Klingen', 'Taylor Jacobson', 'Team Avg', 'Team Total']
+				header = ['Task', 'Alec Videla', 'Bill Landis', 'Connor Cox', 'Ian Newling', 'Mike Wifler', 'Michael Klingen', 'Taylor Jacobson', 'Team Avg', 'Team Total']
 				fout.writerow(header)
 
 				for task in lTasks:
@@ -372,7 +373,7 @@ def make_spreadsheet(dRIP, dEOS):
 				# Add blank line between Full team and researcher averages
 				fout.writerow([])
 				# header determines the order of the columns in the spreadsheet
-				header = ['Task',  'Connor Cox', 'Mike Wifler', 'Taylor Jacobson', 'Rschr Avg', 'Rschr Total']
+				header = ['Task',  'Connor Cox', 'Ian Newling', 'Mike Wifler', 'Taylor Jacobson', 'Rschr Avg', 'Rschr Total']
 				fout.writerow(header)
 
 				for task in lTasks:

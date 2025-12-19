@@ -89,19 +89,36 @@ def housingSales(dCOE, dResale, fileDate):
 	print(' Calculating median sale prices and counts for COE & resale homes...')
 	# Create Lists
 	# PHX COE
-	lCOE_PHX_count, lCOE_PHX_Sale_Price_Cur_Mo, lCOE_PHX_SqFt_Cur_Mo = [], [], []
+	lCOE_PHX_count, lCOE_PHX_Sale_Price_Cur_Mo, lCOE_PHX_SqFt_Cur_Mo, lCOE_PHX_Sale_Price_Last_3_Months, lCOE_PHX_SqFt_Last_3_Months, lCOE_PHX_Sale_Price_Last_6_Months, lCOE_PHX_SqFt_Last_6_Months = [], [], [], [], [], [], []
 	# PHX RESALE
-	lRESALE_PHX_count, lRESALE_PHX_cur_mo, lRESALE_PHX_SqFt_Cur_Mo = [], [], []
+	lRESALE_PHX_count, lRESALE_PHX_cur_mo, lRESALE_PHX_SqFt_Cur_Mo, lRESALE_PHX_Last_6_Months, lRESALE_PHX_SqFt_Last_6_Months = [], [], [], [], []
 	# PIN COE
-	lCOE_PIN_count, lCOE_PIN_Sale_Price_Cur_Mo, lCOE_PIN_SqFt_Cur_Mo = [], [], []
+	lCOE_PIN_count, lCOE_PIN_Sale_Price_Cur_Mo, lCOE_PIN_SqFt_Cur_Mo, lCOE_PIN_Sale_Price_Last_6_Months, lCOE_PIN_SqFt_Last_6_Months = [], [], [], [], []
 	# PIN RESALE
-	lRESALE_PIN_count, lRESALE_PIN_cur_mo, lRESALE_PIN_SqFt_Cur_Mo = [], [], []
+	lRESALE_PIN_count, lRESALE_PIN_cur_mo, lRESALE_PIN_SqFt_Cur_Mo, lRESALE_PIN_Last_6_Months, lRESALE_PIN_SqFt_Last_6_Months = [], [], [], [], []
 
 	lfileDate = fileDate.split('-')
 	year = lfileDate[0]
 	month = lfileDate[1]
-	dt_First_Of_Last_Month = datetime.datetime(int(lfileDate[0]), int(lfileDate[1]), 1)
-	ui = td.uInput('\n Continue... > {0}'.format(dt_First_Of_Last_Month))
+	dt_First_Of_Last_Month = datetime.datetime(int(year), int(month), 1)
+
+	year_3_months_ago = year
+	three_months_ago = int(month) - 2
+	if three_months_ago <= 0:
+		three_months_ago = three_months_ago + 12
+		year_3_months_ago = int(year) - 1
+	
+	year_6_months_ago = year
+	six_months_ago = int(month) - 5
+	if six_months_ago <= 0:
+		six_months_ago = six_months_ago + 12
+		year_6_months_ago = int(year) - 1
+	
+	# dt_Last_3_Months = datetime.datetime(int(year_3_months_ago), int(three_months_ago), 1)
+	dt_Last_6_Months = datetime.datetime(int(year_6_months_ago), int(six_months_ago), 1)
+	print('\n Current Month {0}'.format(dt_First_Of_Last_Month))
+	print('\n 6 Month {0}'.format(dt_Last_6_Months))
+	ui = td.uInput('\n Continue [00]... > ')
 	if ui == '00':
 		exit('\n Terminating program...')
 	dt_jan_1_cur_yr = datetime.datetime(int(year), 1, 1)
@@ -115,81 +132,124 @@ def housingSales(dCOE, dResale, fileDate):
 		# Exclude Attached homes
 		# if dCOE[row]['PRODCODE'] == 'A' or dCOE[row]['PRODCODE'] == 'Attached':
 		# 	continue
-
+		if int(dCOE[row]['SALEPRICE']) < 150000:
+			continue
 		# All PHX COE
 		lCOE_PHX_count.append(int(dCOE[row]['SALEPRICE']))
 		PHX_new_total_reveune = PHX_new_total_reveune + int(dCOE[row]['SALEPRICE'])
 		dtsplt = dCOE[row]['DATE'].split('/')
 		saledate = datetime.datetime(int(dtsplt[2]), int(dtsplt[0]), int(dtsplt[1]))
 		
-		# PHX Current Month Meidan Price list
-		if saledate >= dt_First_Of_Last_Month:
-			lCOE_PHX_Sale_Price_Cur_Mo.append(int(dCOE[row]['SALEPRICE']))
-			# print(dCOE[row]['SQFT'])
+		# # PHX Current Month Meidan Price list
+		# if saledate >= dt_First_Of_Last_Month:
+		# 	lCOE_PHX_Sale_Price_Cur_Mo.append(int(dCOE[row]['SALEPRICE']))
+		# 	if dCOE[row]['SQFT'] != '':
+		# 		if int(dCOE[row]['SQFT']) > 0 :
+		# 			lCOE_PHX_SqFt_Cur_Mo.append(int(dCOE[row]['SQFT']))
+		
+		# # PHX 3 Month Meidan Price list
+		# if saledate >= dt_Last_3_Months:
+		# 	lCOE_PHX_Sale_Price_Last_3_Months.append(int(dCOE[row]['SALEPRICE']))
+		# 	if dCOE[row]['SQFT'] != '':
+		# 		if int(dCOE[row]['SQFT']) > 0 :
+		# 			lCOE_PHX_SqFt_Last_3_Months.append(int(dCOE[row]['SQFT']))
+		
+		# PHX 6 Month Meidan Price list
+		if saledate >= dt_Last_6_Months:
+			lCOE_PHX_Sale_Price_Last_6_Months.append(int(dCOE[row]['SALEPRICE']))
 			if dCOE[row]['SQFT'] != '':
 				if int(dCOE[row]['SQFT']) > 0 :
-					lCOE_PHX_SqFt_Cur_Mo.append(int(dCOE[row]['SQFT']))
-
+					lCOE_PHX_SqFt_Last_6_Months.append(int(dCOE[row]['SQFT']))
+		
+		# Pinal County COE
 		if dCOE[row]['COUNTY'] == 'PINAL':
 			# All Pinal COE
 			lCOE_PIN_count.append(int(dCOE[row]['SALEPRICE']))
-			# Pinal Current Month Meidan Price list
-			if saledate >= dt_First_Of_Last_Month:
-				lCOE_PIN_Sale_Price_Cur_Mo.append(int(dCOE[row]['SALEPRICE']))
+			# # Pinal Current Month Meidan Price list
+			# if saledate >= dt_First_Of_Last_Month:
+			# 	lCOE_PIN_Sale_Price_Cur_Mo.append(int(dCOE[row]['SALEPRICE']))
+			# 	if dCOE[row]['SQFT'] != '':
+			# 		lCOE_PIN_SqFt_Cur_Mo.append(int(dCOE[row]['SQFT']))
+			# Pinal 6 Month Meidan Price list
+			if saledate >= dt_Last_6_Months:
+				lCOE_PIN_Sale_Price_Last_6_Months.append(int(dCOE[row]['SALEPRICE']))
 				if dCOE[row]['SQFT'] != '':
-					lCOE_PIN_SqFt_Cur_Mo.append(int(dCOE[row]['SQFT']))
+					lCOE_PIN_SqFt_Last_6_Months.append(int(dCOE[row]['SQFT']))
 
 	# RESALE -----------------------------------------------------------------------
+	row_count = 0
 	for row in dResale:
+		row_count += 1
 		# Skip Pima County and Attached units
 		if dResale[row]['COUNTY'] == 'PIMA':  # Exclude Pima county
 			continue
 		# Exclude Attached homes
 		# if dResale[row]['PRODCODE'] == 'A' or dResale[row]['PRODCODE'] == 'Attached':
 		# 	continue
-
-		lRESALE_PHX_count.append(int(dResale[row]['SALEPRICE']))
+		try:
+			lRESALE_PHX_count.append(int(dResale[row]['SALEPRICE']))
+		except ValueError:
+			print(' Skipping row {0} with SALEPRICE: {1}'.format(row_count, dResale[row]['SALEPRICE']))
+			print(row_count)
+			continue
+			# raise
 		dtsplt = dResale[row]['DATE'].split('/')
 		saledate = datetime.datetime(int(dtsplt[2]), int(dtsplt[0]), int(dtsplt[1]))
 		
-		# PHX Current Month Sale Price and Count
-		if saledate >= dt_First_Of_Last_Month:
+		# # PHX Current Month Sale Price and Count
+		# if saledate >= dt_First_Of_Last_Month:
+		# 	if dResale[row]['SALEPRICE'] != '':
+		# 		lRESALE_PHX_cur_mo.append(int(dResale[row]['SALEPRICE']))
+		# 	if dResale[row]['SQFT'] != '':
+		# 		lRESALE_PHX_SqFt_Cur_Mo.append(int(dResale[row]['SQFT']))
+		
+		# PHX 6 Month Sale Price and Count
+		if saledate >= dt_Last_6_Months:
 			if dResale[row]['SALEPRICE'] != '':
-				lRESALE_PHX_cur_mo.append(int(dResale[row]['SALEPRICE']))
+				lRESALE_PHX_Last_6_Months.append(int(dResale[row]['SALEPRICE']))
 			if dResale[row]['SQFT'] != '':
-				lRESALE_PHX_SqFt_Cur_Mo.append(int(dResale[row]['SQFT']))
+				lRESALE_PHX_SqFt_Last_6_Months.append(int(dResale[row]['SQFT']))
 
 		if dResale[row]['COUNTY'] == 'PINAL':
 			# PIN All Resale
 			lRESALE_PIN_count.append(int(dResale[row]['SALEPRICE']))
-			# PIN Current Month Meidan Price list
-			if saledate >= dt_First_Of_Last_Month:
+			# # PIN Current Month Meidan Price list
+			# if saledate >= dt_First_Of_Last_Month:
+			# 	if dResale[row]['SALEPRICE'] != '':
+			# 		lRESALE_PIN_cur_mo.append(int(dResale[row]['SALEPRICE']))
+			# 	if dResale[row]['SQFT'] != '':
+			# 		lRESALE_PIN_SqFt_Cur_Mo.append(int(dResale[row]['SQFT']))
+			# PIN 6 Month Meidan Price list
+			if saledate >= dt_Last_6_Months:
 				if dResale[row]['SALEPRICE'] != '':
-					lRESALE_PIN_cur_mo.append(int(dResale[row]['SALEPRICE']))
+					lRESALE_PIN_Last_6_Months.append(int(dResale[row]['SALEPRICE']))
 				if dResale[row]['SQFT'] != '':
-					lRESALE_PIN_SqFt_Cur_Mo.append(int(dResale[row]['SQFT']))
+					lRESALE_PIN_SqFt_Last_6_Months.append(int(dResale[row]['SQFT']))
 	
 	dRLB = {}
 	# PHX NEW
 	dRLB['NEW_PHX_COUNT'] = len(lCOE_PHX_count)
-	dRLB['NEW_PHX_MEDIAN_PRICE'] = round(median(lCOE_PHX_Sale_Price_Cur_Mo))
-	dRLB['NEW_PHX_MEDIAN_SQFT'] = round(median(lCOE_PHX_SqFt_Cur_Mo))
+	# dRLB['NEW_PHX_MEDIAN_PRICE'] = round(median(lCOE_PHX_Sale_Price_Cur_Mo))
+	# dRLB['NEW_PHX_MEDIAN_SQFT'] = round(median(lCOE_PHX_SqFt_Cur_Mo))
+	# dRLB['NEW_PHX_MEDIAN_PRICE'] = round(median(lCOE_PHX_Sale_Price_Last_3_Months))
+	# dRLB['NEW_PHX_MEDIAN_SQFT'] = round(median(lCOE_PHX_SqFt_Last_3_Months))
+	dRLB['NEW_PHX_MEDIAN_PRICE'] = round(median(lCOE_PHX_Sale_Price_Last_6_Months))
+	dRLB['NEW_PHX_MEDIAN_SQFT'] = round(median(lCOE_PHX_SqFt_Last_6_Months))
 	dRLB['NEW_PHX_PRICE_SQFT'] = round(dRLB['NEW_PHX_MEDIAN_PRICE'] / dRLB['NEW_PHX_MEDIAN_SQFT'])
 	dRLB['NEW_PHX_TOTAL_REVEUE'] = round(PHX_new_total_reveune)
 	dRLB['NEW_PHX_AVG_PRICE'] = dRLB['NEW_PHX_TOTAL_REVEUE'] / dRLB['NEW_PHX_COUNT']
 	# PHX RESALE
 	dRLB['RESALE_PHX_COUNT'] = len(lRESALE_PHX_count)
-	dRLB['RESALE_PHX_MEDIAN_PRICE'] = round(median(lRESALE_PHX_cur_mo))
-	dRLB['RESALE_PHX_MEDIAN_SQFT'] = round(median(lRESALE_PHX_SqFt_Cur_Mo))
+	dRLB['RESALE_PHX_MEDIAN_PRICE'] = round(median(lRESALE_PHX_Last_6_Months))
+	dRLB['RESALE_PHX_MEDIAN_SQFT'] = round(median(lRESALE_PHX_SqFt_Last_6_Months))
 	dRLB['RESALE_PHX_PRICE_SQFT'] = round(dRLB['RESALE_PHX_MEDIAN_PRICE'] / dRLB['RESALE_PHX_MEDIAN_SQFT'])
-	
+	# Pinal County NEW
 	dRLB['NEW_PIN_COUNT'] = len(lCOE_PIN_count)
-	dRLB['NEW_PIN_MEDIAN_PRICE'] = round(median(lCOE_PIN_Sale_Price_Cur_Mo))
-	dRLB['NEW_PIN_MEDIAN_SQFT'] = round(median(lCOE_PIN_SqFt_Cur_Mo))
-
+	dRLB['NEW_PIN_MEDIAN_PRICE'] = round(median(lCOE_PIN_Sale_Price_Last_6_Months))
+	dRLB['NEW_PIN_MEDIAN_SQFT'] = round(median(lCOE_PIN_SqFt_Last_6_Months))
+	# Pinal County RESALE
 	dRLB['RESALE_PIN_COUNT'] = len(lRESALE_PIN_count)
-	dRLB['RESALE_PIN_MEDIAN_PRICE'] = round(median(lRESALE_PIN_cur_mo))
-
+	dRLB['RESALE_PIN_MEDIAN_PRICE'] = round(median(lRESALE_PIN_Last_6_Months))
 	return dRLB
 
 # Calculate home sales counts by price range

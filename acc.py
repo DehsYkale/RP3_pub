@@ -206,17 +206,18 @@ def queryTFForContact(service, dAcc):
 	elif 'TIM' in dAcc['NF'].upper() or 'TIMOTHY' in dAcc['NF'].upper():
 		addToQS = "(FirstName LIKE 'Tim%' or FirstName LIKE 'Timothy%')"
 	else:
-		# addToQS = "FirstName LIKE '{0}%'".format(dAcc['NFI'])
 		addToQS = "FirstName LIKE '{NFI}%'".format(**dAcc)
 		matchPotential = False
-	# qs = '{0}{1}'.format(qs, addToQS)
-	wc = f'{wc}{addToQS}'
-	# print(wc)
-	# print()
+	
+	# Add State to query if exists
+	if dAcc['STATE'] != 'None':
+		addToQS = f"{addToQS} AND (BillingState = '{dAcc['STATE']}' OR BillingState = '')"
 
-	# results = bb.sfXquery(service, qs)
+	wc = f'{wc}{addToQS}'
+
 	# TerraForce Query
 	results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None)
+	
 	return results, matchDefinate, matchPotential
 	# print(results)
 

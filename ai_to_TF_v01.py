@@ -5,9 +5,12 @@ Searches for matching companies in Salesforce and asks for user confirmation
 
 import json
 import os
+
+from pprint import pprint
 import bb
 import fun_login
 from datetime import datetime
+import fun_text_date as td
 
 def load_json_file(file_path):
 	"""Load the company data from JSON file"""
@@ -27,7 +30,6 @@ def search_company_by_name(service, company_name):
 	records = bb.tf_query_3(service, rec_type='Entity', where_clause=where_clause, limit=10, fields='default')
 	
 	return records
-
 
 def search_company_by_address(service, street, city, state, postal_code):
 	"""Search Salesforce for companies matching the address"""
@@ -89,12 +91,12 @@ def get_user_confirmation(sf_matches):
 	
 	print("\n" + "-"*80)
 	print("Are any of these matches the same company?")
-	print("Enter the match number (1-{}) or 'n' for none: ".format(len(sf_matches)), end='')
+	print("Enter the match number (1-{}) or [0] for none: ".format(len(sf_matches)), end='')
 	
 	while True:
 		response = input().strip().lower()
 		
-		if response == 'n':
+		if response == '0':
 			return None
 		
 		try:
@@ -102,28 +104,28 @@ def get_user_confirmation(sf_matches):
 			if 1 <= match_num <= len(sf_matches):
 				return sf_matches[match_num - 1]
 			else:
-				print(f"Please enter a number between 1 and {len(sf_matches)}, or 'n': ", end='')
+				print(f"Please enter a number between 1 and {len(sf_matches)}, or [0]: ", end='')
 		except ValueError:
-			print(f"Please enter a number between 1 and {len(sf_matches)}, or 'n': ", end='')
+			print(f"Please enter a number between 1 and {len(sf_matches)}, or [0]: ", end='')
 
-def process_primary_company(service, json_data):
+def process_company(service, json_data, company_type):
 	"""Process the primary company from the JSON file"""
-	primary = json_data['companies']['primary']
+	dCompany = json_data['companies'][company_type]
 	
 	print("\n" + "#"*80)
-	print("PROCESSING PRIMARY COMPANY")
+	print(f"PROCESSING {company_type.upper()} COMPANY")
 	print("#"*80)
 	
 	# Search by name first
-	name_matches = search_company_by_name(service, primary['Name'])
+	name_matches = search_company_by_name(service, dCompany['Name'])
 	
 	# Search by address
 	address_matches = search_company_by_address(
 		service,
-		primary.get('BillingStreet', ''),
-		primary.get('BillingCity', ''),
-		primary.get('BillingState', ''),
-		primary.get('BillingPostalCode', '')
+		dCompany.get('BillingStreet', ''),
+		dCompany.get('BillingCity', ''),
+		dCompany.get('BillingState', ''),
+		dCompany.get('BillingPostalCode', '')
 	)
 	
 	# Combine matches and remove duplicates
@@ -136,22 +138,68 @@ def process_primary_company(service, json_data):
 			seen_ids.add(match['Id'])
 	
 	# Display comparison
-	display_company_comparison(primary, all_matches)
+	display_company_comparison(dCompany, all_matches)
 	
 	# Get user confirmation
 	selected_match = get_user_confirmation(all_matches)
 	
 	return {
-		'company': primary,
+		'company': dCompany,
 		'match': selected_match,
 		'match_type': 'existing' if selected_match else 'new'
 	}
 
+def update_match_record(service, dMatch):
+	"""Update the matched Salesforce record with data from JSON company"""
+	# Prepare update data
+	AI_entity = dMatch['company']
+	TF_entity = dMatch['match']
+
+	dup = {}
+	# Cycle through the TF entity fields and update from AI entity if not empty
+	for row in TF_entity:
+		# Skip attributes metadata and Description field
+		if row == 'attributes':
+			continue
+
+		print(f'{row}: {TF_entity[row]}')
+
+		# Update Description field by appending new info
+		if row == 'Description':
+			if AI_entity['Description'] != '':
+				if TF_entity['Description'] != 'None':
+					if AI_entity['Description'] not in TF_entity['Description']:
+						dup['Description'] = TF_entity['Description'] + '\n\n' + AI_entity['Description']
+				else:
+					dup['Description'] = AI_entity['Description']
+
+		# Check if field exists in AI entity and is not empty
+		if TF_entity[row] == 'None':
+			if row in AI_entity:
+				if AI_entity[row] != '':
+					dup[row] = AI_entity[row]
+
+	print('here1')
+	pprint(dup)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	
+	# Update record in Salesforce
+	if dup != {}:
+		dup['Id'] = TF_entity['Id']
+		dup['type'] = 'Account'
+		# up_results = bb.tf_update_3(service, dup)
+		up_results = bb.tf_update_with_duplicate_bypass(service, dup)
+		ui = td.uInput('\n Continue [00]... > ')
+		if ui == '00':
+			exit('\n Terminating program...')
+
 def main():
 	"""Main function for Phase 1"""
-	# File path
-	file_path = r"C:\Users\Public\Public Mapfiles\Contact_Files\Company_Search_Virgin Farms Partners_20251107_152035.json"
-	
+
+	# Load the JSON file
+	file_path = "C:/Users/Public/Public Mapfiles/Contact_Files/Company_Search_Hartford Investments Llc_20251120_105114.json"
 	# Check if file exists
 	if not os.path.exists(file_path):
 		print(f"Error: File not found at {file_path}")
@@ -163,10 +211,17 @@ def main():
 	
 	# Connect to Salesforce using fun_login
 	service = fun_login.TerraForce()
-	print("Connected successfully!")
 	
 	# Process primary company
-	result = process_primary_company(service, json_data)
+	result = process_company(service, json_data, 'primary')
+
+	
+	print('here1')
+	pprint(result)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	
 	
 	# Display summary
 	print("\n" + "="*80)
@@ -177,6 +232,31 @@ def main():
 	if result['match']:
 		print(f"Match:   {result['match']['Name']} (ID: {result['match']['Id']})")
 	print("="*80)
+
+	update_match_record(service, result)
+
+		# Process primary company
+	result = process_company(service, json_data, 'parent_company')
+
+	
+	print('here1')
+	pprint(result)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	
+	
+	# Display summary
+	print("\n" + "="*80)
+	print("PHASE 1 COMPLETE")
+	print("="*80)
+	print(f"Company: {result['company']['Name']}")
+	print(f"Action:  {'Update existing account' if result['match_type'] == 'existing' else 'Create new account'}")
+	if result['match']:
+		print(f"Match:   {result['match']['Name']} (ID: {result['match']['Id']})")
+	print("="*80)
+
+	update_match_record(service, result)
 
 if __name__ == "__main__":
 	main()

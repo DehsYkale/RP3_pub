@@ -15,7 +15,6 @@ import re
 # Formats Address to Title case and 
 def address_formatter(dAcc):
 	import lao
-	
 	lao.print_function_name('td def address_formatter')
 
 	if 'STREET' in dAcc.keys():
@@ -28,7 +27,9 @@ def address_formatter(dAcc):
 			dAcc['CITY'] = dAcc['CITY'].title()
 	
 	if 'STATE' in dAcc.keys():
-		if len(dAcc['STATE']) > 2:
+		if len(dAcc['STATE']) > 2 and dAcc['STATE'] != 'None':
+			print('here1')
+			print(dAcc['STATE'])
 			dAcc['STATE'] = lao.convertState(dAcc['STATE'])
 		# if dAcc['CITY'].isupper():
 		# 	dAcc['CITY'] = dAcc['CITY'].title()
