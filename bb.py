@@ -259,6 +259,88 @@ def getPIDfromDID(service, DID):
 	# qs = "SELECT PID__c FROM lda_Opportunity__c WHERE Id = '{0}'".format(DID)
 	return results[0]['PID__c']
 
+# Returns a nested dictionary of new Research Requests
+def get_new_research_requests_nested_dict():
+	"""
+	Query TF for Research requests with New status and return as nested dictionary.
+	"""
+	import fun_login
+	import bb
+	import re
+	
+	service = fun_login.TerraForce()
+	
+	where_clause = "Record_Type_Name__c = 'Research' AND Status__c = 'New' AND Office__c = 'Orlando'"
+	
+	results = bb.tf_query_3(service, 'Request', where_clause, limit=None, fields='default')
+
+	requests_dict = {}
+	
+	# Populate dictionary
+	for rec in results:
+		Request_Name = rec.get('Name')
+		requests_dict[Request_Name] = {
+			'DID': rec.get('Deal_Lookup__c'),
+			'LID': 'None',
+			'PID': rec.get('Deal_PID__c'),
+			'Request_Id': rec.get('Id'),
+			'Request_Name': Request_Name,
+			'Request_Type': 'None',
+			'Approver__c': rec.get('Approver__c'),
+			'Approver__r_Name': 'None',
+			'CreatedDate': rec.get('CreatedDate'),
+			'Description__c': rec.get('Description__c'),
+			'MapTitle__c': rec.get('MapTitle__c'),
+			'Office__c': rec.get('Office__c'),
+			'Parcels__c': 'None',
+			'Parcel_Layer': 'None',
+			'RecordTypeId': rec.get('RecordTypeId'),
+			'Status__c': rec.get('Status__c')			
+		}
+
+		# pprint(rec)
+		# print("\n-------------------------\n")
+		
+		# Check for Approver Name
+		try:
+			if requests_dict[Request_Name]['Approver__c'] != 'None':
+				requests_dict[Request_Name]['Approver__r_Name'] = rec.get('Approver__r', {}).get('Name')
+		except AttributeError:
+			pass
+		
+		# Clean Description__c of HTML and whitespaces
+		requests_dict[Request_Name]['Description__c'] = re.sub(r'<[^>]+>', '', requests_dict[Request_Name]['Description__c'])
+		requests_dict[Request_Name]['Description__c'] = re.sub(r'\s+', ' ', requests_dict[Request_Name]['Description__c']).strip()
+
+		# PARCEL RESEARCH REQUEST
+		if 'Parcel Research' in requests_dict[Request_Name]['MapTitle__c']:
+			temp_title = requests_dict[Request_Name]['MapTitle__c'].replace('L5 Parcel Research ', '')
+			lTemp_title = temp_title.split(' ')
+			requests_dict[Request_Name]['Parcel_Layer'] = lTemp_title[0]
+			requests_dict[Request_Name]['Parcels__c'] = lTemp_title[1]
+			requests_dict[Request_Name]['Request_Type'] = 'Parcel Research'
+			
+		# LEAD RESEARCH REQUEST
+		elif 'Lead Research' in requests_dict[Request_Name]['MapTitle__c']:
+			requests_dict[Request_Name]['LID']  = requests_dict[Request_Name]['MapTitle__c'].replace('L5 Lead Research ', '')
+			requests_dict[Request_Name]['Request_Type'] = 'Lead Research'
+		
+		# OWNERSHIP RESEARCH REQUEST
+		elif 'Ownership Research' in requests_dict[Request_Name]['MapTitle__c']:
+			requests_dict[Request_Name]['PID']  = requests_dict[Request_Name]['MapTitle__c'].replace('L5 Ownership Research ', '')
+			requests_dict[Request_Name]['Request_Type'] = 'Ownership Research'
+			requests_dict[Request_Name]['DID'] = bb.getDIDfromPID(service, requests_dict[Request_Name]['PID'])
+
+	
+		# print("\n-------------------------\n")
+		# pprint(requests_dict[Request_Name])
+		# ui = td.uInput('\n Continue [00]... > ')
+		# if ui == '00':
+		# 	exit('\n Terminating program...')
+
+	# print("\n-------------------------\n")
+	return requests_dict
+
 # Search for existing Business/Entity Account in TF and create one if it does not exist
 # Returns NAME, AID, RTY
 def findCreateAccountEntity(service, NAME = 'None', CITY = 'None', STATE = 'None', URL = 'None', STREET = 'None', ZIPCODE = 'None', PHONE = 'None', CATEGROY = 'None'):

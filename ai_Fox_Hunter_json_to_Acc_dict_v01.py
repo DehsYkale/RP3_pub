@@ -1,7 +1,9 @@
 # Function to create a Fox Hunter json dAcc dictionary
 
+import acc
 import dicts
 import fjson
+import fun_login
 import fun_text_date as td
 from pprint import pprint
 
@@ -77,6 +79,9 @@ def get_Fox_Hunter_dAcc(dFox):
 
 	return dAcc
 
+td.banner('ai Fox Hunter json to Acc dict v01')
+
+service = fun_login.TerraForce()
 
 filepath = 'C:/Users/Public/Public Mapfiles/Contact_Files'
 filename = 'Company_Search_Hartford Investments LLC_20251201_135218.json'
@@ -84,12 +89,23 @@ fullpath = f'{filepath}/{filename}'
 
 dFox = fjson.getJsonDict(fullpath)
 
-for row in dFox:
-	print(f'\nRow: {row}')
-	pprint(dFox[row])
+# for row in dFox:
+# 	print(f'\nRow: {row}')
+# 	pprint(dFox[row])
 
 dAcc = get_Fox_Hunter_dAcc(dFox)
 pprint(dAcc)
 ui = td.uInput('\n Continue [00]... > ')
 if ui == '00':
 	exit('\n Terminating program...')
+
+# Find Create Account Entity
+dAcc = acc.find_create_account_entity(service, dAcc)
+
+dAcc = acc.find_create_account_person(service, dAcc)
+pprint(dAcc)
+ui = td.uInput('\n Continue [00]... > ')
+if ui == '00':
+	exit('\n Terminating program...')
+
+print('\n Process complete.')

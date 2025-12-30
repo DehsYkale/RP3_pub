@@ -103,7 +103,7 @@ def ask_kablewy_ai(payload, model="default"):
 def get_ai_model():
 	
 	print("\n Select a model:\n")
-	print("  1) gpt-5.1")
+	print("  1) gpt-5.2")
 	print("  2) gemini-3-pro-preview")
 	print("  3) gemini-2.5-flash")
 	print("  4) claude-sonnet-4-5-20250929")
@@ -111,7 +111,7 @@ def get_ai_model():
 
 	ui = td.uInput('\n Select > ')
 	if ui == '1':
-		model = "gpt-5.1"
+		model = "gpt-5.2"
 	elif ui == '2':
 		model = "gemini-3-pro-preview"
 	elif ui == '3':

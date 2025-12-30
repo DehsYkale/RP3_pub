@@ -12,6 +12,49 @@ from pprint import pprint
 from shapely.geometry import Point
 import fun_text_date as td
 
+def get_lead_info_dAcc_dTF_dicts(LeadId):
+
+	gdb_path = r"F:\Research Department\maps\Parcels & Leads\Leads.gdb"
+	layer_name = LeadId.split('_')[0] + 'Leads' + LeadId.split('_')[1]  # e.g., 'FLLeads'
+
+	# Read the layer
+	gdf = gpd.read_file(gdb_path, layer=layer_name)
+
+	# Filter for the LeadId
+	result = gdf[gdf['leadid'] == LeadId]
+
+	# Convert the first matching row to a dictionary
+	if not result.empty:
+		dLeadInfo = result.iloc[0].to_dict()
+	else:
+		td.warningMsg(f'\n No Lead Info found for LeadId: {LeadId}')
+		ui = td.uInput('\n Continue [00]... > ')
+		if ui == '00':
+			exit('\n Terminating program...')
+		dLeadInfo = {}
+
+	# Create dAcc from dLeadInfo
+	dAcc = dicts.get_blank_account_dict()
+	dAcc['ENTITY'] = dLeadInfo.get('owner', '').split(' OR ')[0]
+	dAcc['STREET'] = dLeadInfo.get('mailstreet', '')
+	dAcc['CITY'] = dLeadInfo.get('mailcity', '')
+	dAcc['STATE'] = dLeadInfo.get('mailstate', '')
+	dAcc['ZIP'] = dLeadInfo.get('mailzip', '')
+	dAcc['ADDRESSFULL'] = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIP']}"
+	dAcc['PHONE'] = dLeadInfo.get('phone', '')
+
+	# Create dTF from dLeadInfo
+	dTF = dicts.get_blank_tf_deal_dict()
+	dTF['Acres__c'] = dLeadInfo.get('acres', '')
+	dTF['Parcels__c'] = dLeadInfo.get('parcels', '')
+	dTF['Lead_Parcel__c'] = dTF['Parcels__c'].split(',')[0]
+	state_county = dLeadInfo.get('leadid', '').split('_')[0]  # e.g., 'FL_Lake'
+	dTF['State__c'] = state_county[0]
+	dTF['County__c'] = state_county[1]
+	dTF['Latitude__c'] = dLeadInfo.get('y', '')
+	dTF['Longitude__c'] = dLeadInfo.get('x', '')
+	
+	return dAcc, dTF
 
 def get_gpf_for_LAO_geoinfo(include_zip=True):
 

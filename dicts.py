@@ -2519,6 +2519,7 @@ def get_TF_request_query_fields():
 		'Map_Description__c',
 		'LastModifiedById',
 		'LastModifiedDate',
+		'MapTitle__c',
 		'ModifyMapToDo__c',
 		'Most_Recent_Activity__c',
 		'Name',

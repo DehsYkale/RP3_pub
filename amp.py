@@ -1,7 +1,7 @@
 # python3
 # -*- coding: utf-8 -*-
 
-print('\n Loading arcpy in "amp.py" main...')
+# print('\n Loading arcpy in "amp.py" main...')
 # import arcpy
 # from arcpy import env
 import bb

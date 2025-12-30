@@ -74,7 +74,7 @@ def is_json_complete(json_str):
 def strip_to_json(results):
 	"""Extract JSON from AI response with improved error handling."""
 	# Create output directory if it doesn't exist
-	output_dir = Path('C:/Users/Public/Public Mapfiles/Contact_Files')
+	output_dir = Path('C:/TEMP')
 	
 	try:
 		# Extract the text field from the nested structure
@@ -609,7 +609,7 @@ def print_summary(data, company_name):
 	# Save to file
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	safe_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
-	filename = f"C:/Users/Public/Public MapFiles/Contact_Files/Company_Search_{safe_name}_{timestamp}_Print_Summary.txt"
+	filename = f"F:/Research Department/Code/Contact Files/Company_Search_{safe_name}_{timestamp}_Print_Summary.txt"
 	
 	try:
 		with open(filename, 'w', encoding='utf-8') as f:
@@ -636,8 +636,11 @@ def save_results_to_file(data, company_name):
 		print(f"❌ Error saving file: {e}")
 		return None
 
-def main(company, address, model):
+def create_ai_contacts_json(company, address):
 	"""Main execution function using two-part search."""
+
+	# Get AI model
+	model = ai.get_ai_model()
 	
 	# PART 1: Get company structure
 	print("🔍 Starting two-part search process...")
@@ -715,45 +718,45 @@ def main(company, address, model):
 
 	return combined_data
 
-if __name__ == "__main__":
-	# Start overall execution timer
-	overall_start_time = time.time()
+# if __name__ == "__main__":
+# 	# Start overall execution timer
+# 	overall_start_time = time.time()
 	
-	# # Example search
-	# company = "Hartford Investments, LLC"
-	# address = "4801 Goodman St, Timnath CO 80547"
+# 	# # Example search
+# 	# company = "Hartford Investments, LLC"
+# 	# address = "4801 Goodman St, Timnath CO 80547"
 
-	# ui = td.uInput('\n Company Name [00] > ')
-	# if ui.strip() != '':
-	# 	company = ui
-	# 	address = td.uInput('\n Company Address [00] > ')
-	# 	if address.strip() == '':
-	# 		exit('\n No address provided. Terminating program...')
-	# 	elif address == '00':
-	# 		exit('\n Terminating program...')
-	# elif ui == '00':
-	# 		exit('\n Terminating program...')
+# 	# ui = td.uInput('\n Company Name [00] > ')
+# 	# if ui.strip() != '':
+# 	# 	company = ui
+# 	# 	address = td.uInput('\n Company Address [00] > ')
+# 	# 	if address.strip() == '':
+# 	# 		exit('\n No address provided. Terminating program...')
+# 	# 	elif address == '00':
+# 	# 		exit('\n Terminating program...')
+# 	# elif ui == '00':
+# 	# 		exit('\n Terminating program...')
 
-	lead = 'FL_Lake_645c73'
+# 	lead = 'FL_Lake_645c73'
 
-	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
+# 	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
 	
-	# Get AI model
-	model = ai.get_ai_model()
+# 	# Get AI model
+# 	model = ai.get_ai_model()
 
-	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
+# 	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
 
-	# Run the search
-	dContact_info = main(dAcc['ENTITY'], dAcc['ADDRESSFULL'], model)
+# 	# Run the search
+# 	dContact_info = main(dAcc['ENTITY'], dAcc['ADDRESSFULL'], model)
 	
-	# Calculate and display total execution time
-	total_duration = time.time() - overall_start_time
-	print(f"\n{'='*80}")
-	print(f"⏱️  TOTAL EXECUTION TIME: {total_duration:.2f} seconds ({total_duration/60:.2f} minutes)")
-	print('='*80 + '\n')
+# 	# Calculate and display total execution time
+# 	total_duration = time.time() - overall_start_time
+# 	print(f"\n{'='*80}")
+# 	print(f"⏱️  TOTAL EXECUTION TIME: {total_duration:.2f} seconds ({total_duration/60:.2f} minutes)")
+# 	print('='*80 + '\n')
 	
-	# If you want to see the raw JSON structure:
-	# pprint(dContact_info, width=120)
+# 	# If you want to see the raw JSON structure:
+# 	# pprint(dContact_info, width=120)
 
 # TODO: Add function to actually create/update Salesforce Account records using the structured data
 # TODO: Add batch processing capability for multiple companies

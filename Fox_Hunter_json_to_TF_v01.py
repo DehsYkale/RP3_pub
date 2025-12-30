@@ -2,6 +2,13 @@ import json
 import fun_login
 import bb
 
+# Function to check if company exists
+def check_company_exists(service, company_name):
+	"""Query TF to see if a company with this exact name exists"""
+	where_clause = f"Name = '{company_name}'"
+	results = bb.tf_query_3(service, 'Entity', where_clause, fields='default')
+	return results
+
 # Load the JSON file
 json_path = "C:/Users/Public/Public Mapfiles/Contact_Files/Company_Search_Hartford Investments Llc_20251120_105114.json"
 
@@ -16,13 +23,6 @@ primary_company = data['companies']['primary']['Name']
 parent_company = data['companies']['parent_company']['Name']
 
 print(f"Checking Terraforce for:\n1. Primary: {primary_company}\n2. Parent: {parent_company}\n")
-
-# Function to check if company exists
-def check_company_exists(service, company_name):
-	"""Query TF to see if a company with this exact name exists"""
-	where_clause = f"Name = '{company_name}'"
-	results = bb.tf_query_3(service, 'Entity', where_clause, fields='default')
-	return results
 
 # Check primary company
 print(f"=" * 60)
@@ -56,7 +56,8 @@ if parent_results and len(parent_results) > 0:
 		print(f"    Name: {record.get('Name', 'N/A')}")
 		print(f"    Category: {record.get('Category__c', 'N/A')}")
 		print(f"    Address: {record.get('BillingStreet', 'N/A')}, {record.get('BillingCity', 'N/A')}, {record.get('BillingState', 'N/A')}")
-		print(f"    Phone: {record.get('Phone', 'N/A')}")
+		print(f"    Phone: {record.get('00025239	00190026	140th	' \
+		'Phone', 'N/A')}")
 else:
 	print("✗ NOT FOUND in Terraforce")
 
