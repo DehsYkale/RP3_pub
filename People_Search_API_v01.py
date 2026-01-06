@@ -173,7 +173,7 @@ def enter_property(dAcc, payload):
 			payload['AddressLine2'] = ''
 
 	# else:
-	# 	street, city, state, zipcode = td.parce_single_line_address(full_address)
+	# 	street, city, state, zipcode = td.parse_single_line_address(full_address)
 	# 	payload['Address']['AddressLine1'] = street
 	# 	payload['Address']['AddressLine2'] = f'{city}, {state} {zipcode}'
 

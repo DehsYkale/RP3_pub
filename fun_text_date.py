@@ -35,6 +35,52 @@ def address_formatter(dAcc):
 		# 	dAcc['CITY'] = dAcc['CITY'].title()
 	return dAcc
 
+# Standardizes the format of a billing street address
+def billingstreet_standarize_format(street):
+	"""Standardizes the format of a billing street address."""
+	street = street.title()
+	
+	# Standardize PO Box formatting
+	street = re.sub(r'\bP\.?\s*O\.?\s*BOX\b', 'PO Box', street, flags=re.IGNORECASE)
+
+	# Abbreviate street suffixes
+	dStreet_suffixes = dicts.get_street_suffixes_dict()
+	words = street.split()
+	if words[-1].upper() in dStreet_suffixes:
+		abbreviation = dStreet_suffixes[words[-1].upper()]
+		words[-1] = abbreviation.title()
+	street = ' '.join(words)
+
+	# Remove punctuation and standardize spacing
+	street = street.replace('.', '')
+	street = street.replace(',', '')
+	street = street.replace('\n', ' ')
+	street = street.replace(' | ', ', ')
+	street = street.replace(' |', ' ')
+	street = street.replace('|', ' ')
+	# Replace directional words with abbreviations
+	street = street.replace(' North ', ' N ')
+	street = street.replace(' South ', ' S ')
+	street = street.replace(' East ', ' E ')
+	street = street.replace(' West ', ' W ')
+	street = street.replace(' Northwest ', ' NW ')
+	street = street.replace(' Northeast ', ' NE ')
+	street = street.replace(' Southwest ', ' SW ')
+	street = street.replace(' Southeast ', ' SE ')
+	# Correct ordinal suffix capitalization
+	street = street.replace('0Th ', '0th ')
+	street = street.replace('1St ', '1st ')
+	street = street.replace('2Nd ', '2nd ')
+	street = street.replace('3Rd ', '3rd ')
+	street = street.replace('4Th ', '4th ')
+	street = street.replace('5Th ', '5th ')
+	street = street.replace('6Th ', '6th ')
+	street = street.replace('7Th ', '7th ')
+	street = street.replace('8Th ', '8th ')
+	street = street.replace('9Th ', '9th ')
+
+	return street
+
 # Abbreviates Steet words
 def get_abbreviate_street_name(street):
 
@@ -86,8 +132,8 @@ def get_abbreviate_street_name(street):
 	return street
 
 # Parces a single line address
-def parce_single_line_address(ADDRESS, dAcc='None'):
-	lao.print_function_name('td def parce_single_line_address')
+def parse_single_line_address(ADDRESS, dAcc='None'):
+	lao.print_function_name('td def parse_single_line_address')
 	# Remove commas and extra spaces
 	ADDRESS = (ADDRESS.upper()).replace(',', '').strip()
 	# Remove United States
@@ -216,7 +262,7 @@ def clipboard_address_formatter(dAcc):
 			data = data.replace('\r\n', ' ')
 
 			# Parce the single line address
-			street, city, state, zipcode = parce_single_line_address(data)
+			street, city, state, zipcode = parse_single_line_address(data)
 			
 			# Remove full state name from street
 			stateNameFull = (lao.convertState(state)).upper()

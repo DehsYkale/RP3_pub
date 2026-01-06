@@ -663,7 +663,7 @@ def Address_Only(dWpg):
 		if ui == '00':
 			exit('\n Terminating program...')
 		elif ui == '1':
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parce_single_line_address(address)
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parse_single_line_address(address)
 			dWpg = td.address_formatter(dWpg)
 			break
 		elif ui == '0':
@@ -689,7 +689,7 @@ def Arizona_Corporation_Commission(dWpg):
 			address = address.replace(', USA', '')
 			address = address.strip()
 			print(address)
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parce_single_line_address(address)
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parse_single_line_address(address)
 			dWpg = td.address_formatter(dWpg)
 			dWpg['STREET'] = td.get_abbreviate_street_name(dWpg['STREET'])
 			break
@@ -762,7 +762,7 @@ def Dun_Bradstreet_Cloud(dWpg):
 			dWpg['ADDRESSFULL'] = dWpg['LPAGE'][i].replace('Address: ', '')
 			dWpg['ADDRESSFULL'] = dWpg['ADDRESSFULL'].replace('See other locations', '')
 			dWpg['ADDRESSFULL'] = dWpg['ADDRESSFULL'].replace('United States', '')
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parce_single_line_address(dWpg['ADDRESSFULL'])
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parse_single_line_address(dWpg['ADDRESSFULL'])
 			break
 	for i, element in enumerate(dWpg['LPAGE']):
 		if 'Website: ' in element:
@@ -1047,7 +1047,7 @@ def Google(dWpg):
 	for i, element in enumerate(dWpg['LPAGE']):
 		if 'Address: ' in element:
 			dWpg['ADDRESSFULL'] = dWpg['LPAGE'][i].replace('Address: ', '')
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parce_single_line_address(dWpg['ADDRESSFULL'])
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parse_single_line_address(dWpg['ADDRESSFULL'])
 		if 'Phone: ' in element:
 			dWpg['PHONE'] = dWpg['LPAGE'][i].replace('Phone: ', '')
 			dWpg['PHONE'] = td.phoneFormat(dWpg['PHONE'])
@@ -1110,7 +1110,7 @@ def OpenCorporates(dAcc, dWpg):
 		try:
 			i = dWpg['LPAGE'].index('Head Office Address')
 			dWpg['ADDRESS'] = dWpg['LPAGE'][i + 1]
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'],  = td.parce_single_line_address(dWpg['ADDRESS'])
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'],  = td.parse_single_line_address(dWpg['ADDRESS'])
 		except ValueError:
 			did_not_find_it = True
 	if did_not_find_it:
@@ -1118,7 +1118,7 @@ def OpenCorporates(dAcc, dWpg):
 		try:
 			i = dWpg['LPAGE'].index('Mailing Address')
 			dWpg['ADDRESS'] = dWpg['LPAGE'][i + 1]
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'],  = td.parce_single_line_address(dWpg['ADDRESS'])
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'],  = td.parse_single_line_address(dWpg['ADDRESS'])
 			print(dWpg['ADDRESS'])
 		except ValueError:
 			td.warningMsg('\n Could not find address in OpenCorporates.')
@@ -1217,7 +1217,7 @@ def Real_Yellow_Pages(dWpg):
 	for i, element in enumerate(dWpg['LPAGE']):
 		if 'Address: ' in element:
 			dWpg['ADDRESSFULL'] = dWpg['LPAGE'][i].replace('Address: ', '')
-			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parce_single_line_address(dWpg['ADDRESSFULL'])
+			dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parse_single_line_address(dWpg['ADDRESSFULL'])
 			break
 	for i, element in enumerate(dWpg['LPAGE']):
 		if 'Website: ' in element:
@@ -1393,7 +1393,7 @@ def USA_People_Search(dWpg):
 	# Example: William S Landis, Age 60
 	dWpg['NAME'] = name_temp.split(',')[0].strip()
 	# Full Address
-	dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parce_single_line_address(dWpg['LPAGE'][i + 2])
+	dWpg['STREET'], dWpg['CITY'], dWpg['STATE'], dWpg['ZIPCODE'] = td.parse_single_line_address(dWpg['LPAGE'][i + 2])
 	
 	dWpg = td.address_formatter(dWpg)
 		

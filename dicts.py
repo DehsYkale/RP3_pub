@@ -461,6 +461,89 @@ def get_state_abbriviations_dict():
 	}
 	return dStateAbbr
 
+# Get LAO County information
+def get_counties(returnList, market='None', ArcName='None', MarketAbb='None', State='None'):
+	# print_function_name('lao def getCounties')
+	# print(' def getcouties\n {0}\n {1}\n {2}\n {3}\n'.format(returnList, market, ArcName, MarketAbb))
+	dCounties = spreadsheet_to_dict('F:/Research Department/Code/Databases/LAO_Counties.xlsx')
+	d = {}
+	l = []
+	if returnList == 'FullDict':
+		return dCounties
+	for row in dCounties:
+		# Return list of LAO Markets
+		if returnList == 'Market' and not dCounties[row]['Market'] in l:
+			l.append(dCounties[row]['Market'])
+		# Return list of LAO MSAs
+		if returnList == 'MSA' and not dCounties[row]['Market'] in l:
+			l.append(dCounties[row]['MSA'])
+		# Return list of Market's Parcel ArcName in a Market
+		elif returnList == 'Counties' and dCounties[row]['Market'] == market and not dCounties[row]['ArcName'] in l:
+			l.append(dCounties[row]['ArcName'])
+		# Return list of Market's Parcel ArcName in a Market for 52
+		elif returnList == 'Counties_52' and dCounties[row]['Market'] == market:
+			listname = '{0}, {1}'.format(dCounties[row]['ArcName'], dCounties[row]['State'])
+			l.append(listname)
+		# Return Maret of ParcelsName
+		elif returnList == 'MarketOfParcelsName' and market.upper() == dCounties[row]['ParcelsName'].upper():
+			return dCounties[row]['Market']
+		# Return County's State
+		elif returnList == 'State' and dCounties[row]['ArcName'].upper() == ArcName.upper():
+			return dCounties[row]['State']
+		# Return Market's State
+		elif returnList == 'MarketsState' and dCounties[row]['Market'] == market:
+			return dCounties[row]['State']
+		# Return list of two letter States
+		elif returnList == 'StateAbb' and not dCounties[row]['State'] in l:
+			l.append(dCounties[row]['State'])
+		# Return list of Counties without an AltAPN
+		elif returnList == 'NoAltAPN' and dCounties[row]['AltAPN'] == 'No':
+			l.append(dCounties[row]['ParcelsName'])
+		# Return list of Market's Parcel Names
+		elif returnList == 'MarketParcelNames' and dCounties[row]['Market'] == market:
+			l.append(dCounties[row]['ParcelsName'])
+		elif returnList == 'MarketParcelLeadNames' and dCounties[row]['Market'] == market:
+			l.append(dCounties[row]['ParcelsName'])
+			l.append(dCounties[row]['ParcelsName'].replace('Parcels', 'Leads'))
+		# Return list of all Parcel Names
+		elif returnList == 'AllParcelsNames':
+			l.append(dCounties[row]['ParcelsName'])
+		# Return Name of Skipfile based on Parcel ArcName
+		elif returnList == 'SkipFile' and dCounties[row]['ArcName'].upper() == ArcName.upper():
+			return dCounties[row]['skipFile']
+		# Return if County is Non-Disclosure based on ArcName
+		elif returnList == 'IsDisclosure' and dCounties[row]['StateFull'] == market and dCounties[row]['ArcName'] == ArcName:
+			return dCounties[row]['Disclosure']
+		elif returnList == 'CountysMarket':
+			county = dCounties[row]['ArcName']
+			d[county] = dCounties[row]['Market']
+		# Return Market name based on 3 Letter Market Abbriviation
+		elif returnList == 'MarketAbb' and dCounties[row]['MarketAbb'] == MarketAbb and State == 'None':
+			return dCounties[row]['Market']
+		# Return MarketAbb of County
+		elif returnList == 'MarketAbb' and dCounties[row]['ArcName'] == ArcName and dCounties[row]['State'] == State:
+			return dCounties[row]['MarketAbb']
+		# Return list of all counties
+		elif returnList == 'AllCounties ArcName':
+			l.append(dCounties[row]['ArcName'])
+		# Return list of all counties
+		elif returnList == 'AllCounties County Name':
+			l.append(dCounties[row]['County'])
+		elif returnList == 'ArcParcelLayers':
+			d[dCounties[row]['ParcelsName']] = 'owner'
+		elif returnList == 'CountyInfo' and ArcName == dCounties[row]['ArcName']:
+			return dCounties[row]
+		# Open LAO_Counties.csv in Excel
+		elif returnList == 'Modify':
+			lao.openFile('F:/Research Department/Code/Databases/LAO_Counties.xlsx')
+			break
+
+	if l != []:
+		l.sort()
+		return l
+	if d != {}:
+		return d
+	
 # Make dictionary of Account fields (dAcc) for TerraForce
 def get_blank_account_dict():
 	dAcc = {'ADDRESSFULL':'None',
@@ -1687,6 +1770,79 @@ def get_L5_url_dict():
 	}
 	return dL5_URL_Vals
 
+def get_street_suffixes_dict():
+	dStreet_suffixes = {
+	'ALLEY': 'ALY', 'ALLEE': 'ALY', 'ALY': 'ALY',
+	'AVENUE': 'AVE', 'AV': 'AVE', 'AVE': 'AVE', 'AVEN': 'AVE', 'AVENU': 'AVE', 'AVN': 'AVE',
+	'BEACH': 'BCH', 'BCH': 'BCH',
+	'BEND': 'BND', 'BND': 'BND',
+	'BLUFF': 'BLF', 'BLF': 'BLF', 'BLUF': 'BLF',
+	'BLUFFS': 'BLFS', 'BLFS': 'BLFS',
+	'BOULEVARD': 'BLVD', 'BLVD': 'BLVD', 'BOUL': 'BLVD', 'BOULV': 'BLVD',
+	'BRANCH': 'BR', 'BR': 'BR', 'BRNCH': 'BR',
+	'BYPASS': 'BYP', 'BYP': 'BYP', 'BYPA': 'BYP', 'BYPAS': 'BYP', 'BYPS': 'BYP',
+	'CAUSEWAY': 'CSWY', 'CSWY': 'CSWY', 'CAUSWA': 'CSWY',
+	'CENTER': 'CTR', 'CEN': 'CTR', 'CENT': 'CTR', 'CENTR': 'CTR', 'CENTRE': 'CTR', 'CNTER': 'CTR', 'CNTR': 'CTR', 'CTR': 'CTR',
+	'CENTERS': 'CTRS', 'CTRS': 'CTRS',
+	'CIRCLE': 'CIR', 'CIR': 'CIR', 'CIRC': 'CIR', 'CIRCL': 'CIR', 'CRCL': 'CIR', 'CRCLE': 'CIR',
+	'COURT': 'CT', 'CT': 'CT',
+	'COURTS': 'CTS', 'CTS': 'CTS',
+	'COVE': 'CV', 'CV': 'CV',
+	'COVES': 'CVS', 'CVS': 'CVS',
+	'CREEK': 'CRK', 'CRK': 'CRK',
+	'CROSSING': 'XING', 'XING': 'XING', 'CRSSNG': 'XING',
+	'DRIVE': 'DR', 'DR': 'DR', 'DRIV': 'DR', 'DRV': 'DR',
+	'DRIVES': 'DRS', 'DRS': 'DRS',
+	'EXPRESSWAY': 'EXPY', 'EXP': 'EXPY', 'EXPR': 'EXPY', 'EXPRESS': 'EXPY', 'EXPW': 'EXPY', 'EXPY': 'EXPY',
+	'EXTENSION': 'EXT', 'EXT': 'EXT', 'EXTN': 'EXT', 'EXTNSN': 'EXT',
+	'EXTENSIONS': 'EXTS', 'EXTS': 'EXTS',
+	'FERRY': 'FRY', 'FRY': 'FRY', 'FRRY': 'FRY',
+	'FIELD': 'FLD', 'FLD': 'FLD',
+	'FIELDS': 'FLDS', 'FLDS': 'FLDS',
+	'FREEWAY': 'FWY', 'FREEWY': 'FWY', 'FRWAY': 'FWY', 'FRWY': 'FWY', 'FWY': 'FWY',
+	'GARDEN': 'GDN', 'GARDN': 'GDN', 'GRDEN': 'GDN', 'GRDN': 'GDN', 'GDN': 'GDN',
+	'GARDENS': 'GDNS', 'GDNS': 'GDNS', 'GRDNS': 'GDNS',
+	'GATEWAY': 'GTWY', 'GATEWY': 'GTWY', 'GATWAY': 'GTWY', 'GTWAY': 'GTWY', 'GTWY': 'GTWY',
+	'GROVE': 'GRV', 'GROV': 'GRV', 'GRV': 'GRV',
+	'GROVES': 'GRVS', 'GRVS': 'GRVS',
+	'HEIGHTS': 'HTS', 'HT': 'HTS', 'HTS': 'HTS',
+	'HIGHWAY': 'HWY', 'HIGHWY': 'HWY', 'HIWAY': 'HWY', 'HIWY': 'HWY', 'HWAY': 'HWY', 'HWY': 'HWY',
+	'HOLLOW': 'HOLW', 'HLLW': 'HOLW', 'HOLLOWS': 'HOLW', 'HOLW': 'HOLW', 'HOLWS': 'HOLW',
+	'JUNCTION': 'JCT', 'JCT': 'JCT', 'JCTION': 'JCT', 'JCTN': 'JCT', 'JUNCTN': 'JCT', 'JUNCTON': 'JCT',
+	'JUNCTIONS': 'JCTS', 'JCTNS': 'JCTS', 'JCTS': 'JCTS',
+	'LANE': 'LN', 'LN': 'LN',
+	'MOTORWAY': 'MTWY', 'MTWY': 'MTWY',
+	'MOUNT': 'MT', 'MNT': 'MT', 'MT': 'MT',
+	'MOUNTAIN': 'MTN', 'MNTAIN': 'MTN', 'MNTN': 'MTN', 'MOUNTIN': 'MTN', 'MTIN': 'MTN', 'MTN': 'MTN',
+	'MOUNTAINS': 'MTNS', 'MNTNS': 'MTNS', 'MTNS': 'MTNS',
+	'PARK': 'PARK', 'PRK': 'PARK',
+	'PARKS': 'PARKS',
+	'PARKWAY': 'PKWY', 'PARKWY': 'PKWY', 'PKWAY': 'PKWY', 'PKWY': 'PKWY', 'PKY': 'PKWY',
+	'PARKWAYS': 'PKWY', 'PKWYS': 'PKWY',
+	'PLACE': 'PL', 'PL': 'PL',
+	'PLAZA': 'PLZ', 'PLZ': 'PLZ', 'PLZA': 'PLZ',
+	'POINT': 'PT', 'PT': 'PT',
+	'POINTS': 'PTS', 'PTS': 'PTS',
+	'RIVER': 'RIV', 'RIV': 'RIV', 'RVR': 'RIV', 'RIVR': 'RIV',
+	'ROAD': 'RD', 'RD': 'RD',
+	'ROADS': 'RDS', 'RDS': 'RDS',
+	'ROUTE': 'RTE', 'RTE': 'RTE',
+	'SQUARE': 'SQ', 'SQ': 'SQ', 'SQR': 'SQ', 'SQRE': 'SQ', 'SQU': 'SQ',
+	'SQUARES': 'SQS', 'SQRS': 'SQS', 'SQS': 'SQS',
+	'STATION': 'STA', 'STA': 'STA', 'STATN': 'STA', 'STN': 'STA',
+	'STREET': 'ST', 'STRT': 'ST', 'ST': 'ST', 'STR': 'ST',
+	'SUMMIT': 'SMT', 'SMT': 'SMT', 'SUMIT': 'SMT', 'SUMITT': 'SMT',
+	'TERRACE': 'TER', 'TER': 'TER', 'TERR': 'TER',
+	'THROUGHWAY': 'TRWY', 'TRWY': 'TRWY',
+	'TRAFFICWAY': 'TRFY', 'TRFY': 'TRFY',
+	'TRAIL': 'TRL', 'TRAILS': 'TRL', 'TRL': 'TRL', 'TRLS': 'TRL',
+	'TRAILER': 'TRLR', 'TRLR': 'TRLR', 'TRLRS': 'TRLR',
+	'TURNPIKE': 'TPKE', 'TRNPK': 'TPKE', 'TURNPK': 'TPKE', 'TPKE': 'TPKE',
+	'VISTA': 'VIS', 'VIS': 'VIS', 'VIST': 'VIS', 'VST': 'VIS', 'VSTA': 'VIS',
+	'WAY': 'WAY', 'WY': 'WAY'
+	}
+	return dStreet_suffixes
+
 # LISTS #####################################################################
 
 # Get TF Classification list
@@ -2200,6 +2356,35 @@ def get_lao_employment_data_area_markets_list():
 	]
 	
 	return l
+
+def get_unit_suite_designators_list():
+		lUnit_designators = ['APARTMENT',
+						'APT',
+						'BUILDING',
+						'BLDG',
+						'DEPARTMENT',
+						'DEPT',
+						'FL',
+						'FLOOR',
+						'HANGER',
+						'HNGR',
+						'KEY',
+						'LOT',
+						'PIER',
+						'SLIP',
+						'SPACE',
+						'SPC',
+						'STOP',
+						'SUITE',
+						'STE',
+						'TRAILER',
+						'TRLR',
+						'UNIT',
+						'RM',
+						'ROOM',
+						'#']
+		
+		return lUnit_designators
 
 # TF_QUERY_3 FIELDS #####################################################################
 # Deal TF fields

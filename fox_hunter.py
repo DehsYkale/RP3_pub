@@ -618,14 +618,14 @@ def print_summary(data, company_name):
 	except Exception as e:
 		print(f"❌ Error saving print summary file: {e}")
 
-def save_results_to_file(data, company_name):
+def save_results_to_json_file(data, company_name):
 	"""Save results to a JSON file for later use."""
 	if not data:
 		return None
 	
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	safe_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
-	filename = f"C:/Users/Public/Public MapFiles/Contact_Files/Company_Search_{safe_name}_{timestamp}.json"
+	filename = f"F:/Research Department/Code/Contact Files/Company_Search_{safe_name}_{timestamp}.json"
 	
 	try:
 		with open(filename, 'w', encoding='utf-8') as f:
@@ -714,50 +714,7 @@ def create_ai_contacts_json(company, address):
 	print_summary(combined_data, company)
 	
 	# Save to file
-	save_results_to_file(combined_data, company)
+	contacts_json_file = save_results_to_json_file(combined_data, company)
 
-	return combined_data
+	return contacts_json_file
 
-# if __name__ == "__main__":
-# 	# Start overall execution timer
-# 	overall_start_time = time.time()
-	
-# 	# # Example search
-# 	# company = "Hartford Investments, LLC"
-# 	# address = "4801 Goodman St, Timnath CO 80547"
-
-# 	# ui = td.uInput('\n Company Name [00] > ')
-# 	# if ui.strip() != '':
-# 	# 	company = ui
-# 	# 	address = td.uInput('\n Company Address [00] > ')
-# 	# 	if address.strip() == '':
-# 	# 		exit('\n No address provided. Terminating program...')
-# 	# 	elif address == '00':
-# 	# 		exit('\n Terminating program...')
-# 	# elif ui == '00':
-# 	# 		exit('\n Terminating program...')
-
-# 	lead = 'FL_Lake_645c73'
-
-# 	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
-	
-# 	# Get AI model
-# 	model = ai.get_ai_model()
-
-# 	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
-
-# 	# Run the search
-# 	dContact_info = main(dAcc['ENTITY'], dAcc['ADDRESSFULL'], model)
-	
-# 	# Calculate and display total execution time
-# 	total_duration = time.time() - overall_start_time
-# 	print(f"\n{'='*80}")
-# 	print(f"⏱️  TOTAL EXECUTION TIME: {total_duration:.2f} seconds ({total_duration/60:.2f} minutes)")
-# 	print('='*80 + '\n')
-	
-# 	# If you want to see the raw JSON structure:
-# 	# pprint(dContact_info, width=120)
-
-# TODO: Add function to actually create/update Salesforce Account records using the structured data
-# TODO: Add batch processing capability for multiple companies
-# TODO: Add error handling for duplicate detection in Salesforce

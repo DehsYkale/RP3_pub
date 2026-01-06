@@ -270,7 +270,7 @@ def get_new_research_requests_nested_dict():
 	
 	service = fun_login.TerraForce()
 	
-	where_clause = "Record_Type_Name__c = 'Research' AND Status__c = 'New' AND Office__c = 'Orlando'"
+	where_clause = "Record_Type_Name__c = 'Research' AND Status__c = 'New'"
 	
 	results = bb.tf_query_3(service, 'Request', where_clause, limit=None, fields='default')
 
@@ -1605,6 +1605,8 @@ def tf_query_3(service, rec_type, where_clause, limit=None, fields='default'):
 	elif rec_type == 'Entity':
 		if fields == 'default':
 			fields = dicts.get_TF_entity_query_fields()
+		if 'IsPersonAccount = False' not in where_clause:
+			where_clause = "{0} AND IsPersonAccount = False".format(where_clause)
 		query_string = "SELECT {0} FROM Account WHERE {1}".format(fields, where_clause)
 	# LOT DETAILS ###############################################
 	elif rec_type == 'LotDetail':
@@ -1625,6 +1627,8 @@ def tf_query_3(service, rec_type, where_clause, limit=None, fields='default'):
 	elif rec_type == 'Person':
 		if fields == 'default':
 			fields = dicts.get_TF_person_query_fields()
+		if 'IsPersonAccount = True' not in where_clause:
+			where_clause = "{0} AND IsPersonAccount = True".format(where_clause)
 		query_string = "SELECT {0} FROM Account WHERE {1}".format(fields, where_clause)
 	# REQUEST ###############################################
 	elif rec_type == 'Request':

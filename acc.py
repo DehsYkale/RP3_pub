@@ -1814,7 +1814,7 @@ def get_missing_address(dAcc, search_for):
 			# Paste Address from clipboard
 			dAcc['STREET'] = td.uInput('\n Enter full address > ')
 			# dAcc = parseAddress(dAcc['STREET'], dAcc)
-			dAcc = td.parce_single_line_address(dAcc['STREET'], dAcc=dAcc)
+			dAcc = td.parse_single_line_address(dAcc['STREET'], dAcc=dAcc)
 			print('\n\n {0}\n {1}, {2} {3}\n'.format(dAcc['STREET'], dAcc['CITY'], dAcc['STATE'], dAcc['ZIPCODE']))
 			ui = td.uInput('\n Accept Address [0/1/00] > ')
 			if ui == '1':

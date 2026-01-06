@@ -102,14 +102,16 @@ def ask_kablewy_ai(payload, model="default"):
 # Get the AI model
 def get_ai_model():
 	
-	print("\n Select a model:\n")
-	print("  1) gpt-5.2")
-	print("  2) gemini-3-pro-preview")
-	print("  3) gemini-2.5-flash")
-	print("  4) claude-sonnet-4-5-20250929")
-	print(" 00) Quit")
+	# print("\n Select a model:\n")
+	# print("  1) gpt-5.2")
+	# print("  2) gemini-3-pro-preview")
+	# print("  3) gemini-2.5-flash")
+	# print("  4) claude-sonnet-4-5-20250929")
+	# print(" 00) Quit")
 
-	ui = td.uInput('\n Select > ')
+	# ui = td.uInput('\n Select > ')
+	print(' Using default AI model: gpt-5.2')
+	ui = '1'
 	if ui == '1':
 		model = "gpt-5.2"
 	elif ui == '2':

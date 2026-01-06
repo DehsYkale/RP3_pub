@@ -83,15 +83,16 @@ td.banner('ai Fox Hunter json to Acc dict v01')
 
 service = fun_login.TerraForce()
 
-filepath = 'C:/Users/Public/Public Mapfiles/Contact_Files'
-filename = 'Company_Search_Hartford Investments LLC_20251201_135218.json'
+filepath = 'F:/Research Department/Code/Contact Files'
+filename = 'Company_Search_TAVARES TWENTY-FIVE I LLC_20251229_114320.json'
 fullpath = f'{filepath}/{filename}'
 
 dFox = fjson.getJsonDict(fullpath)
 
-# for row in dFox:
-# 	print(f'\nRow: {row}')
-# 	pprint(dFox[row])
+for row in dFox:
+	print(f'\nRow: {row}')
+	pprint(dFox[row])
+exit()
 
 dAcc = get_Fox_Hunter_dAcc(dFox)
 pprint(dAcc)

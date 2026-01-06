@@ -919,7 +919,10 @@ def get_lot_details():
 		if dHTML['avg_front_foot'] == 'None':
 			dHTML['TAG'] = "<tr><td>%d</td><td>%d</td><td>N/A</td><td>%s</td><td>%s</td><td>N/A</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'])
 		else:
-			dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='right'>%s</td><td align='right'>%s</td><td align='right'>%s</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+			# dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='right'>%s</td><td align='right'>%s</td><td align='right'>%s</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+
+			dHTML['TAG'] = '<tr><td align="center">%d</td><td align="center">%d</td><td align="center">%s" x %s"</td><td align="right">%s</td><td align="right">%s</td><td align="right">%s</td></tr>' % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+
 		dHTML['Lot_Table'] = dHTML['Lot_Table'] + dHTML['TAG']
 	# Use Lot Details Count if not 0 rather than Lots__c
 	if dHTML['Total_Lots_All_Groups'] != 0:

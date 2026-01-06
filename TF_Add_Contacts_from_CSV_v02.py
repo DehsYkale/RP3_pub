@@ -51,7 +51,7 @@ def populate_dAcc():
 	# Address
 	# One cell Address
 	if 'ADDRESS' in dCon.keys():
-		dAcc['STREET'], dAcc['CITY'], dAcc['STATE'], dAcc['ZIPCODE'] = td.parce_single_line_address(dCon['ADDRESS'])
+		dAcc['STREET'], dAcc['CITY'], dAcc['STATE'], dAcc['ZIPCODE'] = td.parse_single_line_address(dCon['ADDRESS'])
 		# dAcc = addressFormater(dAcc)
 		dAcc = td.address_formatter(dAcc)
 	# Multi-cell Address

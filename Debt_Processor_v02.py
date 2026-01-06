@@ -425,7 +425,7 @@ def standardize_dMstr_fields(dMstr):
 			if mail_street != '':
 				match = re.search(r' (\d{5})\b', mail_street)
 				mail_street = mail_street[:match.end()]
-				street, city, state, zipcode = td.parce_single_line_address(mail_street)
+				street, city, state, zipcode = td.parse_single_line_address(mail_street)
 				dMstr[row]['Mail Street'] = street
 				dMstr[row]['Mail City'] = city
 				dMstr[row]['Mail State'] = state
