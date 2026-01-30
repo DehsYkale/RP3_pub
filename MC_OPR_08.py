@@ -415,6 +415,7 @@ while 1:
 		html = html['html']
 		htmlFileName = '{0}.html'.format(campTitleCSVFileName.replace(' ', ''))
 		with open('C:/Users/Public/Public Mapfiles/awsUpload/Maps/{0}'.format(htmlFileName), 'w', newline='') as f:
+			html = html.replace('\u034f', '')
 			f.write(html)
 		# Upload to AWS
 		aws.sync_opr_maps_comp_listings_folders_to_s3(delete_files=True)
@@ -547,6 +548,7 @@ while 1:
 			for email in dRecipiant_actions:
 				if 'SOFT' in dRecipiant_actions[email]:
 					strBounce_check = f'{email} : listID {listID}\n'
+					html = html.replace('\u034f', '')
 					f.write(f'{email} : listID {listID}\n')
 	
 print('\n Fin')

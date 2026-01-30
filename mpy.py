@@ -1,5 +1,6 @@
 # Non-ESRI map functions
 
+
 import aws
 import bb
 import dicts
@@ -8,37 +9,177 @@ import fun_login
 import geopandas as gpd
 from json import dump
 import lao
+import math
 import os
+import pandas as pd
 from pprint import pprint
+import requests
 from shapely.geometry import Point
 import fun_text_date as td
+import time
 
+def get_arcgis_token():
+	"""Get authentication token for LAO ArcGIS REST API."""
+
+	print('\n Getting ArcGIS token...')
+
+	from dotenv import load_dotenv
+	# Load environment variables from a .env file
+	load_dotenv()
+
+	# Get the value of an environment variable
+	username = os.getenv('ARCGIS_USERNAME')
+	password = os.getenv('ARCGIS_PASSWORD')
+
+	url = "https://maps.landadvisors.com/portal/sharing/rest/generateToken"
+	data = {
+		"username": username,
+		"password": password,
+		"client": "referer",
+		"referer": "https://maps.landadvisors.com",
+		"f": "json"
+	}
+	response = requests.post(url, data=data)
+	return response.json().get("token")
+
+def get_lead_layer_id(token, leadid):
+	"""Extract state and county from leadid and look up the Lead layer ID from the API."""
+	parts = leadid.split("_")
+	state = parts[0].upper()
+	county = parts[1].upper()
+	lead_layer_name = f"{state}LEADS{county}"
+	parcel_layer_name = f"{state}PARCELS{county}"
+	
+	# Query the FeatureServer to get all layers
+	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
+	params = {
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
+	
+	# Find the layer with matching name
+	for layer in data.get("layers", []):
+		if layer["name"].upper() == lead_layer_name:
+			lead_layer_id = layer["id"]
+	
+	# Query the FeatureServer to get all layers
+	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer"
+	params = {
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
+	
+	# Find the layer with matching name
+	for layer in data.get("layers", []):
+		if layer["name"].upper() == parcel_layer_name:
+			parcel_layer_id = layer["id"]
+	
+	return lead_layer_id, parcel_layer_id
+
+def get_lead_by_id(token, leadid, layer_id):
+	"""Get Lead attributes by leadid from ArcGIS REST API."""
+	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
+	url = f"{base_url}/{layer_id}/query"
+	params = {
+		"where": f"leadid='{leadid}'",
+		"outFields": "*",
+		"returnGeometry": "false",
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
+	if data.get("features"):
+		return data["features"][0]["attributes"]
+	return None
+
+def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
+	lao.print_function_name(' mpy def get_parcel_propertyids')
+	"""Get propertyids for parcels from the Parcels layer.
+	
+	Args:
+		token: ArcGIS auth token
+		parcels_str: Comma-separated string of APNs from Lead's 'parcels' field
+		parcel_layer_id: Layer ID for the appropriate county parcels layer
+	
+	Returns:
+		List of propertyid values
+	"""
+	# Parse comma-separated APNs and clean whitespace
+	apns = [apn.strip() for apn in parcels_str.split(",")]
+	
+	# Build IN clause for query
+	apn_list = ",".join([f"'{apn}'" for apn in apns])
+	where_clause = f"apn IN ({apn_list})"
+	
+	parcel_fields = dicts.get_parcel_fields_list()
+	print('\n Parcel Fields list')
+	print(parcel_fields)
+	print('\n')
+
+	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer"
+	url = f"{base_url}/{parcel_layer_id}/query"
+	params = {
+		"where": where_clause,
+		"outFields": parcel_fields,
+		"returnGeometry": "false",
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
+
+	# pprint(data)
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
+	
+	lPropertyids = []
+	subdiv = 'None'
+	usedesc = 'None'
+	zoning = 'None'
+	if data.get("features"):
+		for feature in data["features"]:
+			pid = feature["attributes"].get("propertyid")
+			if pid:
+				lPropertyids.append(pid)
+			if subdiv == 'None':
+				subdiv = feature["attributes"].get("subdiv", subdiv)
+			if usedesc == 'None':
+				usedesc = feature["attributes"].get("usedesc", usedesc)
+			if zoning == 'None':
+				zoning = feature["attributes"].get("zoning", zoning)
+	
+	return lPropertyids, subdiv, usedesc, zoning
+
+# Get dAcc and dTF from LeadId
 def get_lead_info_dAcc_dTF_dicts(LeadId):
 	lao.print_function_name(' mpy def get_lead_info_dAcc_dTF_dicts')
 
-	# Suppress the organizePolygons warning
-	os.environ['OGR_ORGANIZE_POLYGONS'] = 'SKIP'
+	start_time = time.time()
 
-	gdb_path = r"F:\Research Department\maps\Parcels & Leads\Leads.gdb"
-	layer_name = LeadId.split('_')[0] + 'Leads' + LeadId.split('_')[1]  # e.g., 'FLLeads'
+	token = get_arcgis_token()
 
-	# Read the layer
-	gdf = gpd.read_file(gdb_path, layer=layer_name)
+	lead_layer_id, parcel_layer_id = get_lead_layer_id(token, LeadId)
+	print(f"\n Lead Layer ID: {lead_layer_id}")
+	print(f" Parcel Layer ID: {parcel_layer_id}\n")
 
-	# Filter for the LeadId
-	result = gdf[gdf['leadid'] == LeadId]
-
-	# Convert the first matching row to a dictionary
-	if not result.empty:
-		dLeadInfo = result.iloc[0].to_dict()
-	else:
-		td.warningMsg(f'\n No Lead Info found for LeadId: {LeadId}')
-		ui = td.uInput('\n Continue [00]... > ')
-		if ui == '00':
-			exit('\n Terminating program...')
-		dLeadInfo = {}
-
+	dLeadInfo = get_lead_by_id(token, LeadId, lead_layer_id)
 	pprint(dLeadInfo)
+	
+
+	# Get propertyids from the parcels
+	parcels_str = dLeadInfo.get("parcels")
+	print(f"\n Parcels: {parcels_str}")
+	if parcels_str:
+		print("\n Getting Parcel Property IDs...")
+		lPropertyids, subdiv, usedesc, zoning = get_parcel_propertyids(token, parcels_str, parcel_layer_id)
+		print(f"\n Property IDs: {lPropertyids}")
+
 	# Create dAcc from dLeadInfo
 	dAcc = dicts.get_blank_account_dict()
 	dAcc['ENTITY'] = dLeadInfo.get('owner', '').split(' OR ')[0]
@@ -59,8 +200,69 @@ def get_lead_info_dAcc_dTF_dicts(LeadId):
 	dTF['County__c'] = lstate_county[1]
 	dTF['Latitude__c'] = dLeadInfo.get('y', '')
 	dTF['Longitude__c'] = dLeadInfo.get('x', '')
+	dTF['Subdivision__c'] = subdiv
+	dTF['Description__c'] = usedesc
+	dTF['Zoning__c'] = zoning
+
+	print(f"Completed in {time.time() - start_time:.2f} seconds.")
 	
-	return dAcc, dTF
+	return dAcc, dTF, lPropertyids
+
+# Get list of Parcel PropertyIDs from list of APNs
+def get_parcel_propertyid(lParcels, dTF=None):
+	"""
+	Given a list of parcel numbers, return a dictionary mapping each parcel number to its property ID.
+	"""
+	start_time = time.time()
+	lParcel_PropertyID = []
+
+	MarketAbb = dicts.get_counties('MarketAbb', ArcName=dTF['County__c'], State=dTF['State__c'])
+	layer_name = f"{dTF['State__c']}Parcels{dTF['County__c']}"
+
+	# Define cache path
+	cache_dir = "F:/Research Department/maps/Parcels & Leads/GDF Caches"
+	# cache_dir = "C:/TEMP"
+	# os.makedirs(cache_dir, exist_ok=True)
+	cache_path = f"{cache_dir}/{layer_name}.parquet"
+
+	# Read from cache or source
+	print(f'\n Getting parcel information from {layer_name}...')
+	if os.path.exists(cache_path):
+		# print(f" Reading from cache: {cache_path}...\n")
+		gdf = pd.read_parquet(cache_path)
+	else:
+		print(f" Reading parcel layer: {layer_name}...\n")
+		os.environ['OGR_ORGANIZE_POLYGONS'] = 'SKIP'
+		gdb_path = f"C:/Users/Public/Public Mapfiles/Parcels/{MarketAbb}.gdb"
+		gdf = gpd.read_file(gdb_path, layer=layer_name, ignore_geometry=True)
+		
+		# Save to cache for future runs
+		# print(f" Saving cache: {cache_path}...\n")
+		gdf.to_parquet(cache_path)
+
+	# Filter for all APNs in the list
+	print(f" Finding {len(lParcels)} parcels...\n")
+	result = gdf[gdf['apn'].isin(lParcels)]
+
+	# Map parcel numbers to property IDs
+	zoning = 'None'
+	subdivision = 'None'
+	use_description = 'None'
+	for _, row in result.iterrows():
+		lParcel_PropertyID.append(row['propertyid'])
+		# pprint(row)
+		if dTF['Zoning__c'] == 'None' and  row['zoning'] != '':
+			dTF['Zoning__c']  = row['zoning']
+		if dTF['Subdivision__c'] == 'None' and  row['subdiv'] != '':
+			dTF['Subdivision__c']  = row['subdiv'].title()
+		if dTF['Description__c'] == 'None' and  row['usedesc'] != '':
+			dTF['Description__c']  = row['usedesc']
+
+	print(f"Completed in {time.time() - start_time:.2f} seconds.")
+	if dTF:
+		return lParcel_PropertyID, dTF
+	else:
+		return lParcel_PropertyID
 
 def get_gpf_for_LAO_geoinfo(include_zip=True):
 	lao.print_function_name(' mpy def get_gpf_for_LAO_geoinfo')
@@ -197,7 +399,7 @@ def get_LAO_geoinfo(dTF='None', dGDF=False, lon=0, lat=0):
 	else:
 		return dTF
 
-# Retruns intersection or address based on lon/lat
+# Returns intersection or address based on lon/lat
 def get_intersection_from_lon_lat(dTF='None', lon=0, lat=0, askManually=True, findAddress=False):
 	import requests
 	from pprint import pprint
@@ -441,6 +643,43 @@ def create_zoomToPolygon_json_file(fieldname=None, polyId=None, polyinlayer=None
 
 	get_m1_file_copy(action='UP')
 
+# Check TF for Deal centroids within a certain distance of a lon/lat
+def find_deals_in_extent(service, lon, lat, distance_feet=150):
+	"""
+	Find lda_Opportunity__c records within the specified distance of a point.
+	
+	Args:
+		lon: Longitude in decimal degrees
+		lat: Latitude in decimal degrees
+		distance_feet: Distance to offset (default 150 feet)
+	
+	Returns:
+		List of Deal records within the extent
+	"""
+	# Constants
+	feet_per_degree_lat = 364567
+	feet_per_degree_lon = 364567 * math.cos(math.radians(lat))
+	
+	# Calculate offsets in degrees
+	lat_offset = distance_feet / feet_per_degree_lat
+	lon_offset = distance_feet / feet_per_degree_lon
+	
+	min_lon = lon - lon_offset  # West
+	min_lat = lat - lat_offset  # South
+	max_lon = lon + lon_offset  # East
+	max_lat = lat + lat_offset  # North
+	
+	# Build where clause
+	where_clause = (
+		f"Longitude__c >= {min_lon} AND Longitude__c <= {max_lon} "
+		f"AND Latitude__c >= {min_lat} AND Latitude__c <= {max_lat}"
+	)
+		
+	# Query for Deals
+	results = bb.tf_query_3(service, 'Deal', where_clause)
+	
+	return results
+
 # OWNERINDEX FUNCTIONS #####################################################################
 
 # 	action values
@@ -452,8 +691,7 @@ def create_zoomToPolygon_json_file(fieldname=None, polyId=None, polyinlayer=None
 
 # Make a new OI poly from a list of parcel propertyid(s)
 def oi_make_from_parcel_propertyid(dTF='None', lPropertyIds='None'):
-	# from json import dump
-	# from lao import getUserName
+
 	print('\n Creating OwnerIndex Poly...')
 	# Construct parcel layer name and county (stAbb_county)
 	if len(dTF['State__c']) > 2:
@@ -719,6 +957,8 @@ def oi_post(m1_params):
 	import requests
 	lao.print_function_name('mpy def oi_post')
 
+	username = lao.getUserName()
+
 	action = m1_params["action"]
 	# Define the URL for the POST request
 	url = 'https://m1.landadvisors.com/api/ownerindex-action'
@@ -734,9 +974,15 @@ def oi_post(m1_params):
 		print(f'\n {action} failed using M1 API.')
 		print(f' Trying ArcGIS...')
 		print(f'\n {r.text}')
+		if username == 'blandis':
+			print('\n Here10 mpy.py')
+			pprint(m1_params)
+			ui = td.uInput('\n Continue [00]... > ')
+			if ui == '00':
+				exit('\n Terminating program...')
 
 		# Try createing OwnerIndex poly using ArcGIS
-		username = lao.getUserName()
+		
 		lResearchers = ['blandis', 'tjacobson', 'avidela', 'lcoxworth', 'lsweetser', 'mwifler', 'ccox', 'mklingen']
 		if username in lResearchers:
 			from aws import run_Arc_AWS

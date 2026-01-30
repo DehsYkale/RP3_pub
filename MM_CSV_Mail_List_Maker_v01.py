@@ -315,4 +315,7 @@ with open(csv_mailer_generic_filename, 'w', newline='') as g, open(csv_office_ma
 csv_mm_on_c_drive = 'C:/Users/blandis/OneDrive/Documents/My Data Sources/{0} Mailing List.csv'.format('GEN')
 shutil.copy2(csv_mailer_generic_filename, csv_mm_on_c_drive)
 
+print('\n Files are located at C:/Users/blandis/OneDrive/Documents/My Data Sources/\n')
+os.startfile(r'C:/Users/blandis/OneDrive/Documents/My Data Sources/')
+
 exit('\n Fin\n')

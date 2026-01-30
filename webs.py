@@ -215,7 +215,8 @@ def open_pid_did(service, pid_did):
 	else:
 		DID = pid_did
 
-	openbrowser('https://landadvisors.my.salesforce.com/{0}'.format(DID))
+	# openbrowser('https://landadvisors.my.salesforce.com/{0}'.format(DID))
+	openbrowser(f'https://landadvisors.lightning.force.com/lightning/r/lda_Opportunity__c/{DID}/view')
 
 	return DID
 
@@ -1078,7 +1079,7 @@ def open_contact_websites(dAcc, website):
 	elif website == 'AI Prompt' or website == '50':
 		import pyperclip
 
-		file_path = r"F:\Research Department\Code\Databases\Find Company Owner AI Prompt v01.txt"
+		file_path = r"F:\Research Department\Code\Prompts\Find_Company_Structure_AI_Prompt_v02.txt"
 			# Read the file content
 		with open(file_path, 'r', encoding='utf-8') as file:
 			content = file.read()

@@ -944,7 +944,8 @@ def parse_person(dAcc):
 def find_create_account_person(service, dAcc):
 	import fun_update_contact as upcon
 	from pprint import pprint
-	lao.print_function_name('acc def find_create_account_person')
+	# DO NOT ADD THIS LINE FOR DEBUGGING
+	# lao.print_function_name('acc def find_create_account_person')
 
 	# Find Person(s) associated with Entity getUpdateExistingContactDataif Entity exists
 	if dAcc['EID'] != 'None' and dAcc['NAME'] == 'None':
@@ -1079,7 +1080,8 @@ def find_create_account_person(service, dAcc):
 def find_create_account_entity(service, dAcc):
 	import fun_acc_entity as fae
 	import lao
-	lao.print_function_name('acc def find_create_account_entity')
+	# DO NOT ADD THIS LINE FOR DEBUGGING
+	# lao.print_function_name('acc def find_create_account_entity')
 
 	while 1:
 		# have user enter name if none given

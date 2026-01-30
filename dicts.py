@@ -1045,10 +1045,10 @@ def get_mm_market_dict():
 				'JAX': 'Jacksonville',
 				'KCI': 'Kansas City',
 				'LVS': 'Las Vegas',
-				'NAZ': 'Northern Arizona',
 				'NSH': 'Nashville',
 				'ORL': 'Orlando',
 				'PHX': 'Phoenix',
+				'PRC': 'Prescott',
 				'SLC': 'Salt Lake City',
 				'TPA': 'Tampa Bay',
 				'TUC': 'Tucson',
@@ -2370,6 +2370,7 @@ def get_unit_suite_designators_list():
 						'HNGR',
 						'KEY',
 						'LOT',
+						'NO',
 						'PIER',
 						'SLIP',
 						'SPACE',
@@ -2385,6 +2386,33 @@ def get_unit_suite_designators_list():
 						'#']
 		
 		return lUnit_designators
+
+def get_parcel_fields_list():
+	lParcel_fields = \
+		'acres,' \
+		'apn,' \
+		'altapn,' \
+		'buyr1name,' \
+		'docnum,' \
+		'mailstreet,' \
+		'mailcity,' \
+		'mailstate,' \
+		'mailzip,' \
+		'mtg1amt,' \
+		'mtg1lender,' \
+		'mtg1recdt,' \
+		'objectid,' \
+		'owner,' \
+		'saledate,' \
+		'saleprice,' \
+		'sellr1name,' \
+		'subdiv,' \
+		'usedesc,' \
+		'x,' \
+		'y,' \
+		'zoning'
+
+	return lParcel_fields
 
 # TF_QUERY_3 FIELDS #####################################################################
 # Deal TF fields
@@ -2437,6 +2465,7 @@ def get_TF_deal_query_fields():
 			'Loan_Date__c',
 			'Location__c',
 			'Longitude__c',
+			'Lot_Count_Rollup__c',
 			'Lot_Description__c',
 			'Lot_Type__c',
 			'Lot_Price_Rollup__c',

@@ -216,7 +216,8 @@ print(' PID: {0}'.format(PID))
 # Format Sale Price for SalesForce
 dUpdate['Sale_Price__c'] = dd['Sale_Price__c'].replace('$', '').replace(',', '')
 # Format Sale Date for SalesForce
-dUpdate['Sale_Date__c'] = bb.formatDateToSF(dd['Sale_Date__c'])
+# dUpdate['Sale_Date__c'] = bb.formatDateToSF(dd['Sale_Date__c'])
+dUpdate['Sale_Date__c'] = td.date_engine(dd['Sale_Date__c'], , outformat='tf_query')
 # Add Researcher OwnerId to record
 dUpdate['OwnerId'] = bb.createdByResearch(service)
 dUpdate['OPR_Sent__c'] = '1965-01-11T00:00:00+00:00'

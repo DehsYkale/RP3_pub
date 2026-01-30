@@ -80,6 +80,8 @@ def get_starting_yearMonth_and_lastmonth():
 		lastmonth = first - datetime.timedelta(days=1)
 		yearMonth = lastmonth.strftime('%Y%m')
 
+	yearMonth = 202510
+	lastmonth = '2025-10-31'
 	print(f' Starting yearMonth: {yearMonth}')
 	print(f' Last month: {lastmonth}\n')
 	return yearMonth, lastmonth

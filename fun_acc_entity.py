@@ -110,6 +110,7 @@ def remove_business_suffixes(name):
 	]
 	
 	result = name
+	# print('\n Original Name: {0}'.format(result))
 	
 	# Remove business suffixes
 	for suffix in suffixes:
@@ -117,7 +118,10 @@ def remove_business_suffixes(name):
 	
 	# Remove "The" prefix
 	result = re.sub(r'^The\s+', '', result, flags=re.IGNORECASE)
-	
+	# print(' Cleaned Name: {0}\n'.format(result))
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 	return result.strip()
 
 # Query TF to see if Entity record exists returning results
@@ -127,8 +131,9 @@ def query_tf_for_entity_name(service, NAMEQUERY):
 	# Select Entities based on Name
 	while 1:
 		# TerraForce Query
-		wc = f"IsPersonAccount != TRUE AND Name LIKE '%{NAMEQUERY}%'"
-		results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None)
+		# wc = f"IsPersonAccount != TRUE AND Name LIKE '%{NAMEQUERY}%'"
+		wc = f"Name LIKE '{NAMEQUERY}%'"
+		results = bb.tf_query_3(service, rec_type='Entity', where_clause=wc, limit=None)
 		business_dict = results
 		# If results are null then search only the first word in name
 		if results == []:

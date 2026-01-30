@@ -40,10 +40,12 @@ def center_window(width=1000, height=200):
 		# print(screenwidth)
 		# print(screenheight)
 		# exit()
-		if screenwidth == 1920 and screenheight == 1080:
+		if screenwidth == 2560 and screenheight == 1440:
 			bill_location = 'Home'
-		elif screenwidth == 3840 and screenheight == 2160:
-			bill_location = 'Bressan'
+		# if screenwidth == 1920 and screenheight == 1080:
+		# 	bill_location = 'Home'
+		# elif screenwidth == 3840 and screenheight == 2160:
+		# 	bill_location = 'Bressan'
 		else:
 			bill_location = 'LAO'
 
@@ -52,7 +54,7 @@ def center_window(width=1000, height=200):
 			root.geometry('%dx%d+%d+%d' % (width, height, 3840, 1120))
 			# root.geometry('%dx%d+%d+%d' % (width, height, 0, 0))
 		elif bill_location == 'Home':
-			root.geometry('%dx%d+%d+%d' % (width, height, 6, -82))
+			root.geometry('%dx%d+%d+%d' % (width, height, 1014, -81))
 		elif bill_location == 'Bressan':
 			root.geometry('%dx%d+%d+%d' % (width, height, 0, 0))
 	elif user == 'avidela':

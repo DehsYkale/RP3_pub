@@ -149,11 +149,21 @@ def parse_single_line_address(ADDRESS, dAcc='None'):
 	zip_plus_four_pattern = r'\b(\d{5})-(\d{4})\b'
 	if re.search(zip_plus_four_pattern, ADDRESS):
 		ADDRESS = ADDRESS[:-5]
+	zip_plus_four_pattern = r'\b(\d{5}) (\d{4})\b'
+	if re.search(zip_plus_four_pattern, ADDRESS):
+		ADDRESS = ADDRESS[:-5]
+	zip_plus_four_pattern = r'\b(\d{9})\b'
+	if re.search(zip_plus_four_pattern, ADDRESS):
+		ADDRESS = ADDRESS[:-4]
+
+	# print(f"\nADDRESS after cleaning: {ADDRESS}\n")
+	# ui = uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 
 	# Split address into a list
 	lAddress = ADDRESS.split()
 	
-
 	lAddress[-1] = lAddress[-1].strip()
 	zipOriginal = lAddress[-1]
 	# Process ZipCode
@@ -168,6 +178,7 @@ def parse_single_line_address(ADDRESS, dAcc='None'):
 	# Mannual entry if address is incomplete based lack of zip code
 	if len(lAddress[-1]) != 5:
 		while 1:
+			warningMsg('\n Missing Zip Code...manual entry required.\n')
 			print(ADDRESS)
 			street = (uInput('\n Manually enter Street > ')).upper()
 			zipcode = (uInput('\n Manually enter Zipcode > ')).upper()
@@ -197,7 +208,9 @@ def parse_single_line_address(ADDRESS, dAcc='None'):
 			lStreet = street.split(' ')
 			lStreet = lStreet[:-3]
 			street = ' '.join(lStreet)
-
+	# Title case city
+	city = city.title()
+	
 	if dAcc == 'None':
 		return street, city, state, zipcode
 	else:

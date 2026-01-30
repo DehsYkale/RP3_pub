@@ -16,7 +16,7 @@ import fun_text_date as td
 import lao
 
 # Clears the console and create a banner_internal based on agrument
-def banner_internal(title='Arc AWS v02'):
+def banner_internal(title='Arc AWS v03'):
 	system('cls')
 	print
 	print('        '+('-' * (len(title)+4)))
@@ -29,7 +29,7 @@ def banner_internal(title='Arc AWS v02'):
 	print
 
 # Login to the AWS server
-def loginAWS():
+def loginAWS(verbos=True):
 	from getpass import getuser
 	import time
 	d['user'] = getuser().lower()
@@ -41,19 +41,21 @@ def loginAWS():
 	d['user'] = 'blandis'
 	pwd = 'Logmeintoarcmap5!'
 
-	print
-	print(' User:   {0}'.format(d['user']))
-	print('  Pwd:   {0}'.format(pwd))
-	print('  Int:   {0}'.format(d['initials']))
-	print(' Date:   {0}'.format(d['dateupdated']))
-	print
+	if verbos:
+		print
+		print(' User:   {0}'.format(d['user']))
+		print('  Pwd:   {0}'.format(pwd))
+		print('  Int:   {0}'.format(d['initials']))
+		print(' Date:   {0}'.format(d['dateupdated']))
+		print
 	gis = GIS("https://maps.landadvisors.com/portal", d['user'], pwd, verify_cert=True)
 
 	print(' Login complete...')
-	# # Check what you can access
-	print(f"Your username: {gis.users.me.username}")
-	print(f"Your role: {gis.users.me.role}")
-	# exit()
+	if verbos:
+		# # Check what you can access
+		print(f"Your username: {gis.users.me.username}")
+		print(f"Your role: {gis.users.me.role}")
+		# exit()
 	return gis
 
 # Get the AWS services

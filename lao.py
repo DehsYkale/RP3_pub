@@ -182,17 +182,19 @@ def rawAcerageClassification(classification):
 
 #Format date to SalesForce format
 def formatDateToSF(date): #formatSalesForceDate
-	#In -> 09/20/2013
-	#Return - > YYYY-MM-DDThh:mm:ss+hh:mm
-	MO,DY,YR = date.split('/')
-	if len(YR) == 2:	#change 2 digit year to 4 digit year
-		YR = '20{0}'.format(YR)
-	if len(MO) == 1:	#change 1 digit month to 2 digit month
-		MO = '0{0}'.format(MO)
-	if len(DY) == 1:	#change 1 digit day to 2 digit day
-		DY = '0{0}'.format(DY)
-	date = YR+'-'+MO+'-'+DY+'T00:00:00+00:00'
-	return date
+	td.warningMsg('bb.formatDateToSF is deprecated, use td.date_engine(date, outformat="tf_query") instead')
+	exit('\n Terminating program...')
+	# #In -> 09/20/2013
+	# #Return - > YYYY-MM-DDThh:mm:ss+hh:mm
+	# MO,DY,YR = date.split('/')
+	# if len(YR) == 2:	#change 2 digit year to 4 digit year
+	# 	YR = '20{0}'.format(YR)
+	# if len(MO) == 1:	#change 1 digit month to 2 digit month
+	# 	MO = '0{0}'.format(MO)
+	# if len(DY) == 1:	#change 1 digit day to 2 digit day
+	# 	DY = '0{0}'.format(DY)
+	# date = YR+'-'+MO+'-'+DY+'T00:00:00+00:00'
+	# return date
 
 # Today's date in 'TF' (YYY-MM-DD), 'slash' (MM/DD/YYY) or 'ArcMap' (YYYY_MM_DD) formats
 def todayDate(dateformat='TF', include_time=False):
@@ -919,8 +921,8 @@ def zipCodeFindCityStateCountry(ZIP):
 	# ZIP = ZIP.replace('-', '')
 	
 	# td.uInput(ZIP)
-	ZIPFILE = 'F:/Research Department/Code/Research/data/north_american_zipcodes.csv'
-	with open(ZIPFILE) as Z:
+	zip_code_file = 'F:/Research Department/Code/Research/data/north_american_zipcodes.csv'
+	with open(zip_code_file) as Z:
 		ZF = csv.reader(Z)
 		for row in ZF:
 			if row[0] == ZIP:
@@ -2201,14 +2203,13 @@ def consoleWindowPosition(position='default'):
 			win32gui.MoveWindow(hwnd, 3017, 0, 830, 1000, True)
 		else:
 			print('office')
-			win32gui.MoveWindow(hwnd, 2242, 1010, 830, 675, True)
+			win32gui.MoveWindow(hwnd, 2240, 1010, 830, 675, True)
 
 	elif position == 'Bill Marvelous Menu':
-		if screenwidth == 1920 and screenheight == 1080: # Bill Home
-			win32gui.MoveWindow(hwnd, 1920, 0, 830, 1000, True)
+		if screenwidth == 2560 and screenheight == 1440: # Bill Home
+			win32gui.MoveWindow(hwnd, 3843, 507, 1100, 1550, True)
 		else:
 			win32gui.MoveWindow(hwnd, 2242, 0, 830, 1000, True)
-
 
 # Sets color of the console
 def consoleColor(color='BLACK'):

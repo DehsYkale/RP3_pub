@@ -454,7 +454,7 @@ def get_beneficiary_and_loan_amount(service, dTF, dPnt):
 # Create Ownership of Sale
 def create_ownership_of_sale(service, PID):
 	td.banner('PPP Ownership to Sale v01')
-	print(f' Create Lead\Ownership of Sale for PID: {PID} ?')
+	print(f' Create Lead-Ownership of Sale for PID: {PID} ?')
 	while 1:
 		print('\n  1) Yes')
 		print('  2) No')

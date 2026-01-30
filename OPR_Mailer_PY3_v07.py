@@ -156,16 +156,16 @@ def send_to():
 			td.banner('OPR Mailer PY3 v07', colorama=True)
 			print(' 🧪 Test mode selected - OPRs will be sent to you only')
 			recipients_to = ['{0} LAO <{1}@landadvisors.com>'.format(userName.upper(), userName)]
-			recipients_cc = []
+			recipients_bcc = []
 			sender = 'OPR TEST <research@landadvisors.com>'
-			return recipients_to, recipients_cc, SENDLIST, sender, oprType
+			return recipients_to, recipients_bcc, SENDLIST, sender, oprType
 		
 		elif SENDLIST == 'Q' or SENDLIST == '11':
 			SENDLIST = 'Q'
 			td.banner('OPR Mailer PY3 v07', colorama=True)
 			print(' 🔍 Quality Control mode selected')
-			sender, recipients_to, recipients_cc = '', [], []
-			return recipients_to, recipients_cc, SENDLIST, sender, oprType
+			sender, recipients_to, recipients_bcc = '', [], []
+			return recipients_to, recipients_bcc, SENDLIST, sender, oprType
 			
 		elif SENDLIST == 'R':
 			oprType = 'None'
@@ -199,9 +199,9 @@ def send_to():
 
 		elif SENDLIST in lLAOOffices:
 			print(f'\n 📤 Preparing to send {oprType} OPRs to {SENDLIST} market...')
-			recipients_to, recipients_cc = get_lao_staff_recipients(SENDLIST)
+			recipients_to, recipients_bcc = get_lao_staff_recipients(SENDLIST)
 			sender = '{0} {1} <research@landadvisors.com>'.format(SENDLIST, oprType)
-			return recipients_to, recipients_cc, SENDLIST, sender, oprType
+			return recipients_to, recipients_bcc, SENDLIST, sender, oprType
 			
 		else:
 			print('\n ❌ Invalid selection. Please try again.')
@@ -211,21 +211,21 @@ def send_to():
 def get_lao_staff_recipients(sendListMarket):
 	lao.print_function_name('script get_lao_staff_recipients')
 	lDoNotSendRolls = ['Marketing', 'Management', 'Capital', 'Events', 'DA', 'IT', 'Escrow', 'Mapping']
-	recipients_to, recipients_cc = [], []
+	recipients_to, recipients_bcc = [], []
 	for staff in dStaff:
 		if dStaff[staff]['Roll'] in lDoNotSendRolls or dStaff[staff]['LAO'] == 'No':
 			continue
 		# Create list of to recipients
 		elif dStaff[staff]['Roll'] == 'Research':
 			nameEmail = '{0} <{1}@landadvisors.com>'.format(staff, dStaff[staff]['Email'])
-			recipients_cc.append(nameEmail)
+			recipients_bcc.append(nameEmail)
 		elif sendListMarket in dStaff[staff]['Markets']:
 			nameEmail = '{0} <{1}@landadvisors.com>'.format(staff, dStaff[staff]['Email'])
 			recipients_to.append(nameEmail)
 		
 
 	# Return recipient
-	return recipients_to, recipients_cc
+	return recipients_to, recipients_bcc
 
 def add_capital_recipients(recipients_to):
 	lao.print_function_name('script add_capital_recipients')
@@ -509,6 +509,7 @@ def lao_activity(PID):
 
 def get_comp_fields(row, recipients_to):
 	lao.print_function_name('script get_comp_fields')
+
 	dHTML['Buyer_Acting_As__c'] = (row['Buyer_Acting_As__c'])
 	dHTML['Encumbrance_Rating__c '] = (row['Encumbrance_Rating__c'])
 	dHTML['Sale_Date__c'] = row['Sale_Date__c']
@@ -532,17 +533,12 @@ def get_comp_fields(row, recipients_to):
 		dHTML['PPSQFT'] = '$' + '{:,.2f}'.format(dHTML['PPSQFT'])
 
 	# Apartment/Assisted Living Unit Fields
-	if (dHTML['Classification__c'] == 'Apartment' or dHTML['Classification__c'] == 'Apartment Traditional' or  'Assisted Living' in dHTML['Classification__c']) and dHTML['Lots__c'] > 0:
+	dHTML['Multifamily'] = False
+	if ('Apartment' in dHTML['Classification__c'] or 'Assisted Living' in dHTML['Classification__c'] or 'Build for Rent' in dHTML['Classification__c'] or 'High Density Residential' in dHTML['Classification__c']) and dHTML['Lots__c'] > 0:
 		# dHTML['Lot_Type__c'] = 'Apartment'
-		dHTML['PPU'] = dHTML['Sale_Price__c'] / dHTML['Lots__c']
-		dHTML['PPU'] = '$' + '{:,.0f}'.format(dHTML['PPU'])
-		dHTML['MTF'] = True
-	elif dHTML['Lot_Type__c'] == 'Raw Acreage':
-		dHTML['Lot_Type__c'] = 'Raw Acreage'
-		dHTML['MFT'] = False
-	else:
-		# dHTML['Lot_Type__c'] = 'Residential'
-		dHTML['MFT'] = False
+		dHTML['Price_Per_Lot__c_Multifamily'] = dHTML['Sale_Price__c'] / dHTML['Lots__c']
+		dHTML['Price_Per_Lot__c_Multifamily'] = '$' + '{:,.0f}'.format(dHTML['Price_Per_Lot__c_Multifamily'])
+		dHTML['Multifamily'] = True
 
 	# Add GV to Whale Sales outside of Scottsdale
 	if SENDLIST != 'Q' and SENDLIST != 'T':
@@ -687,7 +683,8 @@ def get_property_comps_table(row, market):
 		compPrice = '${:,.0f}'.format(pid['Sale_Price__c'])
 		compPricePerAcre = '${:,.0f}'.format(pid['Price_Per_Acre__c'])
 		compSaleDate = (td.date_engine(pid['Sale_Date__c'], outformat='opr', informat='TF'))
-		compsRow = "<tr><td><a href='{0}'>{1}</a></td><td align='center'>{2}</td><td align='right'>{3}</td><td align='right'>{4}</td><td align='right'>{5}</td><td align='center'><a href='{6}'>L5</a></td></tr>".format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
+		# compsRow = "<tr><td><a href='{0}'>{1}</a></td><td align='center'>{2}</td><td align='right'>{3}</td><td align='right'>{4}</td><td align='right'>{5}</td><td align='center'><a href='{6}'>L5</a></td></tr>".format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
+		compsRow = '<tr><td><a href="{0}">{1}</a></td><td style="text-align: center;">{2}</td><td style="text-align: right;">{3}</td><td style="text-align: right;">{4}</td><td style="text-align: right;">{5}</td><td style="text-align: center;"><a href="{6}">L5</a></td></tr>'.format(OPRLink, pid['PID__c'], compSaleDate,  compPrice, pid['Acres__c'], compPricePerAcre, L5Link)
 		compsTable = '{0}{1}'.format(compsTable, compsRow)
 	compsTable = compsTable.replace(' /', '/')
 	dHTML['Property_Comps_Table'] = compsTable
@@ -917,11 +914,14 @@ def get_lot_details():
 		dHTML['Price_per_parcel__c'] = td.currency_format_from_number(dHTML['Price_per_parcel__c'])
 
 		if dHTML['avg_front_foot'] == 'None':
-			dHTML['TAG'] = "<tr><td>%d</td><td>%d</td><td>N/A</td><td>%s</td><td>%s</td><td>N/A</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'])
-		else:
-			# dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='right'>%s</td><td align='right'>%s</td><td align='right'>%s</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+			# dHTML['TAG'] = "<tr><td>%d</td><td>%d</td><td>N/A</td><td>%s</td><td>%s</td><td>N/A</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'])
+			# dHTML['TAG'] = '<tr><td style="text-align: center;">%d</td><td style="text-align: center;">%d</td><td style="text-align: center;">N/A</td><td style="text-align: center;">%s</td><td style="text-align: center;">%s</td><td style="text-align: center;">N/A</td></tr>' % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'])
 
-			dHTML['TAG'] = '<tr><td align="center">%d</td><td align="center">%d</td><td align="center">%s" x %s"</td><td align="right">%s</td><td align="right">%s</td><td align="right">%s</td></tr>' % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+			dHTML['TAG'] = '<tr><td style="text-align: center;">%d</td><td style="text-align: center;">%d</td><td style="text-align: center;">N/A</td><td style="text-align: center;">%s</td><td style="text-align: center;">N/A</td></tr>' % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Price_per_Lot__c'])
+		else:
+			# dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_parcel__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
+
+			dHTML['TAG'] = "<tr><td align='center'>%d</td><td align='center'>%d</td><td align='center'>%s' x %s'</td><td align='center'>%s</td><td align='center'>%s</td></tr>" % (dHTML['Num_Lot_Groups'], dHTML['LTCSINGLE'], dHTML['Lot_Width__c'], dHTML['Lot_Depth__c'], dHTML['Price_per_Lot__c'], dHTML['price_per_front_foot'])
 
 		dHTML['Lot_Table'] = dHTML['Lot_Table'] + dHTML['TAG']
 	# Use Lot Details Count if not 0 rather than Lots__c
@@ -1321,11 +1321,11 @@ while 1:
 	userName = lao.getUserName()
 
 	# choose who to send it to.
-	recipients_to, recipients_cc, SENDLIST, sender, oprType = send_to()
+	recipients_to, recipients_bcc, SENDLIST, sender, oprType = send_to()
 
-	# If no recipients_cc change variable to a value of None
-	if recipients_cc == []:
-		recipients_cc = None
+	# If no recipients_bcc change variable to a value of None
+	if recipients_bcc == []:
+		recipients_bcc = None
 
 	today = td.date_engine('today')
 	errorMail = ''
@@ -1390,8 +1390,11 @@ while 1:
 		html = get_html_template(oprType)
 
 		
-		print('here10')
-		pprint(dHTML)
+		# print('here10')
+		# pprint(dHTML)
+		# ui = td.uInput('\n Continue [00]... > ')
+		# if ui == '00':
+		# 	exit('\n Terminating program...')
 
 		# Send OPR to Market recipients
 		if SENDLIST.upper() != 'Q': # Skip sending OPRs if sending QC
@@ -1423,7 +1426,7 @@ while 1:
 				print(f'\n Saved {html_filename} file.')
 				openbrowser(html_filename)
 			
-			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients=None, cc=recipients_cc, bcc=recipients_to, attachments=None)
+			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=None, bcc=recipients_bcc, attachments=None)
 			# Change OPR Sent date to today if OPR successfuly sent
 			if SENDLIST.upper() != 'T' and dSend_results['success'] is True:
 				mark_deal_as_sent(today)
@@ -1446,7 +1449,7 @@ while 1:
 		# Send You Got OPRs email
 		if 'Rick Hildreth <rhildreth@landadvisors.com>' in recipients_to:
 			sender_email, subject, body = send_opr_sent_notification(oprType)
-			emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=recipients_cc, bcc=None, attachments=None)
+			emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=None, bcc=recipients_bcc, attachments=None)
 
 exit('\n Fin')
 

@@ -8,19 +8,16 @@
 <body bgcolor="#f8f9fa" style="font-family: Arial, sans-serif; margin: 0; padding: 20px;">
 
 	<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 1000px; margin: 0 auto; background-color: white;">
-		<!-- Header Navigation -->
+		<!-- Header Navigation - CLIENT VERSION (No L5, TerraForce, or Request Changes links) -->
 		<tr>
 			<td>
 				<table width="100%" cellpadding="5" cellspacing="0" border="0" bgcolor="white">
 					<tr>
 						<td width="23%" align="right" style="padding-left: 0px;">
-							<img src="https://request-server.s3.amazonaws.com/maps/laologo.png" alt="LAO Logo" width="100%""></a>
+							<img src="https://request-server.s3.amazonaws.com/maps/laologo.png" alt="LAO Logo" width="100%"">
 						</td>
 						<td width="77%" align="right">
-							<a href="{{L5L}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">L5 | </strong></a>
-							<a href="https://landadvisors.my.salesforce.com/{{Id}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">TerraForce | </strong></a>
-							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Google Maps | </strong></a>
-							<a href="mailto:research@landadvisors.com?subject={{PID__c}}%20Changes/Corrections&body=Please%20make%20the%20following%20changes/corrections%20to%20{{PID__c}}:%20" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Request Changes </strong></a>
+							<a href="https://maps.google.com/maps?z=10&t=m&q=loc:{{Latitude__c}}+{{Longitude__c}}" target="_blank" style="color: #1e3a5f; padding: 8px 5px; text-decoration: none; margin: 0 5px;"><strong style="font-size: 16px;">Google Maps </strong></a>
 						</td>
 					</tr>
 				</table>
@@ -48,19 +45,15 @@
 						 <!-- TITLE ################################################  -->
 						<td width="60%" valign="top" style="padding: 20px;">
 							{% if "LAO" in TITLE %}
-								<h1 style="font-size: 22px; color: #0f7c00; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
+								<h1 style="font-size: 22px; color: #0f7c00; margin: 0 0 20px 0; font-weight: bold;">{{TITLE_CLIENT}}</h1>
 							{% else %}
-								<h1 style="font-size: 22px; color: #D45E0F; margin: 0 0 20px 0; font-weight: bold;">{{TITLE}}</h1>
+								<h1 style="font-size: 22px; color: #D45E0F; margin: 0 0 20px 0; font-weight: bold;">{{TITLE_CLIENT}}</h1>
 							{% endif %}
 							<!-- PROPERTY DETAILS ########################################  -->
 							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
 								<tr>
-									<td width="50%"><strong style="color: #1e3a5f;">Stage Name:</strong> {{StageName__c}}</td>
-									<td width="50%"><strong style="color: #1e3a5f;">PID:</strong> {{PID__c}}</td>
-								</tr>
-								<tr>
-									<td><strong style="color: #1e3a5f;">Classification:</strong> {{Classification__c}}</td>
-									<td><strong style="color: #1e3a5f;">Acres:</strong> {{Acres__c}}</td>
+									<td width="50%"><strong style="color: #1e3a5f;">Classification:</strong> {{Classification__c}}</td>
+									<td width="50%"><strong style="color: #1e3a5f;">Acres:</strong> {{Acres__c}}</td>
 								</tr>
 								<tr>
 									<td><strong style="color: #1e3a5f;">Lot Type:</strong> {{Lot_Type__c}}</td>
@@ -89,91 +82,52 @@
 									<td width="50%"></td>
 								</tr>
 								{% endif %}
-								<!-- LOAN INFO ##############################################  -->
-								{% if Beneficiary__c_Name or Beneficiary_Contact__c_Name %}
-									<tr>
-										<td width="50%"><strong style="color: #1e3a5f;">Loan Amount: </strong>{{Loan_Amount__c}}</td>
-										<td width="50%"><strong style="color: #1e3a5f;">Loan Date: </strong>{{Loan_Date__c}}</td>
-									</tr>
-								{% endif %}
+								<!-- LOAN INFO - EXCLUDED FROM CLIENT VERSION -->
 							</table>
-							<!-- BUYER/SELLER ################################################  -->
+							<!-- BUYER/SELLER - CLIENT VERSION (No TF links, No MVP info) ################################################  -->
 							<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-bottom: 3px solid #d3d3d3;">
 								<!-- SELLER ################################### -->
 								{% if slr_Owner_Entity__r_Name == "" %}
 									<tr>
-										<td><strong style="color: #1e3a5f;">Seller: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
+										<td><strong style="color: #1e3a5f;">Seller: </strong>{{slr_AccountId__r_Name}}</td>
 									</tr>
 								{% else %}
 									<tr>
-										<td><strong style="color: #1e3a5f;">Seller Entity: </strong><a href="{{slr_Owner_Entity__r_url}}" target="_blank">{{slr_Owner_Entity__r_Name}}</a> ({{slr_Owner_Entity__r_Category__c}})</td>
+										<td><strong style="color: #1e3a5f;">Seller Entity: </strong>{{slr_Owner_Entity__r_Name}} ({{slr_Owner_Entity__r_Category__c}})</td>
 									</tr>
-									<tr>
-										<td><strong style="color: #1e3a5f;">Contact: </strong><a href="{{slr_AccountId__c_url}}" target="_blank">{{slr_AccountId__r_Name}}</a></td>
-									</tr>
+									<!-- <tr>
+										<td><strong style="color: #1e3a5f;">Contact: </strong>{{slr_AccountId__r_Name}}</td>
+									</tr> -->
 								{% endif %}
-								<!-- TOP 100 AGENTS ################################### -->
-								{% if slr_AccountId__r_Top100 %}
-									<tr>
-										<td style="color: #434549; font-size: 14px; padding-left: 30px;">MVP of: {{slr_AccountId__r_Top100}}</td>
-									</tr>
-								{% endif %}
+								<!-- TOP 100 AGENTS - EXCLUDED FROM CLIENT VERSION -->
 								<!-- BUYER ################################### -->
 								{% if Buyer_Entity__r_Name == "" %}
 									<tr>
-										<td><strong style="color: #1e3a5f;">Buyer: </strong><a href='{{Buyer__r_url}}' target="_blank">{{Buyer__r_Name}}</a></td>
+										<td><strong style="color: #1e3a5f;">Buyer: </strong>{{Buyer__r_Name}}</td>
 									</tr>
 								{% else %}
 									<tr>
-										<td><strong style="color: #1e3a5f;">Buyer Entity: </strong><a href='{{Buyer_Entity__r_url}}' target="_blank">{{Buyer_Entity__r_Name}}</a> ({{Buyer_Entity__r_Category__c}})</td>
+										<td><strong style="color: #1e3a5f;">Buyer Entity: </strong>{{Buyer_Entity__r_Name}} ({{Buyer_Entity__r_Category__c}})</td>
 									</tr>
-									<tr>
-										<td><strong style="color: #1e3a5f;">Contact: </strong><a href='{{Buyer__r_url}}' target="_blank">{{Buyer__r_Name}}</a></td>
-								</tr>
+									<!-- <tr>
+										<td><strong style="color: #1e3a5f;">Contact: </strong>{{Buyer__r_Name}}</td>
+								</tr> -->
 								{% endif %}
-								<!-- TOP 100 AGENTS ################################### -->
-								{% if Buyer__r_Top100 %}
-									<tr>
-										<td style="color: #434549; font-size: 14px; padding-left: 30px;">MVP of: {{Buyer__r_Top100}}</td>
-									</tr>
-								{% endif %}
+								<!-- TOP 100 AGENTS - EXCLUDED FROM CLIENT VERSION -->
 								<!-- BUYER ACTING AS ################################### -->
 								<tr>
 									<td><strong style="color: #1e3a5f;">Buyer Acting As: </strong>{{Buyer_Acting_As__c}}</td>
 								</tr>
-								<!-- BENEFICIARY ################################################  -->
-								{% if Beneficiary__c_Name %}
-									<tr>
-										<td><strong style="color: #1e3a5f;">Beneficiary: </strong><a href="{{Beneficiary__c_url}}" target="_blank">{{Beneficiary__c_Name}}</a></td>
-									</tr>
-								{% endif %}
-								{% if Beneficiary_Contact__c_Name %}
-									<tr>
-										<td><strong style="color: #1e3a5f;">Beneficiary Contact: </strong><a href="{{Beneficiary_Contact__c_url}}" target="_blank">{{Beneficiary_Contact__c_Name}}</a></td>
-									</tr>
-								{% endif %}
+								<!-- BENEFICIARY - EXCLUDED FROM CLIENT VERSION -->
 							</table>
-
-							<!-- DESCRIPTION ################################################ 
-							{% if Description__c != "None" %}
-								<table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-top: 3px solid #d3d3d3;">
-									<tr>
-										<td><strong style="color: #1e3a5f;">Description: </strong>{{Description__c}}</td>
-									</tr>
-								</table>
-							{% endif %} -->
 						</td>
 						
 						<!-- Right Image Panel -->
 						 <!-- MAP ################################################  -->
 						<td width="40%" valign="top" style="padding: 20px;">
 							<a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank" style="display: block; max-width: 350px;"><img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="350" height="350" style="border: 2px solid #ccc; border-radius: 10px; max-width: 100%; height: auto; display: block;"></a>
-							<!-- <a href="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" target="_blank">
-								<img src="https://request-server.s3.amazonaws.com/maps/{{PID__c}}.jpg" alt="Property Map" width="100%" height="350" style="border: 2px solid #ccc; border-radius: 10px;">
-							</a> -->
 							<div style="font-size: 12px; margin: 2px 0;">{{Location__c}}, {{City__c}}</div>
 							<div style="font-size: 12px;">{{County__c}} County, {{State__c}} - Submarket: {{Submarket__c}}</div>
-							<div style="font-size: 12px;">Lead Parcel: {{Lead_Parcel__c}}</div>
 						</td>
 					</tr>
 				</table>

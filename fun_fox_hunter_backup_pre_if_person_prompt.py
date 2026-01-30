@@ -9,6 +9,7 @@ from datetime import datetime
 import fun_text_date as td
 import json
 import mpy
+import os
 from pprint import pprint
 import time
 
@@ -17,7 +18,8 @@ import mpy
 
 def load_company_structure_prompt(company_name, company_address, model):
 	"""Load and format the AI prompt for company structure search."""
-	with open('F:/Research Department/Code/Prompts/Find_Company_Structure_AI_Prompt_v02.txt', 'r', encoding='utf-8') as file:
+
+	with open('F:/Research Department/Code/Prompts/Fox_Hunter_Entity_AI_Prompt_v03.txt', 'r', encoding='utf-8') as file:
 		prompt = file.read()
 	
 	prompt = prompt.replace('**[COMPANY_NAME]**', company_name).replace('**[COMPANY_ADDRESS]**', company_address)
@@ -625,7 +627,7 @@ def save_results_to_file(data, company_name):
 	
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	safe_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
-	filename = f"C:/Users/Public/Public MapFiles/Contact_Files/Company_Search_{safe_name}_{timestamp}.json"
+	filename = f"F:/Research Department/Code/Contact Files/Company_Search_{safe_name}_{timestamp}.json"
 	
 	try:
 		with open(filename, 'w', encoding='utf-8') as f:
@@ -636,9 +638,54 @@ def save_results_to_file(data, company_name):
 		print(f"❌ Error saving file: {e}")
 		return None
 
-def main(company, address, model):
-	"""Main execution function using two-part search."""
+def check_if_company_file_exists(company_name):
+	"""
+	Search for the most recent file matching a company name and return its contents.
 	
+	Args:
+		company_name: Company name to search for in filename
+	
+	Returns:
+		Tuple: (file_path, json_contents) or (None, None) if not found
+	"""
+	folder_path = r"F:\Research Department\Code\Contact Files"
+	safe_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
+	matches = []
+	
+	for filename in os.listdir(folder_path):
+		if safe_name.upper() in filename.upper() and filename.endswith('.json'):
+			matches.append(filename)
+	
+	if not matches:
+		return None
+	
+	# Sort by date/time in filename (YYYYMMDD_HHMMSS) - most recent last
+	matches.sort(key=lambda x: x.split('_')[-2] + x.split('_')[-1].replace('.json', ''))
+	most_recent = matches[-1]
+	
+	file_path = os.path.join(folder_path, most_recent)
+	
+	with open(file_path, 'r', encoding='utf-8') as f:
+		contents = json.load(f)
+	
+	return contents
+
+def main(company, address):
+	"""Main execution function using two-part search."""
+
+	# Check if company has already been researched
+	combined_data = check_if_company_file_exists(company)
+	if combined_data:
+		print(f"\n✅ Existing data found for '{company}'")
+		# return combined_data
+	# else:
+	# 	print(f"\n🔍 No existing data found for '{company}'. Proceeding with new search...")
+	# 	exit()
+	
+	model = "gpt-5.2"
+	# model = "gemini-3-pro-preview"
+	# model = "gemini-2.5-flash"
+	# model = "claude-sonnet-4-5-20250929"
 	# PART 1: Get company structure
 	print("🔍 Starting two-part search process...")
 	companies_data = run_company_structure_search(company, address, model)
@@ -715,45 +762,45 @@ def main(company, address, model):
 
 	return combined_data
 
-if __name__ == "__main__":
-	# Start overall execution timer
-	overall_start_time = time.time()
+# if __name__ == "__main__":
+# 	# Start overall execution timer
+# 	overall_start_time = time.time()
 	
-	# # Example search
-	# company = "Hartford Investments, LLC"
-	# address = "4801 Goodman St, Timnath CO 80547"
+# 	# # Example search
+# 	# company = "Hartford Investments, LLC"
+# 	# address = "4801 Goodman St, Timnath CO 80547"
 
-	# ui = td.uInput('\n Company Name [00] > ')
-	# if ui.strip() != '':
-	# 	company = ui
-	# 	address = td.uInput('\n Company Address [00] > ')
-	# 	if address.strip() == '':
-	# 		exit('\n No address provided. Terminating program...')
-	# 	elif address == '00':
-	# 		exit('\n Terminating program...')
-	# elif ui == '00':
-	# 		exit('\n Terminating program...')
+# 	# ui = td.uInput('\n Company Name [00] > ')
+# 	# if ui.strip() != '':
+# 	# 	company = ui
+# 	# 	address = td.uInput('\n Company Address [00] > ')
+# 	# 	if address.strip() == '':
+# 	# 		exit('\n No address provided. Terminating program...')
+# 	# 	elif address == '00':
+# 	# 		exit('\n Terminating program...')
+# 	# elif ui == '00':
+# 	# 		exit('\n Terminating program...')
 
-	lead = 'FL_Lake_645c73'
+# 	lead = 'FL_Lake_645c73'
 
-	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
+# 	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
 	
-	# Get AI model
-	model = ai.get_ai_model()
+# 	# Get AI model
+# 	model = ai.get_ai_model()
 
-	dAcc['ENTITY'] = 'Riot Platforms, Inc. '
-	dAcc['ADDRESSFULL'] = '3855 Ambrosia St, Castle Rock, CO 80109'
+# 	dAcc['ENTITY'] = 'Riot Platforms, Inc. '
+# 	dAcc['ADDRESSFULL'] = '3855 Ambrosia St, Castle Rock, CO 80109'
 
-	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
+# 	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
 
-	# Run the search
-	dContact_info = main(dAcc['ENTITY'], dAcc['ADDRESSFULL'], model)
+# 	# Run the search
+# 	dContact_info = main(dAcc['ENTITY'], dAcc['ADDRESSFULL'], model)
 	
-	# Calculate and display total execution time
-	total_duration = time.time() - overall_start_time
-	print(f"\n{'='*80}")
-	print(f"⏱️  TOTAL EXECUTION TIME: {total_duration:.2f} seconds ({total_duration/60:.2f} minutes)")
-	print('='*80 + '\n')
+# 	# Calculate and display total execution time
+# 	total_duration = time.time() - overall_start_time
+# 	print(f"\n{'='*80}")
+# 	print(f"⏱️  TOTAL EXECUTION TIME: {total_duration:.2f} seconds ({total_duration/60:.2f} minutes)")
+# 	print('='*80 + '\n')
 	
 	# If you want to see the raw JSON structure:
 	# pprint(dContact_info, width=120)

@@ -113,7 +113,7 @@ def get_recipients(is_a_test):
 		elif d['OFFICE'] == 'SCH':
 			recipient = ['Mike Schwab <mschwab@landadvisors.com>', 'Michael Schwab Jr <mjrschwab@landadvisors.com>']
 		elif d['OFFICE'] == 'SLC':
-			recipient = ['Zach Hartman <zhartman@landadvisors.com>', 'Rachel Day <rday@landadvisors.com>', 'Julie Norris <jnorris@landadvisors.com>']
+			recipient = ['Zach Hartman <zhartman@landadvisors.com>', 'Julie Norris <jnorris@landadvisors.com>']
 		elif d['OFFICE'] == 'SRQ':
 			recipient = ['Nancy Surak <nsurak@landadvisors.com>']
 		elif d['OFFICE'] == 'VOG':
@@ -184,7 +184,7 @@ def build_email():
 	elif annoy_sheetname == 'Cover Letter':
 		# # Attach Excel File
 		print('\n Attaching Cover Letter Word doc to email...')
-		filename = 'F:/Research Department/MIMO/Market Insights/Market Mailers/Letters/2025/{0} 2025 Market Mailer Letter.docx'.format(d['OFFICE'])
+		filename = 'F:/Research Department/MIMO/Market Insights/Market Mailers/Letters/2026/{0} 2026 Market Mailer Letter.docx'.format(d['OFFICE'])
 		attach_file = True
 
 	# Attach PDF

@@ -1130,17 +1130,19 @@ def addNote(service, DID, title, body):
 
 # Format date to SalesForce format
 def formatDateToSF(date): #formatSalesForceDate
+	td.warningMsg('bb.formatDateToSF is deprecated, use td.date_engine(date, outformat="tf_query") instead')
+	exit('\n Terminating program...')
 	# In -> 09/20/2013
-	# Return - > YYYY-MM-DDThh:mm:ss+hh:mm
-	MO,DY,YR = date.split('/')
-	if len(YR) == 2:	#change 2 digit year to 4 digit year
-		YR = '20{0}'.format(YR)
-	if len(MO) == 1:	#change 1 digit month to 2 digit month
-		MO = '0{0}'.format(MO)
-	if len(DY) == 1:	#change 1 digit day to 2 digit day
-		DY = '0{0}'.format(DY)
-	date = YR+'-'+MO+'-'+DY+'T00:00:00+00:00'
-	return date
+	# # Return - > YYYY-MM-DDThh:mm:ss+hh:mm
+	# MO,DY,YR = date.split('/')
+	# if len(YR) == 2:	#change 2 digit year to 4 digit year
+	# 	YR = '20{0}'.format(YR)
+	# if len(MO) == 1:	#change 1 digit month to 2 digit month
+	# 	MO = '0{0}'.format(MO)
+	# if len(DY) == 1:	#change 1 digit day to 2 digit day
+	# 	DY = '0{0}'.format(DY)
+	# date = YR+'-'+MO+'-'+DY+'T00:00:00+00:00'
+	# return date
 
 def lineno():
 	from inspect import currentframe
