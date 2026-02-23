@@ -3,20 +3,22 @@
 
 import acc
 import bb
-import csv
-import lao
+import dicts
 import fun_login
+import fun_tf_account_finder as tfaf
+import lao
+
 from pprint import pprint
 from os.path import exists
 import fun_text_date as td
 
 def getSkipFile():
-	skipfile = 'F:/Research Department/Projects/Advisors and Markets/DFW/SKIP DFW Contacts 2023-09.txt'
+	skipfile = 'F:/Research Department/Projects/Advisors and Markets/Nashville/Skip Nashville Contacts 2026-02.txt'
 	# Make skipfile if it does not exitst
 	file_exists = exists(skipfile)
 	if file_exists is False:
 		with open(skipfile, 'w') as f:
-			f.write('Heartman Contacts Skip File')
+			f.write('Nashville Contact Skip File\n')
 	return skipfile
 
 # Poplate the dAcc dict
@@ -48,6 +50,7 @@ def populate_dAcc():
 		dAcc['DEPARTMENT'] = dCon['DEPARTMENT']
 	if 'JOB TITLE' in dCon.keys():
 		dAcc['TITLEPERSON'] = dCon['JOB TITLE']
+	dAcc['CATEGORY'] = dCon['CATEGORY']
 	# Address
 	# One cell Address
 	if 'ADDRESS' in dCon.keys():
@@ -62,7 +65,7 @@ def populate_dAcc():
 	if 'STATE' in dCon.keys():
 		dAcc['STATE'] = dCon['STATE']
 	if 'ZIPCODE' in dCon.keys():
-		dAcc['ZIPCODE'] = dCon['ZIPCODE']
+		dAcc['ZIPCODE'] = str(dCon['ZIPCODE'])[:5]
 	dAcc = td.address_formatter(dAcc)
 	# Phone & Email
 	if 'PHONE' in dCon.keys():
@@ -88,21 +91,33 @@ def populate_dAcc():
 	return dAcc
 
 # Update Cateory with Market Insights & Advisors
-def update_category():
+def update_category_top100_mvp():
 	print('\n Updating Category...')
 	update_cat = False
+	lCategory = ['Market Insights', 'Market Mailer', 'Eric Deems', 'George Schubert']
+	lTop100 = ['Eric Deems', 'George Schubert']
 	if dAcc['CATEGORY'] == 'None':
-		dAcc['CATEGORY'] = 'Market Insights;Landry Burdine;Austin Reilly'
+		dAcc['CATEGORY'] = ';'.join(lCategory)
 		update_cat = True
 	else:
-		lCategory = ['Market Insights, Landry Burdine, Austin Reilly']
 		for cat in lCategory:
 			if cat in dAcc['CATEGORY']:
 				continue
 			else:
-				dAcc['CATEGORY'] = '{0},{1}'.format(dAcc['CATEGORY'], cat)
+				dAcc['CATEGORY'] = '{0};{1}'.format(dAcc['CATEGORY'], cat)
 				update_cat = True
-	
+	# Update Top100__c field
+	if dAcc['TOP100AGENT'] == 'None':
+		dAcc['TOP100AGENT'] = ';'.join(lTop100)
+		update_cat = True
+	else:
+		for top in lTop100:
+			if top in dAcc['TOP100AGENT']:
+				continue
+			else:
+				dAcc['TOP100AGENT'] = '{0};{1}'.format(dAcc['TOP100AGENT'], top)
+				update_cat = True
+
 	if update_cat:
 		dup = {'type': 'Account',
 				'Id': AID,
@@ -110,8 +125,8 @@ def update_category():
 		bb.tf_update_3(service, dup)
 
 service = fun_login.TerraForce()
-inSpreadsheet = 'F:/Research Department/Projects/Advisors and Markets/DFW/DFW Eblast List Update 2023-09-11.xlsx'
-dContacts = lao.spreadsheetToDict(inSpreadsheet, sheetname='Add to MI List')
+inSpreadsheet = 'F:/Research Department/Projects/Advisors and Markets/Nashville/NSH Market Mailer List 2026-02-05.xlsx'
+dContacts = dicts.spreadsheet_to_dict(inSpreadsheet)
 skipfile = getSkipFile()
 
 for row in dContacts:
@@ -120,6 +135,10 @@ for row in dContacts:
 
 	# Populate dAcc dict
 	dAcc = populate_dAcc()
+	pprint(dAcc)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
 
 	# See if Contact already entered
 	if lao.SkipFile(dAcc['EMAIL'], '', 'CHECK', usefile=skipfile):
@@ -130,7 +149,8 @@ for row in dContacts:
 	if dAcc['ENTITY'] != 'None' and dAcc['ENTITY'] != '' and dAcc['ENTITY'] != None:
 		td.colorText(' Person: {0}'.format(dAcc['NAME']), 'ORANGE')
 		print('\n Enter Business...')
-		dAcc = acc.find_create_account_entity(service, dAcc)
+		# dAcc = acc.find_create_account_entity(service, dAcc)
+		dAcc['EID'] = tfaf.main(service, dAcc, account_type='Entity')
 	# Print Entity Info
 	if dAcc['ENTITY'] != 'None':
 		print('\n ENTITY ENTERED\n')
@@ -138,10 +158,19 @@ for row in dContacts:
 
 	# Find Create Person Account
 	print('\n Enter Person...')
-	contactName, AID, dAcc = acc.find_create_account_person(service, dAcc)
+	# contactName, AID, dAcc = acc.find_create_account_person(service, dAcc)
+	dAcc['AID'] = tfaf.main(service, dAcc, account_type='Person')
+	
+	print('\n here3\n')
+	pprint(dAcc)
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+	continue
+	
 
 	# Update Cateory with Market Insights & Advisors
-	update_category()
+	update_category_top100_mvp()
 
 	print('\n Contact entered...')
 	ui = td.uInput('\n [Enter] to confirm or [00] to quit > ')

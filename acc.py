@@ -58,6 +58,9 @@ def populate_dAcc_from_tf(service, ContactID, dAcc='None'):
 	# Populate dAcc fields with TF data
 	dAcc['CATEGORY'] = d['Category__c']
 	dAcc['CITY'] = d['BillingCity']
+	if d['BillingCountry'] != None and d['BillingCountry'] != '':
+		dAcc['COUNTRY'] = d['BillingCountry']
+	dAcc['COUNTRY'] = d['BillingCountry']
 	dAcc['DESCRIPTION'] = d['Description']
 	dAcc['LINKEDIN'] = d['LinkedIn_Url__c']
 	dAcc['PHONE'] = d['Phone']

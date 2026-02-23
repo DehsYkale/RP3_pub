@@ -4,7 +4,6 @@ import csv
 import lao
 from os import system
 import dicts
-import fun_login
 import fun_staff as fstf
 import fun_text_date as td
 from pprint import pprint
@@ -15,11 +14,11 @@ def get_address_components(dAcc, entity=None, address=None):
 	lao.print_function_name(' tfaf def get_address_components()')
 	if address is None:
 		if dAcc['ADDRESSFULL'] == 'None':
-			dAcc['ADDRESSFULL'] = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIP']}"
+			dAcc['ADDRESSFULL'] = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIPCODE']}"
 		BillingStreet = dAcc['STREET']
 		BillingCity = dAcc['CITY']
 		BillingState = dAcc['STATE']
-		BillingPostalCode = dAcc['ZIP']
+		BillingPostalCode = dAcc['ZIPCODE']
 		full_address = dAcc['ADDRESSFULL']
 	else:
 		full_address = address
@@ -31,7 +30,7 @@ def get_address_components(dAcc, entity=None, address=None):
 		BillingPostalCode = lAddress[3]
 
 	# Standardize BillingStreet format & get components
-	BillingStreet = td.billingstreet_standarize_format(BillingStreet)
+	BillingStreet = td.billingstreet_standardize_format(BillingStreet)
 
 	# Handle PO Boxes
 	if 'PO BOX' in BillingStreet.upper():
@@ -243,10 +242,12 @@ def main(service, dAcc, account_type=None, entity=None, address=None):
 
 	# Assign entity and address if not provided
 	if account_type == 'Entity':
+		EID = 'None'
 		if entity is None:
 			entity = dAcc['ENTITY']
 			full_entity_name = entity
 	elif account_type == 'Person':
+		AID = 'None'
 		first_name = dAcc['NF']
 		last_name = dAcc['NL']
 	
@@ -278,8 +279,8 @@ def main(service, dAcc, account_type=None, entity=None, address=None):
 		# The function will handle exact, partial, and first word matches
 		# If no results, function will return EID as 'None'
 		if results == []:
-			td.warningMsg(' No TerraForce Account matches found for this address.')
-			EID = find_best_entity_name_match_no_address(service, full_entity_name)
+			# td.warningMsg(' No TerraForce Account matches found for this address.')
+			# EID = find_best_entity_name_match_no_address(service, full_entity_name)
 			return EID
 
 		
@@ -291,9 +292,10 @@ def main(service, dAcc, account_type=None, entity=None, address=None):
 	if account_type == 'Person':
 		# TODO: Handle records that do not have an address number by querying with the person name only
 		if street_number is None:
-			found_match = find_best_person_name_match_no_address(service, first_name, last_name)
-			td.warningMsg(' No street number found in BillingStreet. Querying by person name only.')
-			exit()
+			# found_match = find_best_person_name_match_no_address(service, first_name, last_name)
+			# td.warningMsg(' No street number found in BillingStreet. Querying by person name only.')
+			# exit()
+			return dAcc
 
 		# TerraForce Query for Address Match
 		fields = 'default'

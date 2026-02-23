@@ -1,4 +1,3 @@
-
 # from amp import getMarketAbbreviation
 import lao
 import bb
@@ -21,9 +20,10 @@ def get_office_list():
 		record = dAgent[row]
 		# print(f'\n {row} : {record['Office']}')
 		# if not record['Office'] in lOffice and not record['Office'] == '' and not record['Office'] == 'Reno'  and not record['Office'] == 'Scottsdale' and record['LAO'] == 'Yes' and not record['Office'] == 'JMP' and not record['Office'] == 'Yuma':
-		if not record['Office'] in lOffice and not record['Office'] == '' and not record['Office'] == 'Scottsdale' and record['LAO'] == 'Yes' and not record['Office'] == 'Conservation' and not record['Office'] == 'JMP' and not record['Office'] == 'New York' and not record['Office'] == 'None' and not record['Office'] == 'Yuma':
+		lOffice_exclude_list = ['', 'Scottsdale', 'Conservation', 'JMP', 'New York', 'Yuma', 'None', 'Tampa']
+		if not record['Office'] in lOffice and not record['Office'] in lOffice_exclude_list and record['LAO'] == 'Yes':
 			lOffice.append(record['Office'])
-	lOffice.append('Jaxsonville')
+	# lOffice.append('Jaxsonville')
 	lOffice.append('Campbell')
 	lOffice.append('Heglie')
 	lOffice.append('McCarville')
@@ -51,7 +51,7 @@ def get_office_MVPs():
 	firstAgent = True
 	for agent in dAgent:
 		if office == 'Atlanta':
-			wc = "Category__c INCLUDES ('Market Mailer') and (Top100__c INCLUDES ('David Moore') and Top100__c EXCLUDES ('Mike Ripley', 'Greg Vogel', 'Michael Zarola', 'Tom Kaufman', Nancy Surak')"	
+			wc = "Category__c INCLUDES ('Market Mailer') and (Top100__c INCLUDES ('David Moore') and Top100__c EXCLUDES ('Mike Ripley', 'Greg Vogel', 'Michael Zarola', 'Tom Kaufman', 'Nancy Surak')"	
 			break
 		elif office == 'Jacksonville':
 			wc = "Category__c INCLUDES ('Market Mailer') and (Top100__c INCLUDES ('Clint Shea', 'Luke Feldman')"
@@ -130,6 +130,9 @@ def write_to_presorted_csv():
 			tf_url = '=HYPERLINK("https://landadvisors.lightning.force.com/lightning/r/Account/{0}/view", "TF")'.format(row['Id'])
 			lRow.append(tf_url)
 			lRow.append('none')
+			# Category__c (multipicklist semicolons to commas)
+			category = row.get('Category__c', '') or ''
+			lRow.append(category.replace(';', ','))
 
 			# Write row to Presorted CSV
 			fout.writerow(lRow)
@@ -148,12 +151,12 @@ def sort_office_mm_csv():
 			fout.writerow(row)
 	os.remove(csv_presort)
 
-lao.banner('Market Mailer CSV Mail List Maker v01')
+lao.banner('Market Mailer CSV Mail List Maker v02')
 
 service = fun_login.TerraForce()
 
 dAgent = lao.getAgentDict(dict_type='full', version='v2')
-fields = 'ID, Name, FirstName, LastName, Company__r.Name, BillingStreet, BillingCity, BillingState, BillingPostalCode'
+fields = 'ID, Name, FirstName, LastName, Company__r.Name, BillingStreet, BillingCity, BillingState, BillingPostalCode, Category__c'
 
 # Get dict of Markets/Advisors
 dMM_market = dicts.get_mm_market_dict()
@@ -163,7 +166,7 @@ lOffice, lScottsaleAgents, lRemove_Vogel, lSchwab_Only = dicts.get_lao_markets_m
 csv_office_mailer_count = 'F:/Research Department/MIMO/Market Insights/Market Mailers/Mailing Lists/Office Mailer Count.csv'
 # CSV of all contacts
 csv_all_mvps = 'F:/Research Department/MIMO/Market Insights/Market Mailers/Mailing Lists/All MVPs.csv'
-header = ['First Name', 'Last Name', 'Company', 'Street', 'City', 'State', 'ZipCode', 'Market', 'TFID URL', 'Letter ID']
+header = ['First Name', 'Last Name', 'Company', 'Street', 'City', 'State', 'ZipCode', 'Market', 'TFID URL', 'Letter ID', 'Category']
 
 
 with open(csv_all_mvps, 'w', newline='') as h:
@@ -266,6 +269,7 @@ with open(csv_mailer_generic_filename, 'w', newline='') as g, open(csv_office_ma
 				
 				# Create out list to write to cleaned file
 				strGeneric_Offices = ', '.join(lGeneric_Offices)
+				category = dOffice_MM_List[omml].get('Category', '')
 				lout = [dOffice_MM_List[omml]['First Name'],
 						dOffice_MM_List[omml]['Last Name'],
 						dOffice_MM_List[omml]['Company'],
@@ -282,6 +286,7 @@ with open(csv_mailer_generic_filename, 'w', newline='') as g, open(csv_office_ma
 					# Add letter id
 					letter_id = '{0} {1:03d}'.format(marketAbb, i_market_letter_id)
 					lout.append(letter_id)
+					lout.append(category)
 					fout_mkt.writerow(lout)
 					i_market_letter_id += 1
 					count_market_advisors += 1
@@ -292,6 +297,7 @@ with open(csv_mailer_generic_filename, 'w', newline='') as g, open(csv_office_ma
 					# Add letter id
 					letter_id = '{0} {1:03d}'.format('GEN', i_generic_letter_id)
 					lout.append(letter_id)
+					lout.append(category)
 					fout_gen.writerow(lout)
 					lGeneric_Contact_TFIDs.append(omml_url)
 					i_generic_letter_id += 1

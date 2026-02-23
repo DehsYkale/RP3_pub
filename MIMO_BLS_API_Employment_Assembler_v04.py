@@ -17,7 +17,7 @@ load_dotenv()
 # Get latest year-mo# by querying BLS API
 def get_current_yr_mo():
 	lSeriesid = ['LAUMT064014000000003']
-		# Request the BLS api for employment data that returns json file
+	# Request the BLS api for employment data that returns json file
 	headers = {'Content-type': 'application/json'}
 	BLS_API_REGISTRATION_KEY = os.getenv("BLS_API_REGISTRATION_KEY")
 	data = json.dumps({"seriesid": lSeriesid,
@@ -25,6 +25,19 @@ def get_current_yr_mo():
 						"registrationkey": BLS_API_REGISTRATION_KEY})
 	p = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers)
 	dGet_yr_mo = json.loads(p.text)
+
+
+	# DEBUG: Show first 5 data points to see what's available
+	print(f"API Response: {dGet_yr_mo}")
+	print("\n=== DEBUG: Latest 5 data points from BLS ===")
+	for series in dGet_yr_mo['Results']['series']:
+		for i, item in enumerate(series['data'][:5]):
+			print(f"  {item['year']}-{item['period']}: {item['value']}")
+	print("=" * 45 + "\n")
+	ui = td.uInput('\n Continue [00]... > ')
+	if ui == '00':
+		exit('\n Terminating program...')
+
 	for series in dGet_yr_mo['Results']['series']:
 
 		for item in series['data']:
@@ -139,8 +152,9 @@ def calc_avg_annual_employment_change_for_last_12_months(lSingle_area):
 		if rolling_month == 0:
 			rolling_month = 12
 			rolling_year -= 1
+			rolling_year_last -= 1  # ADD THIS LINE
 		# If rolling month equals current month, break the loop
-		elif rolling_month == iCur_month:
+		if rolling_month == iCur_month:  # CHANGE elif TO if
 			break
 
 	# Calculate the average monthly employment change for the last 12 months
@@ -174,7 +188,7 @@ def calc_percentage_change_in_annual_employment_for_last_12_months(lSingle_area)
 			rolling_year -= 1
 			rolling_year_last -= 1
 		# If rolling month equals current month, break the loop
-		elif rolling_month == iCur_month:
+		if rolling_month == iCur_month:
 			break
 
 	# Calculate the average monthly employment change for the last 12 months
@@ -195,7 +209,7 @@ lOutput = [['']]
 BLS_API_REGISTRATION_KEY = os.getenv("BLS_API_REGISTRATION_KEY")
 
 
-lOutput = [['State', 'Area', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', 'Last12Mo', 'Annualized Monthly Pct Chg Emp Growth Loss', 'Unemp Rate Last Year', 'Unemp Rate Current', 'Total Emplyd Last Yr', 'Total Emplyd Current Yr']]
+lOutput = [['State', 'Area', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', 'Annualized Monthly Pct Chg Emp Growth Loss', 'Unemp Rate Last Year', 'Unemp Rate Current', 'Total Emplyd Last Yr', 'Total Emplyd Current Yr']]
 
 print(f'Current Year: {cur_year}, Current Month: {iCur_month}')
 

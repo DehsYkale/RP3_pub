@@ -267,7 +267,7 @@ for market in lMarkets:
 	lAll_subs_for_arcmap.extend(lSubdivisions_for_arcmap)
 
 	# Standarize/clean subdivision names
-	dSubdivisions = td.standarize_hb_and_sub_names(fin, dSubdivisions, dSubs_rename, market)
+	dSubdivisions = td.standardize_hb_and_sub_names(fin, dSubdivisions, dSubs_rename, market)
 
 	# Get top subdivisions ranked by Annual Starts
 	lSubs_by_starts = get_top_subdivisions_by_starts(dSubdivisions, list_type='topsubs')
@@ -306,7 +306,7 @@ for market in lMarkets:
 	dHB_closings = dicts.spreadsheet_to_dict(fin_hb_close)
 	
 	# Standarize/clean homebuilder names
-	dHB_closings = td.standarize_hb_and_sub_names(fin_hb_close, dHB_closings, dHB_rename, market)
+	dHB_closings = td.standardize_hb_and_sub_names(fin_hb_close, dHB_closings, dHB_rename, market)
 
 	# Change '' to 0 in Starts and Closings
 	dHB_closings = change_empty_to_zero(dHB_closings, fin_hb_close)
@@ -366,7 +366,7 @@ exit('\n Fin')
 # 	dHB_closings = dicts.spreadsheet_to_dict(fin)
 	
 # 	# Standarize/clean homebuilder names
-# 	dProjects = td.standarize_hb_and_sub_names(fin, dProjects, dHB_rename, market)
+# 	dProjects = td.standardize_hb_and_sub_names(fin, dProjects, dHB_rename, market)
 
 # 	# Change '' to 0 in Starts and Closings
 # 	dProjects = change_empty_to_zero(dProjects)

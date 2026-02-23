@@ -1,33 +1,59 @@
 # Chat GPT AI Functions - Company & Contact Finder for Salesforce
-# Version 0.7 - Two-part search: Company structure first, then contacts
+# Version 0.8 - Three-part search: Company structure, contacts, then person enrichment
 # Fixes: Rate limiting, truncation issues, better error handling
-# Uses comprehensive v02 prompts with full search strategy and verification steps
+# Uses comprehensive v03 prompts with full search strategy and verification steps
 
 from anyio import Path
 import ai
 from datetime import datetime
-import fun_text_date as td
+from fun_fox_hunter_person_detection import (
+	is_company, 
+	parse_person_names, 
+	create_person_only_result,
+	detect_and_route
+)
+import fun_text_date as tdz
 import json
-import mpy
 import os
 from pprint import pprint
 import time
 
-import mpy
+
 
 
 def load_company_structure_prompt(company_name, company_address, model):
 	"""Load and format the AI prompt for company structure search."""
 
-	with open('F:/Research Department/Code/Prompts/Fox_Hunter_Entity_AI_Prompt_v03.txt', 'r', encoding='utf-8') as file:
+	with open('F:/Research Department/Code/Prompts/Fox_Hunter_Entity_AI_Prompt_v06.txt', 'r', encoding='utf-8') as file:
 		prompt = file.read()
 	
 	prompt = prompt.replace('**[COMPANY_NAME]**', company_name).replace('**[COMPANY_ADDRESS]**', company_address)
 	return prompt
 
-def load_contacts_prompt(companies_data):
+def load_person_enrichment_prompt(persons: list, address: str) -> str:
+	"""Load and format the AI prompt for person contact enrichment."""
+	with open('F:/Research Department/Code/Prompts/Fox_Hunter_Person_Enrichment_AI_Prompt_v06.txt', 'r', encoding='utf-8') as file:
+		prompt = file.read()
+	
+	# Build person list for the prompt
+	person_list = []
+	for idx, p in enumerate(persons, 1):
+		name = f"{p['FirstName']} {p['MiddleName__c']} {p['LastName']}".replace("  ", " ").strip()
+		company = p.get('Company__c', 'Unknown')
+		city = p.get('BillingCity', '')
+		state = p.get('BillingState', '')
+		location = f"{city}, {state}" if city and state else address
+		person_list.append(f"{idx}. {name} - {company} ({location})")
+	
+	persons_text = "\n".join(person_list)
+	prompt = prompt.replace('**[PERSON_LIST]**', persons_text)
+	prompt = prompt.replace('**[PROPERTY_ADDRESS]**', address)
+	
+	return prompt
+
+def load_contacts_of_entity_prompt(companies_data):
 	"""Load and format the AI prompt for contacts search based on discovered companies."""
-	with open('F:/Research Department/Code/Prompts/Find_Contacts_AI_Prompt_v02.txt', 'r', encoding='utf-8') as file:
+	with open('F:/Research Department/Code/Prompts/Fox_Hunter_Contacts_of_Entity_AI_Prompt_v06.txt', 'r', encoding='utf-8') as file:
 		prompt = file.read()
 	
 	# Build company list for the prompt
@@ -76,7 +102,7 @@ def is_json_complete(json_str):
 def strip_to_json(results):
 	"""Extract JSON from AI response with improved error handling."""
 	# Create output directory if it doesn't exist
-	output_dir = Path('F:/Research Department/Code/Contact Files/')
+	output_dir = Path('F:/Research Department/Code/Contact Files')
 	
 	try:
 		# Extract the text field from the nested structure
@@ -290,7 +316,7 @@ def run_contacts_search(companies_data, model):
 	Returns:
 		list or dict: Contact data
 	"""
-	prompt = load_contacts_prompt(companies_data)
+	prompt = load_contacts_of_entity_prompt(companies_data)
 	
 	payload = {
 		"jsonrpc": "2.0",
@@ -352,6 +378,187 @@ def run_contacts_search(companies_data, model):
 		traceback.print_exc()
 		return None
 
+def run_person_enrichment(persons: list, address: str, model: str):
+	"""
+	Enrich contact information for individual property owner(s).
+	
+	Args:
+		persons: List of parsed person dicts from parse_person_names()
+		address: Property address
+		model: AI model to use
+		
+	Returns:
+		dict: Enriched contact data in standard format
+	"""
+	prompt = load_person_enrichment_prompt(persons, address)
+	
+	payload = {
+		"jsonrpc": "2.0",
+		"id": 5,
+		"method": "tools/call",
+		"params": {
+			"name": "process_chat",
+			"arguments": {
+				"model": model,
+				"max_tokens": 16000,  # Smaller than company search - less data expected
+				"messages": [
+					{
+						"role": "system",
+						"content": "You are a contact research assistant. Return ONLY valid JSON with person contact information. No explanatory text. Keep descriptions concise (under 200 characters each)."
+					},
+					{
+						"role": "user",
+						"content": prompt
+					}
+				],
+				"tools": [
+					"web_search",
+					"enformion_enrich_contact",
+					"parallel_search",
+					"url_context_query"
+				]
+			}
+		}
+	}
+	
+	print('\n' + '='*80)
+	print(f' PERSON ENRICHMENT: Finding contact info for property owner(s)')
+	print('='*80 + '\n')
+	
+	ai_start_time = time.time()
+	
+	try:
+		results = ai.ask_kablewy_ai(payload)
+		ai_duration = time.time() - ai_start_time
+		
+		enriched_data = strip_to_json(results)
+		
+		print(f"\n{'='*80}")
+		print(f"⏱️  Person Enrichment Duration: {ai_duration:.2f} seconds ({ai_duration/60:.2f} minutes)")
+		print('='*80 + '\n')
+		
+		return enriched_data
+		
+	except Exception as e:
+		ai_duration = time.time() - ai_start_time
+		print(f"\n❌ Error during person enrichment (after {ai_duration:.2f} seconds): {e}")
+		import traceback
+		traceback.print_exc()
+		return None
+
+def run_contact_person_enrichment(contacts: list, address: str, model: str):
+	"""
+	Part 3: Enrich discovered contacts with additional person details (phone, email, etc.).
+	
+	Args:
+		contacts: List of contact dicts from Part 2
+		address: Company/property address for context
+		model: AI model to use
+		
+	Returns:
+		list: Enriched contact list with additional details merged in
+	"""
+	if not contacts or len(contacts) == 0:
+		print("\n⚠️  No contacts to enrich - skipping Part 3")
+		return contacts
+	
+	# Convert contacts to person format for the enrichment prompt
+	persons_for_enrichment = []
+	for contact in contacts:
+		person = {
+			'FirstName': contact.get('FirstName', ''),
+			'MiddleName__c': contact.get('MiddleName__c', ''),
+			'LastName': contact.get('LastName', ''),
+			'Company__c': contact.get('Company__c', ''),
+			'BillingCity': contact.get('BillingCity', ''),
+			'BillingState': contact.get('BillingState', ''),
+		}
+		persons_for_enrichment.append(person)
+	
+	print('\n' + '='*80)
+	print(f' PART 3: Enriching {len(contacts)} discovered contacts')
+	print('='*80 + '\n')
+	
+	# Show contacts being enriched
+	print("Contacts to enrich:")
+	for idx, p in enumerate(persons_for_enrichment, 1):
+		name = f"{p['FirstName']} {p['MiddleName__c']} {p['LastName']}".replace("  ", " ").strip()
+		print(f"  {idx}. {name} - {p.get('Company__c', 'N/A')}")
+	
+	# Wait 30 seconds between requests to avoid rate limiting
+	print("\n⏳ Waiting 30 seconds before Part 3 to avoid rate limits...")
+	time.sleep(30)
+	print("▶️  Starting Part 3 now...")
+	
+	# Run person enrichment
+	enriched_data = run_person_enrichment(persons_for_enrichment, address, model)
+	
+	if not enriched_data or 'contacts' not in enriched_data:
+		print("\n⚠️  Part 3 enrichment failed - returning original contacts")
+		return contacts
+	
+	enriched_contacts = enriched_data.get('contacts', [])
+	
+	# Merge enriched data back into original contacts
+	merged_contacts = merge_enriched_contacts(contacts, enriched_contacts)
+	
+	print(f"\n✅ Part 3 complete - Enriched {len(merged_contacts)} contacts")
+	
+	return merged_contacts
+
+def merge_enriched_contacts(original_contacts: list, enriched_contacts: list) -> list:
+	"""
+	Merge enriched contact data back into original contacts.
+	
+	Matches contacts by name and merges in any new/better data from enrichment.
+	
+	Args:
+		original_contacts: Original contact list from Part 2
+		enriched_contacts: Enriched contact list from Part 3
+		
+	Returns:
+		list: Merged contact list with best available data
+	"""
+	if not enriched_contacts:
+		return original_contacts
+	
+	# Create lookup by name for enriched contacts
+	enriched_lookup = {}
+	for ec in enriched_contacts:
+		name_key = f"{ec.get('FirstName', '')} {ec.get('LastName', '')}".strip().upper()
+		enriched_lookup[name_key] = ec
+	
+	merged = []
+	for orig in original_contacts:
+		name_key = f"{orig.get('FirstName', '')} {orig.get('LastName', '')}".strip().upper()
+		
+		if name_key in enriched_lookup:
+			enriched = enriched_lookup[name_key]
+			# Merge: use enriched value if original is empty
+			merged_contact = orig.copy()
+			
+			# Fields to potentially update from enrichment
+			enrichment_fields = [
+				'PersonEmail', 'Phone', 'PersonMobilePhone', 
+				'LinkedIn_Url__c', 'BillingStreet', 'BillingCity', 
+				'BillingState', 'BillingPostalCode'
+			]
+			
+			for field in enrichment_fields:
+				orig_value = orig.get(field, '')
+				enriched_value = enriched.get(field, '')
+				# Use enriched value if original is empty/missing
+				if not orig_value and enriched_value:
+					merged_contact[field] = enriched_value
+					print(f"  ✓ Updated {name_key}: {field} = {enriched_value}")
+			
+			merged.append(merged_contact)
+		else:
+			# No enriched match found, keep original
+			merged.append(orig)
+	
+	return merged
+
 def combine_results(companies_data, contacts_data):
 	"""
 	Combine company structure and contacts into final format.
@@ -368,9 +575,9 @@ def combine_results(companies_data, contacts_data):
 		"contacts": contacts_data if isinstance(contacts_data, list) else contacts_data.get('contacts', []),
 		"search_metadata": {
 			"search_date": datetime.now().strftime('%Y-%m-%d'),
-			"search_method": "two_part_search",
+			"search_method": "three_part_search",
 			"confidence_level": "high",
-			"notes": "Company structure and contacts searched separately for better reliability"
+			"notes": "Company structure, contacts, and person enrichment searched separately for better reliability"
 		}
 	}
 	
@@ -405,11 +612,12 @@ def validate_sf_data(data):
 	if 'companies' in data:
 		companies = data['companies']
 		
-		# Check primary company
-		if 'primary' in companies:
+		# Check primary company (skip if None - indicates person owner, not company)
+		if 'primary' in companies and companies['primary'] is not None:
 			for field in required_company_fields:
 				if field not in companies['primary'] or not companies['primary'][field]:
 					missing.append(f"companies.primary.{field}")
+		# If primary is None, this is a person owner - company fields not required
 	else:
 		# Check legacy company structure
 		if 'company' not in data:
@@ -449,7 +657,7 @@ def print_summary(data, company_name):
 		companies = data['companies']
 		
 		# Display Primary Company
-		if 'primary' in companies:
+		if 'primary' in companies and companies['primary'] is not None:
 			primary = companies['primary']
 			output_lines.append("\n\nPRIMARY COMPANY (Search Target):")
 			output_lines.append("-" * 80)
@@ -611,7 +819,7 @@ def print_summary(data, company_name):
 	# Save to file
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	safe_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
-	filename = f"C:/Users/Public/Public MapFiles/Contact_Files/Company_Search_{safe_name}_{timestamp}_Print_Summary.txt"
+	filename = f"F:/Research Department/Code/Contact Files/Company_Search_{safe_name}_{timestamp}_Print_Summary.txt"
 	
 	try:
 		with open(filename, 'w', encoding='utf-8') as f:
@@ -670,78 +878,143 @@ def check_if_company_file_exists(company_name):
 	
 	return contents
 
-def main(company, address):
-	"""Main execution function using two-part search."""
-
-	# Check if company has already been researched
-	combined_data = check_if_company_file_exists(company)
+def main(owner_name: str, address: str, enrich_contacts: bool = True):
+	"""
+	Main execution function with person vs company detection.
+	
+	Args:
+		owner_name: Owner name from parcel data (could be person or company)
+		address: Property address
+		enrich_contacts: If True, run Part 3 to enrich discovered contacts (default: True)
+		
+	Returns:
+		dict: Combined company/contact data in standard format
+	"""
+	
+	# Check if already researched
+	combined_data = check_if_company_file_exists(owner_name)
 	if combined_data:
-		print(f"\n✅ Existing data found for '{company}'")
-		# return combined_data
-	# else:
-	# 	print(f"\n🔍 No existing data found for '{company}'. Proceeding with new search...")
-	# 	exit()
+		print(f"\n✅ Existing data found for '{owner_name}'")
+		return combined_data
 	
 	model = "gpt-5.2"
 	# model = "gemini-3-pro-preview"
 	# model = "gemini-2.5-flash"
 	# model = "claude-sonnet-4-5-20250929"
 	# PART 1: Get company structure
-	print("🔍 Starting two-part search process...")
-	companies_data = run_company_structure_search(company, address, model)
+
+	print(f"\n🔍 Analyzing owner: {owner_name}")
 	
-	if not companies_data:
-		print("\n❌ Part 1 failed - cannot continue to Part 2")
-		return None
-	
-	print("\n✅ Part 1 complete - Company structure found")
-	
-	# Show what was found
-	if 'companies' in companies_data:
-		comp_obj = companies_data['companies']
-	else:
-		comp_obj = companies_data
-	
-	print(f"\nCompanies discovered:")
-	if 'primary' in comp_obj:
-		print(f"  • Primary: {comp_obj['primary'].get('Name', 'N/A')}")
-	if 'parent_company' in comp_obj and comp_obj['parent_company'] is not None:
-		print(f"  • Parent: {comp_obj['parent_company'].get('Name', 'N/A')}")
-	if 'subsidiaries' in comp_obj:
-		print(f"  • Subsidiaries: {len(comp_obj['subsidiaries'])}")
-	if 'affiliates' in comp_obj:
-		print(f"  • Affiliates: {len(comp_obj['affiliates'])}")
-	
-	# PART 2: Get contacts for all discovered companies
-	contacts_data = run_contacts_search(comp_obj if 'companies' not in companies_data else companies_data['companies'], model)
-	
-	if not contacts_data:
-		print("\n⚠️  Part 2 failed - but we have company structure")
-		print("You can retry Part 2 separately or continue with company data only")
-		# Return companies only
-		combined_data = {
-			"companies": comp_obj, 
-			"contacts": [], 
-			"search_metadata": {
-				"partial_results": True,
-				"search_date": datetime.now().strftime('%Y-%m-%d'),
-				"notes": "Part 2 (contacts) failed but company structure is available"
-			}
-		}
-	else:
-		print("\n✅ Part 2 complete - Contacts found")
+	if is_company(owner_name):
+		print(f"   → Detected as COMPANY - proceeding with corporate structure search")
 		
-		# Combine results
+		# Original two-part company flow
+		# PART 1: Get company structure
+		print("\n🔍 Starting three-part search process...")
+		companies_data = run_company_structure_search(owner_name, address, model)
+		
+		if not companies_data:
+			print("\n❌ Part 1 failed - cannot continue to Part 2")
+			return None
+		
+		print("\n✅ Part 1 complete - Company structure found")
+		
+		# Show what was found
 		if 'companies' in companies_data:
-			combined_data = companies_data
-			combined_data['contacts'] = contacts_data if isinstance(contacts_data, list) else contacts_data.get('contacts', [])
-			# Merge metadata if exists
-			if isinstance(contacts_data, dict) and 'search_metadata' in contacts_data:
+			comp_obj = companies_data['companies']
+		else:
+			comp_obj = companies_data
+		
+		print(f"\nCompanies discovered:")
+		if 'primary' in comp_obj:
+			print(f"  • Primary: {comp_obj['primary'].get('Name', 'N/A')}")
+		if 'parent_company' in comp_obj and comp_obj['parent_company'] is not None:
+			print(f"  • Parent: {comp_obj['parent_company'].get('Name', 'N/A')}")
+		if 'subsidiaries' in comp_obj:
+			print(f"  • Subsidiaries: {len(comp_obj['subsidiaries'])}")
+		if 'affiliates' in comp_obj:
+			print(f"  • Affiliates: {len(comp_obj['affiliates'])}")
+		
+		# PART 2: Get contacts for all discovered companies
+		contacts_data = run_contacts_search(
+			comp_obj if 'companies' not in companies_data else companies_data['companies'], 
+			model
+		)
+		
+		if not contacts_data:
+			print("\n⚠️  Part 2 failed - but we have company structure")
+			combined_data = {
+				"companies": comp_obj, 
+				"contacts": [], 
+				"search_metadata": {
+					"partial_results": True,
+					"search_date": datetime.now().strftime('%Y-%m-%d'),
+					"notes": "Part 2 (contacts) failed but company structure is available"
+				}
+			}
+		else:
+			print("\n✅ Part 2 complete - Contacts found")
+			
+			# Extract contacts list
+			contacts_list = contacts_data if isinstance(contacts_data, list) else contacts_data.get('contacts', [])
+			
+			# PART 3: Enrich discovered contacts (if enabled)
+			if enrich_contacts and contacts_list:
+				enriched_contacts = run_contact_person_enrichment(contacts_list, address, model)
+				contacts_list = enriched_contacts
+			
+			# Combine results
+			if 'companies' in companies_data:
+				combined_data = companies_data
+				combined_data['contacts'] = contacts_list
+				if isinstance(contacts_data, dict) and 'search_metadata' in contacts_data:
+					if 'search_metadata' not in combined_data:
+						combined_data['search_metadata'] = {}
+					combined_data['search_metadata'].update(contacts_data['search_metadata'])
+				# Update search method to reflect three-part search
 				if 'search_metadata' not in combined_data:
 					combined_data['search_metadata'] = {}
-				combined_data['search_metadata'].update(contacts_data['search_metadata'])
+				combined_data['search_metadata']['search_method'] = 'three_part_search'
+			else:
+				combined_data = combine_results(comp_obj, {'contacts': contacts_list})
+	
+	else:
+		# =======================================================================
+		# NEW: Handle person owner(s)
+		# =======================================================================
+		print(f"   → Detected as PERSON - proceeding with contact enrichment")
+		
+		# Parse person names from parcel format
+		persons = parse_person_names(owner_name, address)
+		
+		if not persons:
+			print(f"\n❌ Could not parse person name: {owner_name}")
+			return None
+		
+		print(f"\n👤 Parsed {len(persons)} person(s):")
+		for p in persons:
+			name = f"{p['FirstName']} {p['MiddleName__c']} {p['LastName']}".replace("  ", " ").strip()
+			print(f"   • {name}")
+		
+		# Create initial structure with parsed names
+		search_date = datetime.now().strftime('%Y-%m-%d')
+		initial_data = create_person_only_result(persons, address, search_date)
+		
+		# Enrich contact information via AI
+		enriched_data = run_person_enrichment(persons, address, model)
+		
+		if enriched_data and 'contacts' in enriched_data:
+			combined_data = enriched_data
+			print(f"\n✅ Contact enrichment complete - {len(enriched_data.get('contacts', []))} contact(s) found")
 		else:
-			combined_data = combine_results(comp_obj, contacts_data)
+			# Use initial parsed data if enrichment fails
+			print("\n⚠️  Contact enrichment failed - using parsed names only")
+			combined_data = initial_data
+			combined_data['search_metadata']['notes'] = "AI enrichment failed. Names parsed from parcel records only."
+	
+	# ==========================================================================
+	# Common processing for both paths
+	# ==========================================================================
 	
 	# Validate the combined data
 	is_valid, missing = validate_sf_data(combined_data)
@@ -755,56 +1028,31 @@ def main(company, address):
 		print("\n✅ All required Salesforce fields are present\n")
 	
 	# Print summary
-	print_summary(combined_data, company)
+	print_summary(combined_data, owner_name)
 	
 	# Save to file
-	save_results_to_file(combined_data, company)
-
+	save_results_to_file(combined_data, owner_name)
+	
 	return combined_data
 
-# if __name__ == "__main__":
-# 	# Start overall execution timer
-# 	overall_start_time = time.time()
-	
-# 	# # Example search
-# 	# company = "Hartford Investments, LLC"
-# 	# address = "4801 Goodman St, Timnath CO 80547"
 
-# 	# ui = td.uInput('\n Company Name [00] > ')
-# 	# if ui.strip() != '':
-# 	# 	company = ui
-# 	# 	address = td.uInput('\n Company Address [00] > ')
-# 	# 	if address.strip() == '':
-# 	# 		exit('\n No address provided. Terminating program...')
-# 	# 	elif address == '00':
-# 	# 		exit('\n Terminating program...')
-# 	# elif ui == '00':
-# 	# 		exit('\n Terminating program...')
-
-# 	lead = 'FL_Lake_645c73'
-
-# 	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
-	
-# 	# Get AI model
-# 	model = ai.get_ai_model()
-
-# 	dAcc['ENTITY'] = 'Riot Platforms, Inc. '
-# 	dAcc['ADDRESSFULL'] = '3855 Ambrosia St, Castle Rock, CO 80109'
-
-# 	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
-
-# 	# Run the search
-# 	dContact_info = main(dAcc['ENTITY'], dAcc['ADDRESSFULL'], model)
-	
-# 	# Calculate and display total execution time
-# 	total_duration = time.time() - overall_start_time
-# 	print(f"\n{'='*80}")
-# 	print(f"⏱️  TOTAL EXECUTION TIME: {total_duration:.2f} seconds ({total_duration/60:.2f} minutes)")
-# 	print('='*80 + '\n')
-	
-	# If you want to see the raw JSON structure:
-	# pprint(dContact_info, width=120)
-
-# TODO: Add function to actually create/update Salesforce Account records using the structured data
-# TODO: Add batch processing capability for multiple companies
-# TODO: Add error handling for duplicate detection in Salesforce
+# =============================================================================
+# QUICK REFERENCE: Detection Logic
+# =============================================================================
+#
+# COMPANY INDICATORS (routes to company search):
+#   - LLC, INC, CORP, LTD, LP, LLP
+#   - TRUST, ESTATE, FOUNDATION
+#   - COMPANY, ENTERPRISES, HOLDINGS
+#   - PROPERTIES, INVESTMENTS, DEVELOPMENT
+#   - BANK, CREDIT UNION
+#   - CHURCH, SCHOOL, GOVERNMENT entities
+#   - Any numbered address entity (e.g., "123 MAIN ST HOLDINGS")
+#
+# PERSON PATTERNS (routes to person enrichment):
+#   - LASTNAME FIRSTNAME [MIDDLE]
+#   - LASTNAME FIRSTNAME & FIRSTNAME (couples)
+#   - LASTNAME FIRSTNAME LASTNAME FIRSTNAME (couples with repeated last name)
+#   - Names with ET UX, ET VIR, ET AL (spouse/family indicators)
+#
+# =============================================================================

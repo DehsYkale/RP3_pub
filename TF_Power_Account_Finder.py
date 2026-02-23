@@ -233,7 +233,7 @@ for row_address in dAddresses:
 	BillingPostalCode = lAddress[3]
 
 	# Standardize BillingStreet format & get components
-	BillingStreet = td.billingstreet_standarize_format(BillingStreet)
+	BillingStreet = td.billingstreet_standardize_format(BillingStreet)
 
 	# Handle PO Boxes
 	if 'PO BOX' in BillingStreet.upper():

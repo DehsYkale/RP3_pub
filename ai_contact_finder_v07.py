@@ -6,6 +6,7 @@
 from anyio import Path
 import ai
 from datetime import datetime
+import dicts
 import fun_text_date as td
 import json
 import mpy
@@ -74,7 +75,7 @@ def is_json_complete(json_str):
 def strip_to_json(results):
 	"""Extract JSON from AI response with improved error handling."""
 	# Create output directory if it doesn't exist
-	output_dir = Path('C:/Users/Public/Public Mapfiles/Contact_Files')
+	output_dir = Path('F:/Research Department/Code/Contact Files/')
 	
 	try:
 		# Extract the text field from the nested structure
@@ -723,26 +724,27 @@ if __name__ == "__main__":
 	# company = "Hartford Investments, LLC"
 	# address = "4801 Goodman St, Timnath CO 80547"
 
-	# ui = td.uInput('\n Company Name [00] > ')
-	# if ui.strip() != '':
-	# 	company = ui
-	# 	address = td.uInput('\n Company Address [00] > ')
-	# 	if address.strip() == '':
-	# 		exit('\n No address provided. Terminating program...')
-	# 	elif address == '00':
-	# 		exit('\n Terminating program...')
-	# elif ui == '00':
-	# 		exit('\n Terminating program...')
+	dAcc = dicts.get_blank_account_dict()
+	ui = td.uInput('\n Company Name [00] > ')
+	if ui.strip() != '':
+		dAcc['ENTITY'] = ui
+		dAcc['ADDRESSFULL'] = td.uInput('\n Full company Address [00] > ')
+		if dAcc['ADDRESSFULL'].strip() == '':
+			exit('\n No address provided. Terminating program...')
+		elif dAcc['ADDRESSFULL'] == '00':
+			exit('\n Terminating program...')
+	elif ui == '00':
+			exit('\n Terminating program...')
 
-	lead = 'FL_Lake_645c73'
+	# lead = 'FL_Lake_645c73'
 
-	dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
+	# dAcc, dTF = mpy.get_lead_info_dAcc_dTF_dicts(lead)
 	
 	# Get AI model
 	model = ai.get_ai_model()
 
-	dAcc['ENTITY'] = 'Riot Platforms, Inc. '
-	dAcc['ADDRESSFULL'] = '3855 Ambrosia St, Castle Rock, CO 80109'
+	# dAcc['ENTITY'] = 'Riot Platforms, Inc. '
+	# dAcc['ADDRESSFULL'] = '3855 Ambrosia St, Castle Rock, CO 80109'
 
 	print(f"\n Searching for company: {dAcc['ENTITY']}\n Address: {dAcc['ADDRESSFULL']}\n")
 

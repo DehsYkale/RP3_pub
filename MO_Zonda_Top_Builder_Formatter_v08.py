@@ -293,7 +293,7 @@ for fpdf in inFiles:
 				if not builder == 'Unknown/Multiple' and not builder == 'Totals':
 
 					# Clean builder names based on hb rename database spreadsheet
-					builder, type_public_private, not_in_builder_rename_list = td.standarize_builder_names(builder, dHB_Rename=dHB, market=market)
+					builder, type_public_private, not_in_builder_rename_list = td.standardize_builder_names(builder, dHB_Rename=dHB, market=market)
 
 					# If builder not in the rename db the add it to the missing list
 					if not_in_builder_rename_list:

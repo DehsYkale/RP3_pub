@@ -229,6 +229,7 @@ def get_staff_dict(dict_type='full', skipFormerEmployees=True):
 			if dTemp[i]['LAO'] == 'No':
 				continue
 		name = dTemp[i]['Name']
+		if name is None: continue
 		dStaff[name] = {}
 		dStaff[name]['City'] = dTemp[i]['City']
 		dStaff[name]['MC Audience'] = dTemp[i]['MC Audience']
@@ -2401,8 +2402,8 @@ def get_parcel_fields_list():
 		'mtg1amt,' \
 		'mtg1lender,' \
 		'mtg1recdt,' \
-		'objectid,' \
 		'owner,' \
+		'propertyid,' \
 		'saledate,' \
 		'saleprice,' \
 		'sellr1name,' \
@@ -2480,6 +2481,8 @@ def get_TF_deal_query_fields():
 			'Owner_Entity__r.BillingCity',
 			'Owner_Entity__r.BillingState',
 			'Owner_Entity__r.BillingPostalCode',
+			'Owner_Entity__r.Category__c',
+			'Owner_Entity__r.Description',
 			'Owner_Entity__r.Phone',
 			'Owner_Entity__r.Website',
 			'OPR_Sent__c',
@@ -2523,7 +2526,7 @@ def get_TF_deal_query_fields():
 	fields_base = ', '.join(lFields)
 
 	# Add other TF objects to fields
-	fields_accounts_receivable = "(SELECT Id FROM Accounts_Receivable__r )"
+	fields_accounts_receivable = "(SELECT Id FROM Accounts_Receivable__r)"
 	fields_commissions = "(SELECT Agent__c, Agent__r.Name, LAO_Agent__c, Agent__r.Phone, Agent__r.PersonEmail, Agent__r.Company__r.Id, Agent__r.Company__r.Name FROM Commissions__r)"
 	fields_lot_details = "(Select Name, Acres__c, Lot_Count__c, Lot_Width__c, Lot_Depth__c, Price_per_parcel__c, Price_per_Front_Foot__c, Price_per_Lot__c From Lot_Details__r WHERE RecordTypeID != '012a0000001ZSieAAG')"
 	fields_offer = "(SELECT Buyer__r.Id, Buyer__r.Name,  Buyer__r.Phone,  Buyer__r.PersonMobilePhone,  Buyer__r.PersonEmail,  Buyer__r.Top100__c, Buyer_Entity__r.Id, Buyer_Entity__r.Name, Buyer_Entity__r.Category__c, Offer_Status__c FROM Offers__r where Offer_Status__c = 'Accepted')"
@@ -2583,7 +2586,7 @@ def get_TF_entity_query_fields():
 # Offer TF fields
 def get_TF_offer_query_fields():
 	lFields = [
-		'Id,'
+		'Id',
 		'Buyer__r.Id',
 		'Buyer__r.Name',
 		'Buyer__r.FirstName',
@@ -2674,6 +2677,7 @@ def get_TF_person_query_fields():
 		'BillingCity',
 		'BillingState',
 		'BillingPostalCode',
+		'BillingCountry',
 		'Category__c',
 		'CC_ID__c',
 		'Company__c',

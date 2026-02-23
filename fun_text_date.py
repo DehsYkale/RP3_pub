@@ -1,7 +1,6 @@
 # Text and Date formatting
 
 import dicts
-# import fun_text_date as td
 import lao
 import datetime
 from os import system
@@ -26,6 +25,13 @@ def address_formatter(dAcc):
 		if dAcc['CITY'].isupper():
 			dAcc['CITY'] = dAcc['CITY'].title()
 	
+	# Skip state conversion if the country is not USA
+	lCountry = ['USA', 'UNITED STATES', 'US', 'UNITED STATES OF AMERICA', 'NONE']
+	if 'COUNTRY' in dAcc.keys():
+		if dAcc['COUNTRY'].upper() not in lCountry:
+			print(f"Country is not USA, skipping state conversion: {dAcc['COUNTRY']}")
+			return dAcc
+	
 	if 'STATE' in dAcc.keys():
 		if len(dAcc['STATE']) > 2 and dAcc['STATE'] != 'None':
 			print('here1')
@@ -36,7 +42,7 @@ def address_formatter(dAcc):
 	return dAcc
 
 # Standardizes the format of a billing street address
-def billingstreet_standarize_format(street):
+def billingstreet_standardize_format(street):
 	"""Standardizes the format of a billing street address."""
 	street = street.title()
 	
@@ -439,8 +445,9 @@ def txt_to_int(val):
 	return val
 
 # Standardize Builder Names based on 
-def standarize_builder_names(name, dHB_Rename='None', market='None'):
+def standardize_builder_names(name, dHB_Rename='None', market='None'):
 
+	name = name.strip()
 	# Set default values
 	type_pubic_private = 'Private'
 	not_in_builder_rename_list = True
@@ -448,15 +455,16 @@ def standarize_builder_names(name, dHB_Rename='None', market='None'):
 	# Load the rename file if not passed in argument
 	if dHB_Rename == 'None':
 		renameFile = '{0}BuilderRenameDatabase_v01.xlsx'.format(lao.getPath('zdata'))
-		dHB_Rename = lao.spreadsheetToDict(renameFile)
+		dHB_Rename = dicts.spreadsheet_to_dict(renameFile)
 
 
 	for row in dHB_Rename:
+		homebuilder_dict_name = dHB_Rename[row]['BUILDER'].upper().strip()
 		# Boise Brighton Homes exception
 		if market == 'BOI' and 'BRIGHTON' in name.upper():
 			not_in_builder_rename_list = False
 			break
-		elif dHB_Rename[row]['BUILDER'].upper() == name.upper():
+		elif homebuilder_dict_name == name.upper():
 		# if name.upper() in dHB_Rename[row]['BUILDER'].upper() :
 			name = dHB_Rename[row]['RENAME']
 			type_pubic_private = dHB_Rename[row]['TYPE']
@@ -465,7 +473,7 @@ def standarize_builder_names(name, dHB_Rename='None', market='None'):
 	return name, type_pubic_private, not_in_builder_rename_list
 
 # Standardize MPC Names based on 
-def standarize_MPC_names(name, dMPC_Rename='None'):
+def standardize_MPC_names(name, dMPC_Rename='None'):
 	name = name.replace(',', '').strip()
 	if dMPC_Rename == 'None':
 		renameFile = '{0}MPCRenameDatabase_v01.xlsx'.format(lao.getPath('zdata'))
@@ -480,7 +488,7 @@ def standarize_MPC_names(name, dMPC_Rename='None'):
 	return name
 
 # Standarize Lender Names
-def standarize_lender_names(name, dLender_Rename='None'):
+def standardize_lender_names(name, dLender_Rename='None'):
 	if dLender_Rename == 'None':
 		renameFile = '{0}LenderRenameDatabase_v01.xlsx'.format(lao.getPath('zdata'))
 		dLender_Rename = lao.spreadsheetToDict(renameFile)
@@ -682,12 +690,12 @@ def format_entity_names(entity_name):
 	return entity_name_formatted
 
 # Standarize/clean homebuilder & subdivision names
-def standarize_hb_and_sub_names(fin, dData, dRename, market):
+def standardize_hb_and_sub_names(fin, dData, dRename, market):
 
 	# Standarize/clean homebuilder names
 	for row in dData:
 		if 'BenchmarkObservedClosings' in fin:
-			dData[row]['Builder'], pub_prvt, not_in = standarize_builder_names(dData[row]['Builder'], dRename,  market)
+			dData[row]['Builder'], pub_prvt, not_in = standardize_builder_names(dData[row]['Builder'], dRename,  market)
 
 			# Add (P) to public builders
 			if pub_prvt == 'Public':
@@ -699,9 +707,9 @@ def standarize_hb_and_sub_names(fin, dData, dRename, market):
 				sub_name = dData[row]['Subdivision']
 			else:
 				sub_name = dData[row]['Community']
-			dData[row]['Community'] = standarize_MPC_names(sub_name, dRename)
+			dData[row]['Community'] = standardize_MPC_names(sub_name, dRename)
 		else:
-			print('Error: wrong data type in standarize_names function!')
+			print('Error: wrong data type in standardize_names function!')
 			exit()
 
 	return dData

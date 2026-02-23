@@ -8,23 +8,41 @@ import fun_login
 import fun_text_date as td
 import fun_tf_account_finder as tfaf
 import fun_fox_hunter as fh
-import geopandas as gpd
 import lao
 import mpy
-import os
-import pandas as pd
 from pprint import pprint
 import webs
 
+# Check for existing Ownership base on lon/lat of Lead
+def existing_ownership_exists(service, lon, lat):
+	lao.print_function_name(' internal - existing_ownership_exists')
+
+	deals = mpy.find_deals_in_extent(service, lon, lat)
+	print(f" Found {len(deals)} deal(s) within 150 feet of the point:")
+	if len(deals) > 0:
+		for deal in deals:
+			print(f"  PID: {deal.get('PID__c')} | Name: {deal.get('Name')} | Acres: {deal.get('Acres__c')}")
+
+			# Updateing OPR_Sent__c field to 1994-10-01
+			dup = {'Id': deal.get('Id'), 'OPR_Sent__c': '1994-10-01', 'type': 'lda_Opportunity__c'}
+			bb.tf_update_3(service, dup)
+			print(f"  Updated OPR_Sent__c field for Deal ID: {deal.get('Id')}")
+
+		# TODO: Add Ownership to the spreadsheet
+		return True
+	return False
 
 # Get Enitity ID (EID)
 def get_entity_EID(service, dAcc):
+	lao.print_function_name(' internal - get_entity_EID')
 	#####################################################
 	# Check TF for existing Entity
 	fh_results = 'None'
 	EID = tfaf.main(service, dAcc, account_type='Entity')
 	if EID != 'None':
 		td.colorText(f' TerraForce Entity already exists with EID: {EID}', 'YELLOW')
+		fh_results = 'Owner Exists'
+		return EID, fh_results
 	else:
 		######################################################
 		entity = dAcc['ENTITY']
@@ -72,19 +90,28 @@ def get_entity_EID(service, dAcc):
 		EID = tfaf.main(service, dAcc_temp, account_type='Entity')
 		if EID == 'None':
 			print('\n Creating TerraForce Account...')
+
+			# Title Case the Entity Name and format address
+			print('here3')
+			pprint(f' Before formatting Entity Name: {dAcc_fh_entity_primary["Name"]}')
+			pprint(dAcc_fh_entity_primary)
 			ui = td.uInput('\n Continue [00]... > ')
 			if ui == '00':
 				exit('\n Terminating program...')
+			dAcc_fh_entity_primary['Name'] = td.format_entity_name(dAcc_fh_entity_primary['Name'])
+			dAcc_fh_entity_primary = td.address_formatter(dAcc_fh_entity_primary)
+
 			EID = bb.tf_create_3(service, dAcc_fh_entity_primary)
 			print(f'\n Created TerraForce Account with EID: {EID}')
-			ui = td.uInput('\n Continue [00]... > ')
-			if ui == '00':
-				exit('\n Terminating program...')
+			# ui = td.uInput('\n Continue [00]... > ')
+			# if ui == '00':
+			# 	exit('\n Terminating program...')
 
 	return EID, fh_results
 
 # Get Person ID (AID)
 def get_person_AID(service, dAcc, EID, fh_results):
+	lao.print_function_name(' internal - get_person_AID')
 
 	lContacts = fh_results['contacts']
 	# TODO: Handle if there are no contacts found
@@ -102,6 +129,8 @@ def get_person_AID(service, dAcc, EID, fh_results):
 			# Check for existing Entity again with updated dAcc
 			AID = tfaf.main(service, dAcc_temp, account_type='Person')
 			break
+	
+	# No existing Person found in TF, create new Person
 	if AID == 'None':
 		print('\n Creating TerraForce Person Account...')
 	
@@ -116,6 +145,11 @@ def get_person_AID(service, dAcc, EID, fh_results):
 		else:
 			dAcc_person_primary['Description'] = f'Created by Fox Hunter on {datetime.date.today().isoformat()}'
 		
+		# Format the Person Name and address
+		dAcc_person_primary['NF'] = dAcc_person_primary['NF'].title()
+		dAcc_person_primary['NL'] = dAcc_person_primary['NL'].title()
+		dAcc_person_primary = td.address_formatter(dAcc_person_primary)
+
 		ui = td.uInput('\n Continue [00]... > ')
 		if ui == '00':
 			exit('\n Terminating program...')
@@ -124,6 +158,35 @@ def get_person_AID(service, dAcc, EID, fh_results):
 	
 	return AID
 
+# Format and populate dTF with Deal Name, Location, EID, AID, etc.
+def format_and_populate_dTF(dTF, EID, AID):
+	# Add EID and AID to dTF
+	dTF['Owner_Entity__c'] = EID
+	dTF['AccountId__c'] = AID
+	# dTF['OPR_Sent__c'] = datetime.date(1994, 10, 1)
+	dTF['OPR_Sent__c'] = '1994-10-01'
+	if len(dTF['State__c']) < 3:
+		dTF['State__c'] = lao.convertState(dTF['State__c'])
+	dTF['Subdivision__c'] = dTF['Subdivision__c'].title()
+	dTF = mpy.get_intersection_from_lon_lat(dTF=dTF, lon=0, lat=0, askManually=False, findAddress=False)
+	# Deal Name
+	if dTF['Location__c'] != '':
+		dTF['Name'] = f'{dTF["Location__c"]} {dTF["Acres__c"]:.1f} Ac'
+	elif dTF['Subdivision__c'] != '':
+		dTF['Name'] = f'{dTF["Subdivision__c"]} {dTF["Acres__c"]:.1f} Ac'
+	elif dTF['Owner_Entity__c'] != '':
+		dTF['Name'] = f'{dTF["Owner_Entity__r"]["Name"][:60]} {dTF["Acres__c"]:.1f} Ac'
+	else:
+		if dAcc['ENTITY'] != 'None' and dAcc['ENTITY'] != '':
+			dTF['Name'] = f'{dAcc["ENTITY"][:60]} {dTF["Acres__c"]:.1f} Ac'
+		else:
+			dTF['Name'] = f'{dAcc["NF"]} {dAcc["NL"]} {dTF["Acres__c"]:.1f} Ac'
+	# Add Created by Fox Hunter to Deal Description
+	if len(dTF['Description__c']) > 0:
+		dTF['Description__c'] = dTF['Description__c'] + f' Created by Fox Hunter on {datetime.date.today().isoformat()}'
+	else:
+		dTF['Description__c'] = f'Created by Fox Hunter on {datetime.date.today().isoformat()}'
+	return dTF
 
 td.banner('AI L5 Lead Spreadsheet Ownership Maker v01')
 
@@ -154,39 +217,22 @@ for row in dL5_Leads:
 	print(f'\n Lead ID: {leadid}')
 
 	# Check for existing Deals within 150 feet of Lead location
-	lon = float(r['x'])
-	lat = float(r['y'])
-	deals = mpy.find_deals_in_extent(service, lon, lat)
-	print(f"Found {len(deals)} deal(s) within 150 feet of the point:")
-	if len(deals) > 0:
-		for deal in deals:
-			print(f"  PID: {deal.get('PID__c')} | Name: {deal.get('Name')} | Acres: {deal.get('Acres__c')}")
-			ui = td.uInput('\n Continue [00]... > ')
-			if ui == '00':
-				exit('\n Terminating program...')
-		# TODO: Add Ownership to the spreadsheet
+	if existing_ownership_exists(service, float(r['x']), float(r['y'])):
+		print('\n Existing Ownership found for this Lead location. Skipping to next Lead...')
 		continue
 
-	# Get Lead Info dicts
-	dAcc, dTF, lParcel_PropertyID = mpy.get_lead_info_dAcc_dTF_dicts(leadid)
+	# Get ESRI ArcGIS token
+	token = mpy.get_arcgis_token()
+	
+	# Get Lead Info dicts and parcle propertyid list
+	dAcc, dTF, lParcel_PropertyID = mpy.get_lead_info_dAcc_dTF_dicts(token, leadid)
 	if dAcc == {} and dTF == {}:
 		continue
-	print(lParcel_PropertyID)
-	ui = td.uInput('\n Continue [00]... > ')
-	if ui == '00':
-		exit('\n Terminating program...')
-	# pprint(dAcc)
-	# print()
-	# pprint(dTF)
 
-		# Get Entity ID (EID)
+	# Get Entity ID (EID)
 	EID, fh_results = get_entity_EID(service, dAcc)
 	# TODO: Handle if EID is 'None'
-	# TODO: Handler Person contact if EID is not 'None' and fh_results is 'None'
-	# ui = td.uInput('\n Continue [00]... > ')
-	# if ui == '00':
-	# 	exit('\n Terminating program...')
-	
+
 	# If making Fox Hunter file only, skip the rest
 	if make_fox_hunter_file_only:
 		continue
@@ -198,64 +244,37 @@ for row in dL5_Leads:
 		if ui == '00':
 			exit('\n Terminating program...')
 	
-	# # Get Parcel propertyids
-	# lParcels = dTF['Parcels__c'].split(',')
-	# lParcel_PropertyID, dTF = mpy.get_parcel_propertyid(lParcels, dTF)
-
 	# Find contact of an existing Entity
 	AID = 'None'
-	if EID != 'None' and fh_results == 'None':
+	if EID != 'None' and fh_results == 'Owner Exists':
 		td.warningMsg('\n Existing Entity found but no Fox Hunter data available to find Contact.')
 		dEmployees = acc.find_persons_of_entity(service, EID = EID, person = 'None', returnDict = True)
 		print('\n Employees/Persons found for Entity in TF:')
-		pprint(dEmployees)
+		# pprint(dEmployees)
 		for emp in dEmployees:
 			print(f"  Name: {emp['FirstName']} {emp['LastName']} | AID: {emp['Id']}")
 			AID = emp['Id']
-			# break
-		# 
-		ui = td.uInput('\n Continue [00]... > ')
-		if ui == '00':
-			exit('\n Terminating program...')
+			break
+		# # 
+		# ui = td.uInput('\n Continue [00]... > ')
+		# if ui == '00':
+		# 	exit('\n Terminating program...')
 
 	# Get Person ID (AID)
 	if AID == 'None':
 		AID = get_person_AID(service, dAcc, EID, fh_results)
 
-	# Add EID and AID to dTF
-	dTF['Owner_Entity__c'] = EID
-	dTF['AccountId__c'] = AID
-	# dTF['OPR_Sent__c'] = datetime.date(1994, 10, 1)
-	dTF['OPR_Sent__c'] = '1994-10-01'
-	if len(dTF['State__c']) < 3:
-		dTF['State__c'] = lao.convertState(dTF['State__c'])
-	dTF = mpy.get_intersection_from_lon_lat(dTF=dTF, lon=0, lat=0, askManually=False, findAddress=False)
-	# Deal Name
-	if dTF['Subdivision__c'] != '':
-		dTF['Name'] = f'{dTF["Subdivision__c"]} {dTF["Acres__c"]:.1f} Ac'
-	if dTF['Location__c'] != '':
-		dTF['Name'] = f'{dTF["Location__c"]} {dTF["Acres__c"]:.1f} Ac'
-	elif dTF['Owner_Entity__c'] != '':
-		dTF['Name'] = f'{dTF["Owner_Entity__r"]["Name"][:60]} {dTF["Acres__c"]:.1f} Ac'
-	else:
-		if dAcc['ENTITY'] != 'None' and dAcc['ENTITY'] != '':
-			dTF['Name'] = f'{dAcc["ENTITY"][:60]} {dTF["Acres__c"]:.1f} Ac'
-		else:
-			dTF['Name'] = f'{dAcc["NF"]} {dAcc["NL"]} {dTF["Acres__c"]:.1f} Ac'
-	# Add Created by Fox Hunter to Deal Description
-	if len(dTF['Description__c']) > 0:
-		dTF['Description__c'] = dTF['Description__c'] + f'\nCreated by Fox Hunter on {datetime.date.today().isoformat()}'
-	else:
-		dTF['Description__c'] = f'Created by Fox Hunter on {datetime.date.today().isoformat()}'
-	
+	# Format and populate dTF with Deal Name, Location, EID, AID, etc.
+	dTF = format_and_populate_dTF(dTF, EID, AID)
+
 	print('here2')
 	print(f' LeadID: {leadid}')
-	print(' ### dTF with added Ownership fields ### ')
-	pprint(dTF)
-	print('\n Pause here to inspect dTF with added Ownership fields...')
-	ui = td.uInput('\n Continue to create PID [00]... > ')
-	if ui == '00':
-		exit('\n Terminating program...')
+	# print(' ### dTF with added Ownership fields ### ')
+	# pprint(dTF)
+	# print('\n Pause here to inspect dTF with added Ownership fields...')
+	# ui = td.uInput('\n Continue to create PID [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 	
 	# Create TF Deal record ###############################################
 	DID = bb.tf_create_3(service, dTF)
@@ -264,9 +283,9 @@ for row in dL5_Leads:
 
 	webs.open_pid_did(service, DID)
 	print(f'\n Created TerraForce Deal with DealID: {DID} and PID: {dTF["PID__c"]}')
-	ui = td.uInput('\n Continue [00]... > ')
-	if ui == '00':
-		exit('\n Terminating program...')
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 
 	# Create Ownership polygon ###########################################
 	mpy.oi_make_from_parcel_propertyid(dTF, lParcel_PropertyID)

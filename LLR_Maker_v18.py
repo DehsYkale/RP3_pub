@@ -90,7 +90,8 @@ def build_tf_query():
 
 	# Date is filtered in script below because Excel and L5 have different criteria <- even though they are supposed to have different criteria, the older data is so bad that it shouldn't be included
 	# SaleDateCutOff = lao.less84months()
-	SaleDateCutOff = td.less_time_ago('MONTH', 84)
+	SaleDateCutOff = td.less_time_ago('MONTH', 72)
+	LisingDateCutOff = td.less_time_ago('MONTH', 24)
 	wsDateFilter = 'Sale_Date__c > {0}'.format(SaleDateCutOff)
 	# wsDateFilter = 'Sale_Date__c > {0}'.format('2000-01-01')
 
@@ -111,7 +112,7 @@ def build_tf_query():
 		wcComps = "{0} AND {1}".format(wcComps, wcSelectedMarket)
 
 	# Create Competitor Listings where clause
-	wcCompetitor_Listings = "StageName__c = 'Lead' AND  List_Date__c > {0} AND {1}".format(SaleDateCutOff,wcRecordType_Research)
+	wcCompetitor_Listings = "StageName__c = 'Lead' AND  List_Date__c > {0} AND {1}".format(LisingDateCutOff, wcRecordType_Research)
 	if userSelectedMarket:
 		wcCompetitor_Listings = "{0} AND {1}".format(wcCompetitor_Listings, wcSelectedMarket)
 
@@ -328,6 +329,9 @@ for mkt in lMarkets:
 		# Not the current Market
 		if row['Market__c'] != mkt:
 			continue
+		# Skip Phoenix ownerships created on or before 5/2/2014
+		if mkt == 'Phoenix' and row.get('CreatedDate', '') <= '2014-05-02T23:59:59.000+0000':
+			continue
 		# Create the line(s) from each single (row) from result
 		lList_of_Lines_Lead_Deals = xxl.llrAllLeadDealsLineMaker(row)
 		# Add the new lines to lToExcelLeadDeals list
@@ -353,16 +357,18 @@ for mkt in dMarketsComps:
 	wb = xw.Book()
 
 	# Write Lead Deals Sheet #############################################
-	print(' Writing Lead Deals sheet...')
-	lToExcelLeadDeals = dMarketsLeadDeals[mkt]
-	noRowsLeadDeals = len(lToExcelLeadDeals) + 2
-	sht = xw.main.sheets.add('Ownerships')
-	df = pd.DataFrame(lToExcelLeadDeals, columns=headerLeadProperties)  # Convert list of lists to a dataframe
-	df = df.sort_values(by=['Classification', 'Submarket']) # Sort by Submarket, Classification
-	sht.range('A1').value = '{0} Ownerships'.format(mkt)
-	sht.range('A3').options(index=False, header=True).value = df
-	xxl.formatOwnershipsSheet(mkt, wb, sht, noRowsLeadDeals, noColLeadDeals)
-	lao.sleep(2)
+	# Skip Phoenix
+	if mkt != 'Phoenix':
+		print(' Writing Lead Deals sheet...')
+		lToExcelLeadDeals = dMarketsLeadDeals[mkt]
+		noRowsLeadDeals = len(lToExcelLeadDeals) + 2
+		sht = xw.main.sheets.add('Ownerships')
+		df = pd.DataFrame(lToExcelLeadDeals, columns=headerLeadProperties)  # Convert list of lists to a dataframe
+		df = df.sort_values(by=['Classification', 'Submarket']) # Sort by Submarket, Classification
+		sht.range('A1').value = '{0} Ownerships'.format(mkt)
+		sht.range('A3').options(index=False, header=True).value = df
+		xxl.formatOwnershipsSheet(mkt, wb, sht, noRowsLeadDeals, noColLeadDeals)
+		lao.sleep(2)
 	
 	# Write Top 100 Deals Sheet ##########################################
 	print(' Writing MVP Deals sheet...')

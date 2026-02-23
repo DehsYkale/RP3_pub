@@ -1590,7 +1590,6 @@ def tf_update_3(service, object_dict):
 	
 # SelesForce Query
 def tf_query_3(service, rec_type, where_clause, limit=None, fields='default'):
-	import acc
 	from pprint import pprint
 
 	# PERSON ###############################################
@@ -1651,7 +1650,6 @@ def tf_query_3(service, rec_type, where_clause, limit=None, fields='default'):
 	if limit != None:
 		query_string = "{0} LIMIT {1}".format(query_string, limit)
 
-	from collections import OrderedDict
 	query_result = service.query_all(query_string)
 	records = query_result['records']  # dictionary of results!
 	records = replace_dict_none_values(records)

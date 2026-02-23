@@ -176,7 +176,7 @@ for xlsfile in inFiles:
 		# Subdivison is not a Community (MPC)
 		if subdivision == 'Undefined':
 			subdivision = worksheet.row_values(i)[2]
-		subdivision = td.standarize_MPC_names(subdivision, dMPC_Rename)
+		subdivision = td.standardize_MPC_names(subdivision, dMPC_Rename)
 		# Catch UTF-8 characters
 		subdivision = subdivision.encode('utf-8')
 		starts = float(worksheet.row_values(i)[16])

@@ -1,8 +1,10 @@
 # Non-ESRI map functions
 
 
+from datetime import datetime
 import aws
 import bb
+from collections import Counter
 import dicts
 import fjson
 import fun_login
@@ -40,7 +42,12 @@ def get_arcgis_token():
 		"f": "json"
 	}
 	response = requests.post(url, data=data)
-	return response.json().get("token")
+	result = response.json()
+	token = result.get("token")
+	expires = result.get("expires")  # milliseconds since epoch
+	# print(f' Token expires: {datetime.fromtimestamp(expires/1000)}')
+	print(' Token acquired.\n')
+	return token
 
 def get_lead_layer_id(token, leadid):
 	"""Extract state and county from leadid and look up the Lead layer ID from the API."""
@@ -51,7 +58,8 @@ def get_lead_layer_id(token, leadid):
 	parcel_layer_name = f"{state}PARCELS{county}"
 	
 	# Query the FeatureServer to get all layers
-	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
+	# url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
+	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_Leads/MapServer"
 	params = {
 		"f": "json",
 		"token": token
@@ -80,9 +88,12 @@ def get_lead_layer_id(token, leadid):
 	
 	return lead_layer_id, parcel_layer_id
 
+# Get Lead attributes by leadid from ArcGIS REST API
 def get_lead_by_id(token, leadid, layer_id):
-	"""Get Lead attributes by leadid from ArcGIS REST API."""
-	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
+	lao.print_function_name(' mpy def get_lead_by_id')
+
+	# base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
+	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_Leads/MapServer"
 	url = f"{base_url}/{layer_id}/query"
 	params = {
 		"where": f"leadid='{leadid}'",
@@ -91,8 +102,17 @@ def get_lead_by_id(token, leadid, layer_id):
 		"f": "json",
 		"token": token
 	}
+	# pprint(params)
+	# print(url)
 	response = requests.get(url, params=params)
 	data = response.json()
+	# Print data for debugging
+	# print(f"\n Lead data for LeadID {leadid}:")
+	# pprint(data)
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
+
 	if data.get("features"):
 		return data["features"][0]["attributes"]
 	return None
@@ -119,6 +139,7 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 	parcel_fields = dicts.get_parcel_fields_list()
 	print('\n Parcel Fields list')
 	print(parcel_fields)
+	print(f'\n Parcel_layer_id: {parcel_layer_id}')
 	print('\n')
 
 	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer"
@@ -130,6 +151,7 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 		"f": "json",
 		"token": token
 	}
+	pprint(params)
 	response = requests.get(url, params=params)
 	data = response.json()
 
@@ -139,6 +161,7 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 	# 	exit('\n Terminating program...')
 	
 	lPropertyids = []
+	lOwners = []
 	subdiv = 'None'
 	usedesc = 'None'
 	zoning = 'None'
@@ -147,6 +170,8 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 			pid = feature["attributes"].get("propertyid")
 			if pid:
 				lPropertyids.append(pid)
+			owner = feature["attributes"].get("owner", "").upper()
+			lOwners.append(owner)
 			if subdiv == 'None':
 				subdiv = feature["attributes"].get("subdiv", subdiv)
 			if usedesc == 'None':
@@ -154,35 +179,45 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 			if zoning == 'None':
 				zoning = feature["attributes"].get("zoning", zoning)
 	
-	return lPropertyids, subdiv, usedesc, zoning
+	# Determine the most common owner
+	if lOwners:
+		most_common_owner = Counter(lOwners).most_common(1)[0][0]
+	else:
+		most_common_owner = 'None'
+	
+	return lPropertyids, subdiv, usedesc, zoning, most_common_owner
 
 # Get dAcc and dTF from LeadId
-def get_lead_info_dAcc_dTF_dicts(LeadId):
+def get_lead_info_dAcc_dTF_dicts(token, LeadId):
 	lao.print_function_name(' mpy def get_lead_info_dAcc_dTF_dicts')
 
 	start_time = time.time()
 
-	token = get_arcgis_token()
+	# token = get_arcgis_token()
 
 	lead_layer_id, parcel_layer_id = get_lead_layer_id(token, LeadId)
 	print(f"\n Lead Layer ID: {lead_layer_id}")
 	print(f" Parcel Layer ID: {parcel_layer_id}\n")
 
 	dLeadInfo = get_lead_by_id(token, LeadId, lead_layer_id)
-	pprint(dLeadInfo)
-	
+	# pprint(dLeadInfo)
+
+	# Return empty dicts if no lead info found
+	if not dLeadInfo:
+		print('\n No Lead Info found...')
+		return {}, {}, []	
 
 	# Get propertyids from the parcels
 	parcels_str = dLeadInfo.get("parcels")
-	print(f"\n Parcels: {parcels_str}")
+	# print(f"\n Parcels: {parcels_str}")
 	if parcels_str:
 		print("\n Getting Parcel Property IDs...")
-		lPropertyids, subdiv, usedesc, zoning = get_parcel_propertyids(token, parcels_str, parcel_layer_id)
-		print(f"\n Property IDs: {lPropertyids}")
+		lPropertyids, subdiv, usedesc, zoning, most_common_owner = get_parcel_propertyids(token, parcels_str, parcel_layer_id)
+		# print(f"\n Property IDs: {lPropertyids}")
 
 	# Create dAcc from dLeadInfo
 	dAcc = dicts.get_blank_account_dict()
-	dAcc['ENTITY'] = dLeadInfo.get('owner', '').split(' OR ')[0]
+	dAcc['ENTITY'] = most_common_owner
 	dAcc['STREET'] = dLeadInfo.get('mailstreet', '')
 	dAcc['CITY'] = dLeadInfo.get('mailcity', '')
 	dAcc['STATE'] = dLeadInfo.get('mailstate', '')

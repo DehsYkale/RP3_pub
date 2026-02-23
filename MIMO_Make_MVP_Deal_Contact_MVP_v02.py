@@ -60,6 +60,9 @@ lAgents = []
 for row in dStaff:
 	if dStaff[row]['marketAbb'] == market_abb and dStaff[row]['Roll'] == 'Agent':
 		market = dStaff[row]['Markets']
+		# Temp exception for Wilson Higgins
+		if row == 'Wilson Higgins' or row == 'Kathleen Rutland':
+			continue
 		lAgents.append(row)
 
 # Print Market and Agents
@@ -82,6 +85,9 @@ if ',' in market:
 		exit('\n Terminating program...')
 	else:
 		market = lMarkets[int(ui)-1]
+		if market == 'Scottsdale':
+			market = 'Phoenix'
+			lAgents = ['Greg Vogel']
 
 # Include Escrow and listings?
 while 1:
@@ -89,10 +95,10 @@ while 1:
 	if ui == '00':
 		exit('\n Terminating program...')
 	elif ui == '0':
-		wc = "Market__c = '{0}' AND StageName__c = 'Top 100'".format(market)
+		wc = "Market__c = '{0}' AND StageName__c = 'Top 100' AND RecordTypeId = '012a0000001ZSS5AAO'".format(market)
 		break
 	elif ui == '1':
-		wc = "Market__c = '{0}' AND StageName__c IN ('Escrow', 'Signed Listing', 'Trusted Listing', 'Top 100')".format(market)
+		wc = "Market__c = '{0}' AND StageName__c IN ('Escrow', 'Signed Listing', 'Trusted Listing', 'Top 100') AND RecordTypeId = '012a0000001ZSS5AAO'".format(market)
 		break
 
 # TerraForce Query
@@ -101,12 +107,13 @@ results = bb.tf_query_3(service, rec_type='Deal', where_clause=wc, limit=None, f
 
 for row in results:
 	dAcc = dicts.get_blank_account_dict()
-	# Add PID, Deal Name and Deal ID (DID) to dAcc
+	# Add PID, DEALNAME and Deal ID (DID) to dAcc
 	dAcc['PID'] = row['PID__c']
 	print(f' {dAcc["PID"]}')
 	dAcc['DID'] = row['Id']
-	dAcc['Deal Name'] = row['Name']
+	# dAcc['DEALNAME'] = row['Name']
 	dAcc['AID'] = row['AccountId__c']
+	county = row.get('County__c', 'None')
 	if dAcc['AID'] == 'None':
 		continue
 	# Skip Deals without Person contact
@@ -123,9 +130,63 @@ for row in results:
 		if agent in dAcc['TOP100AGENT'] or 'Greg Vogel' in dAcc['TOP100AGENT']:
 			update_top100 = False
 			break
+		# Skip Phoenix market if TOP100AGENT is not None
+		elif market == 'Phoenix' and dAcc['TOP100AGENT'] != 'None':
+			update_top100 = False
+			break
+		# If Phoenix market and TOP100AGENT is None but other agents exist in the Commissions add them to lAgent else add Greg Vogel
+		elif market == 'Phoenix' and dAcc['TOP100AGENT'] == 'None':
+			if row['Commissions__r'] != 'None':
+				lAgents = [
+					rec['Agent__r']['Name']
+					for rec in row['Commissions__r']['records']]
+				update_top100 = True
+				if 'Wes Campbell' in lAgents:
+					lAgents.remove('Wes Campbell')
+					lAgents.append('Wesley Campbell')
+				break
+			else:
+				lAgents = ['Greg Vogel']
+				update_top100 = True
+			break
 		else:
 			update_top100 = True
+	
+	# print('here1')
+	# print(dAcc['TOP100AGENT'] + ' - ' + market)
+	# print(update_top100)
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
+	
 	if update_top100 is False:
+		continue
+	
+	# print('here1')
+	# # pprint(row)
+	# print('===========================================')
+	# pprint(row['Commissions__r'])
+	# print('===========================================')
+	# pprint(lAgents)
+	# print('===========================================')
+	# print(update_top100)
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
+	
+
+	# If TOP100AGENT field is None and other agents exist in the Category do not add MVP ZZZZZZZZ
+	skip_bc_other_agents_in_category = False
+	if dAcc['TOP100AGENT'] == 'None':
+		# lCat = dAcc['CATEGORY'].split(';')
+		for row in dStaff:
+			if row in lAgents and row in dAcc['CATEGORY']:
+				skip_bc_other_agents_in_category = False
+				break
+			elif row in dAcc['CATEGORY']:
+				print(' No existing Advisors in MVP, but Advisors exist in Category...skipping...')
+				skip_bc_other_agents_in_category = True
+	if skip_bc_other_agents_in_category:
 		continue
 
 	# Remove Rick Bressan from TOP100AGENT if it exists
@@ -166,13 +227,21 @@ for row in results:
 		dAcc['CATEGORY'] = '{0};Market Mailer'.format(dAcc['CATEGORY'])
 		update_category = True
 	
-	# print(f"\n PID: {dAcc['PID']}")
-	# print(f" AID {dAcc['AID']}")
-	# print(f" TOP 100: {dAcc['TOP100AGENT']}")
-	# print(f" Category: {dAcc['CATEGORY']}")
+	# Add note to Description with date and changes made
+	note = f"Added as MVP for the Market Mailer bc {dAcc['PID']} is a MVP - {td.today_date()}"
+	if dAcc['DESCRIPTION'] == 'None':
+		dAcc['DESCRIPTION'] = note
+	else:
+		dAcc['DESCRIPTION'] = f"{dAcc['DESCRIPTION']} \n {note}"
+	
+	print(f"\n PID: {dAcc['PID']}")
+	print(f" AID {dAcc['AID']}")
+	print(f" TOP 100: {dAcc['TOP100AGENT']}")
+	print(f" Category: {dAcc['CATEGORY']}")
+	print(f" County: {county}")
+	print(f" Description: {dAcc['DESCRIPTION']}")
 
 	# print('\n here1')
-	# pprint(dAcc)
 	# ui = td.uInput('\n Continue [00]... > ')
 	# if ui == '00':
 	# 	exit('\n Terminating program...')
@@ -183,16 +252,26 @@ for row in results:
 		dup['Top100__c'] = dAcc['TOP100AGENT']
 	if update_category:
 		dup['Category__c'] = dAcc['CATEGORY']
+	dup['Description'] = dAcc['DESCRIPTION']
+	dup['BillingStreet'] = dAcc['STREET']
+	dup['BillingCity'] = dAcc['CITY']
+	dup['BillingState'] = dAcc['STATE']
+	dup['BillingPostalCode'] = dAcc['ZIPCODE']
+
 
 	if update_top100 is True or update_category is True:
 		try:
 			bb.tf_update_3(service, dup)
 		except:
-			print('here1')
 			pprint(dAcc)
 			ui = td.uInput('\n Continue [00]... > ')
 			if ui == '00':
 				exit('\n Terminating program...')
+	
+	# print(f" Successfully updated {dAcc['AID']} with PID {dAcc['PID']} as MVP!")
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
 			
 	
 

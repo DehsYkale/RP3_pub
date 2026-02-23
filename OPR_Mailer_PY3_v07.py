@@ -155,10 +155,9 @@ def send_to():
 			SENDLIST = 'T'
 			td.banner('OPR Mailer PY3 v07', colorama=True)
 			print(' 🧪 Test mode selected - OPRs will be sent to you only')
-			recipients_to = ['{0} LAO <{1}@landadvisors.com>'.format(userName.upper(), userName)]
-			recipients_bcc = []
+			recipients_bcc = ['{0} LAO <{1}@landadvisors.com>'.format(userName.upper(), userName)]
 			sender = 'OPR TEST <research@landadvisors.com>'
-			return recipients_to, recipients_bcc, SENDLIST, sender, oprType
+			return recipients_bcc, recipients_bcc, SENDLIST, sender, oprType
 		
 		elif SENDLIST == 'Q' or SENDLIST == '11':
 			SENDLIST = 'Q'
@@ -221,22 +220,22 @@ def get_lao_staff_recipients(sendListMarket):
 			recipients_bcc.append(nameEmail)
 		elif sendListMarket in dStaff[staff]['Markets']:
 			nameEmail = '{0} <{1}@landadvisors.com>'.format(staff, dStaff[staff]['Email'])
-			recipients_to.append(nameEmail)
+			recipients_bcc.append(nameEmail)
 		
 
 	# Return recipient
 	return recipients_to, recipients_bcc
 
-def add_capital_recipients(recipients_to):
+def add_capital_recipients(recipients_bcc):
 	lao.print_function_name('script add_capital_recipients')
 	if 'Distressed' in dHTML['TITLE']:
-		recipients_to.append('mzarola@landadvisorscapital.com')
-		recipients_to.append('lembry@landadvisorscapital.com')
-		if 'mstratz@landadvisorscapital.com' not in recipients_to:
-			recipients_to.append('mstratz@landadvisors.com')
-		if 'gvogel@landadvisors.com' not in recipients_to:
-			recipients_to.append('gvogel@landadvisors.com')
-	return recipients_to
+		recipients_bcc.append('mzarola@landadvisorscapital.com')
+		recipients_bcc.append('lembry@landadvisorscapital.com')
+		if 'mstratz@landadvisorscapital.com' not in recipients_bcc:
+			recipients_bcc.append('mstratz@landadvisors.com')
+		if 'gvogel@landadvisors.com' not in recipients_bcc:
+			recipients_bcc.append('gvogel@landadvisors.com')
+	return recipients_bcc
 
 def create_query_string(service, sendlist, oprType):
 	lao.print_function_name('script create_query_string')
@@ -507,7 +506,7 @@ def lao_activity(PID):
 	else:
 		dHTML['LAO_Advisor_Names'] = ', '.join(dHTML['LAO_Advisor_Names'])
 
-def get_comp_fields(row, recipients_to):
+def get_comp_fields(row, recipients_bcc):
 	lao.print_function_name('script get_comp_fields')
 
 	dHTML['Buyer_Acting_As__c'] = (row['Buyer_Acting_As__c'])
@@ -542,8 +541,8 @@ def get_comp_fields(row, recipients_to):
 
 	# Add GV to Whale Sales outside of Scottsdale
 	if SENDLIST != 'Q' and SENDLIST != 'T':
-		if dHTML['Sale_Price__c'] >= 15000000 and 'Greg Vogel <gvogel@landadvisors.com>' not in recipients_to:
-			recipients_to.append('Greg Vogel <gvogel@landadvisors.com>')
+		if dHTML['Sale_Price__c'] >= 15000000 and 'Greg Vogel <gvogel@landadvisors.com>' not in recipients_bcc:
+			recipients_bcc.append('Greg Vogel <gvogel@landadvisors.com>')
 
 	dHTML['Sale_Price__c'] = '$' + '{:,.0f}'.format(dHTML['Sale_Price__c'])
 
@@ -929,7 +928,7 @@ def get_lot_details():
 		dHTML['Lots__c'] = dHTML['Total_Lots_All_Groups']
 	return True
 
-def get_opr_title(oprType, recipients_to):
+def get_opr_title(oprType, recipients_bcc):
 	lao.print_function_name('script get_opr_title')
 	subCLA = dHTML['Classification__c'].title()
 	subCTY = dHTML['City__c'].title()
@@ -1015,10 +1014,10 @@ def get_opr_title(oprType, recipients_to):
 			dHTML['TITLE'] = 'LAO {0}'.format(dHTML['TITLE'])
 			# Add GV & BR to LAO Deals
 			if SENDLIST != 'Q' and SENDLIST != 'T':
-				if 'Greg Vogel <gvogel@landadvisors.com>' not in recipients_to:
-					recipients_to.append('Greg Vogel <gvogel@landadvisors.com>')
-				if 'Brian Rosener <rrosener@landadvisors.com>' not in recipients_to:
-					recipients_to.append('Brian Rosener <rrosener@landadvisors.com>')
+				if 'Greg Vogel <gvogel@landadvisors.com>' not in recipients_bcc:
+					recipients_bcc.append('Greg Vogel <gvogel@landadvisors.com>')
+				if 'Brian Rosener <rrosener@landadvisors.com>' not in recipients_bcc:
+					recipients_bcc.append('Brian Rosener <rrosener@landadvisors.com>')
 		dHTML['TITLE'] = dHTML['TITLE'].replace('±', '+/-')
 
 def get_links():
@@ -1069,7 +1068,7 @@ def get_html_template(oprType):
 
 def get_recipient_request(names):
 	lao.print_function_name('script get_recipient_request')
-	recipients_to = ['Bill Landis <blandis@landadvisors.com>', 'Ethan Granger <egranger@landadvisors.com>', 'Alec Videla <avidela@landadvisors.com']
+	recipients_bcc = ['Bill Landis <blandis@landadvisors.com>', 'Ethan Granger <egranger@landadvisors.com>', 'Alec Videla <avidela@landadvisors.com']
 	names = names.split(', ')
 	# Find Agents in Top 100 Commission list
 	office = 'None'
@@ -1079,35 +1078,35 @@ def get_recipient_request(names):
 			staff = staff.replace('.', '')
 			if name == staff and dStaff[staff]['Roll'] != 'Research' and dStaff[staff]['LAO'] == 'Yes':
 				skipIt = False
-				for rec in recipients_to:
+				for rec in recipients_bcc:
 					if name in rec:
 						skipIt = True
 				if skipIt:
 					continue
 				nameEmail = '{0} <{1}@landadvisors.com>'.format(staff, dStaff[staff]['Email'])
 				office = dStaff[staff]['Office']
-				recipients_to.append(nameEmail)
+				recipients_bcc.append(nameEmail)
 
 	for name in names:
 		print(name)
 		if 'Bret Rinehart' in name or 'Ryan Semro' in name or 'Ryan ' in name:
-			recipients_to.append('Kathleene Hansen <khansen@landadvisors.com>')
-			return recipients_to
+			recipients_bcc.append('Kathleene Hansen <khansen@landadvisors.com>')
+			return recipients_bcc
 		elif 'Chad Russell' in name or 'Bobby Wuertz' in name or 'Dave Lords' in name or 'Kirk McCarville' in name or 'Michele Pino' in name or 'Mike Brinkley' in name or 'Mike Schwab' in name or 'Ben Heglie' in name:
-			recipients_to.append('Sara Angorn <sangorn@landadvisors.com>')
-			return recipients_to
+			recipients_bcc.append('Sara Angorn <sangorn@landadvisors.com>')
+			return recipients_bcc
 		elif 'Greg Vogel' in name or 'Wesley Campbell' in name:
-			recipients_to.append('Jennifer Bittner <jbittner@landadvisors.com>')
-			return recipients_to
+			recipients_bcc.append('Jennifer Bittner <jbittner@landadvisors.com>')
+			return recipients_bcc
 		elif 'Rick Bressan' in name:
-			return recipients_to
+			return recipients_bcc
 	for staff in dStaff:
 		if (dStaff[staff]['Office'] in office and dStaff[staff]['Roll'] == 'EA') or dStaff[staff]['Roll'] == 'Research':
 			nameEmail = '{0} <{1}@landadvisors.com>'.format(staff, dStaff[staff]['Email'])
-			recipients_to.append(nameEmail)
-	return recipients_to
+			recipients_bcc.append(nameEmail)
+	return recipients_bcc
 
-def build_opr_message(recipients_to, SENDLIST, sender, oprType, html):
+def build_opr_message(recipients_bcc, SENDLIST, sender, oprType, html):
 	lao.print_function_name('script build_opr_message')
 	# msg = MIMEMultipart('alternative')
 	# msg['Subject'] = 'OPR: {0}'.format(dHTML['TITLE'])
@@ -1115,7 +1114,7 @@ def build_opr_message(recipients_to, SENDLIST, sender, oprType, html):
 	# msg['Date'] = formatdate(localtime=True)
 
 	if oprType == 'Request' and SENDLIST.upper() != 'T':
-		recipients_to = get_recipient_request(dHTML['LAO_Advisor_Names'])
+		recipients_bcc = get_recipient_request(dHTML['LAO_Advisor_Names'])
 
 	# assign Template
 	t = Template(html)
@@ -1126,7 +1125,7 @@ def build_opr_message(recipients_to, SENDLIST, sender, oprType, html):
 	body = html
 	sender_email = sender
 
-	return subject, body, sender_email, recipients_to
+	return subject, body, sender_email, recipients_bcc
 
 # Add today's date to the Deal's OPR_Sent__c field
 def mark_deal_as_sent(today):
@@ -1271,13 +1270,13 @@ def send_qc_email(errorMail, qcCount, userName):
 	qcHeader = '<head><title>QC RESULTS</title></head>'
 	errorMail = qcHeader + 'QC RESULTS (' + str(qcCount) + ' transfers)<br><br>' + errorMail
 	sender = 'QC RESULTS <research@landadvisors.com>'
-	recipients_to = ['{0} <{1}@landadvisors.com>'.format(userName.upper(), userName)]
+	recipients_bcc = ['{0} <{1}@landadvisors.com>'.format(userName.upper(), userName)]
 
 	qc_subject = 'QC RESULTS'
 	qc_body = errorMail
 	qc_sender_email = sender
 
-	return qc_subject, qc_body, qc_sender_email, recipients_to
+	return qc_subject, qc_body, qc_sender_email, recipients_bcc
 
 def send_opr_sent_notification(oprType):
 	lao.print_function_name('script send_opr_sent_notification')
@@ -1355,7 +1354,7 @@ while 1:
 		# OPR type specific fields
 		# Comp fields
 		if oprType == 'Comp':
-			get_comp_fields(row, recipients_to)
+			get_comp_fields(row, recipients_bcc)
 			get_buyer(row)
 			# Lot Details
 			if dHTML['Lots__c'] > 0 and not 'Apartment' in dHTML['Classification__c']:
@@ -1381,12 +1380,11 @@ while 1:
 		# PIR Fields
 		elif oprType == 'PIR_Comp':
 			get_pir_fields()
-			get_comp_fields(row, recipients_to)
+			get_comp_fields(row, recipients_bcc)
 			get_buyer(row)
 
 		get_links()
-		get_opr_title(oprType, recipients_to)
-
+		get_opr_title(oprType, recipients_bcc)
 		html = get_html_template(oprType)
 
 		
@@ -1413,10 +1411,10 @@ while 1:
 					break
 
 			# Add Capital Recipients if needed
-			recipients_to = add_capital_recipients(recipients_to)
+			recipients_bcc = add_capital_recipients(recipients_bcc)
 
 			# Build OPR Message
-			subject, body, sender_email, recipients_to = build_opr_message(recipients_to, SENDLIST, sender, oprType, html)
+			subject, body, sender_email, recipients_bcc = build_opr_message(recipients_bcc, SENDLIST, sender, oprType, html)
 
 			# Save body as html file for reference
 			if lao.getUserName().lower() == 'blandis':
@@ -1425,6 +1423,13 @@ while 1:
 					f.write(body)
 				print(f'\n Saved {html_filename} file.')
 				openbrowser(html_filename)
+			
+			# print(f'\n Subject: {subject}')
+			# print(f' Recipients To: {recipients_to}')
+			# print(f' Recipients BCC: {recipients_bcc}')
+			# ui = td.uInput('\n Continue [00]... > ')
+			# if ui == '00':
+			# 	exit('\n Terminating program...')
 			
 			dSend_results = emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=None, bcc=recipients_bcc, attachments=None)
 			# Change OPR Sent date to today if OPR successfuly sent
@@ -1447,9 +1452,9 @@ while 1:
 		emailer.send_email_ses(qc_subject, qc_body, qc_sender_email, recipients=None, cc=None, bcc=qc_recipients, attachments=None)
 	else:
 		# Send You Got OPRs email
-		if 'Rick Hildreth <rhildreth@landadvisors.com>' in recipients_to:
+		if 'Rick Hildreth <rhildreth@landadvisors.com>' in recipients_bcc:
 			sender_email, subject, body = send_opr_sent_notification(oprType)
-			emailer.send_email_ses(subject, body, sender_email, recipients=recipients_to, cc=None, bcc=recipients_bcc, attachments=None)
+			emailer.send_email_ses(subject, body, sender_email, recipients=None, cc=None, bcc=recipients_bcc, attachments=None)
 
 exit('\n Fin')
 

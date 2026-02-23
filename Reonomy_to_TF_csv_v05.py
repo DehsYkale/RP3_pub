@@ -459,7 +459,7 @@ with open('{0}{1}_RAW.csv'.format(lao.getPath('comps'), csvName), 'w', newline='
 
 # Process Muti-Parcel Sales
 print('\n Processing...merging multi-parcel sales...please stand by...')
-dRaws = td.spreadsheet_to_dict('{0}{1}_RAW.csv'.format(lao.getPath('comps'), csvName))
+dRaws = dicts.spreadsheet_to_dict('{0}{1}_RAW.csv'.format(lao.getPath('comps'), csvName))
 dFormats = {}
 firstLine = True
 for raw in dRaws:

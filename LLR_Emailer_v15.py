@@ -57,7 +57,7 @@ while 1:
 	else:
 		td.warningMsg('\n Invalid input...try again...')
 
-lFileNameOffice = ['Atlanta', 'Austin', 'Boise', 'Charlotte', 'DFW', 'Greenville', 'Houston', 'Jacksonville', 'Kansas City', 'Las Vegas', 'Prescott', 'Orlando', 'Nashville', 'Phoenix', 'Salt Lake City', 'Tampa', 'Tucson']
+lFileNameOffice = ['Atlanta', 'Austin', 'Boise', 'Charlotte', 'Denver', 'DFW', 'Greenville', 'Houston', 'Jacksonville', 'Kansas City', 'Las Vegas', 'Nashville', 'Orlando', 'Phoenix', 'Prescott', 'Reno', 'Salt Lake City', 'Tampa', 'Tucson']
 
 dAgents = dicts.get_staff_dict(dict_type='full')
 today = td.today_date()

@@ -1558,7 +1558,7 @@ def llr_debt_list_line_maker(dLine):
 	beneficiary, loanAmount = '', ''
 	if dLine['Beneficiary__r'] != 'None':
 		# Standarize Lender Name
-		dLine['Beneficiary__r']['Name'] = td.standarize_lender_names(dLine['Beneficiary__r']['Name'])
+		dLine['Beneficiary__r']['Name'] = td.standardize_lender_names(dLine['Beneficiary__r']['Name'])
 		beneficiary = buildSimpleHyperlink('BENEFICIARY', dLine)
 	loanAmount = dLine['Loan_Amount__c']		
 

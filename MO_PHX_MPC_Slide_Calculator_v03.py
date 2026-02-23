@@ -64,7 +64,7 @@ mpc_rename_file = '{0}MPCRenameDatabase_v01.xlsx'.format(lao.getPath('zdata'))
 dSubs_rename = lao.spreadsheetToDict(mpc_rename_file)
 market = 'PHX'
 print('Standardizing Zonda MPC names...')
-dPrice = td.standarize_hb_and_sub_names(fPrice, dPrice, dSubs_rename, market)
+dPrice = td.standardize_hb_and_sub_names(fPrice, dPrice, dSubs_rename, market)
 
 # print('here1')
 # pprint(dPrice)
