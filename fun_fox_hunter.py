@@ -9,15 +9,19 @@
 
 from anyio import Path
 import ai
+import bb
 from datetime import datetime
+import dicts
 from fun_fox_hunter_person_detection import (
 	is_company, 
 	parse_person_names, 
 	create_person_only_result,
 	detect_and_route
 )
-import fun_text_date as tdz
+import fun_tf_account_finder as tfaf
+import fun_text_date as td
 import json
+import lao
 import os
 from pprint import pprint
 import re
@@ -948,6 +952,75 @@ def check_if_company_file_exists(company_name):
 	
 	return contents
 
+# Get Enitity ID (EID)
+def get_entity_EID(service, dAcc):
+	lao.print_function_name(' fox_hunter def get_entity_EID')
+	#####################################################
+	# Check TF for existing Entity
+	fh_results = 'None'
+	EID = tfaf.main(service, dAcc, account_type='Entity')
+	if EID != 'None':
+		td.colorText(f' TerraForce Entity already exists with EID: {EID}', 'YELLOW')
+	######################################################
+	entity = dAcc['ENTITY']
+	address = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIPCODE']}"
+	print(f'\n Owner: {entity}')
+	print(f' Address: {address}')
+
+	# Use Fox Hunter to get Entity and Contact details
+	fh_results = main(entity, address)
+
+	# Check if Fox Hunter found any companies
+	if fh_results is None or 'companies' not in fh_results or fh_results['companies']['primary'] is None:
+		td.warningMsg('\n Fox Hunter did not find any companies for this owner.')
+		# ui = td.uInput('\n Continue [00]... > ')
+		# if ui == '00':
+		# 	exit('\n Terminating program...')
+		return EID, fh_results
+
+	# Only create entity if it doesn't already exist in TF
+	if EID == 'None':
+		# Add/Remove fields to match TerraForce Account object
+		dAcc_fh_entity_primary = fh_results['companies']['primary']
+		dAcc_fh_entity_primary['type'] = 'Account'
+		del dAcc_fh_entity_primary['relationship_description']
+		del dAcc_fh_entity_primary['relationship']
+		# Add Created by Fox Hunter to Description
+		if len(dAcc_fh_entity_primary['Description']) > 0:
+			dAcc_fh_entity_primary['Description'] = dAcc_fh_entity_primary['Description'] + f'\nCreated by Fox Hunter on {datetime.today().date().isoformat()}'
+		else:
+			dAcc_fh_entity_primary['Description'] = f'Created by Fox Hunter on {datetime.today().date().isoformat()}'
+		# TODO: Add routine to create Parent Enitity if it does exists
+
+		# Create a temporary dAcc to check for existing Entity again
+		dAcc_temp = dicts.get_blank_account_dict()
+		dAcc_temp['ENTITY'] = dAcc_fh_entity_primary['Name']
+		dAcc_temp['STREET'] = dAcc_fh_entity_primary['BillingStreet']
+		dAcc_temp['CITY'] = dAcc_fh_entity_primary['BillingCity']
+		dAcc_temp['STATE'] = dAcc_fh_entity_primary['BillingState']
+		dAcc_temp['ZIP'] = dAcc_fh_entity_primary['BillingPostalCode']
+		# Check for existing Entity again with updated dAcc
+		EID = tfaf.main(service, dAcc_temp, account_type='Entity')
+		if EID == 'None':
+			print('\n Creating TerraForce Account...')
+
+			# Title Case the Entity Name and format address
+			print('here3')
+			pprint(f' Before formatting Entity Name: {dAcc_fh_entity_primary["Name"]}')
+			pprint(dAcc_fh_entity_primary)
+			ui = td.uInput('\n Continue [00]... > ')
+			if ui == '00':
+				exit('\n Terminating program...')
+			dAcc_fh_entity_primary['Name'] = td.format_entity_name(dAcc_fh_entity_primary['Name'])
+			dAcc_fh_entity_primary = td.address_formatter(dAcc_fh_entity_primary)
+
+			EID = bb.tf_create_3(service, dAcc_fh_entity_primary)
+			print(f'\n Created TerraForce Account with EID: {EID}')
+			# ui = td.uInput('\n Continue [00]... > ')
+			# if ui == '00':
+			# 	exit('\n Terminating program...')
+
+	return EID, fh_results
 
 # =============================================================================
 # Main Entry Point
@@ -973,7 +1046,7 @@ def main(owner_name: str, address: str, enrich_contacts: bool = True):
 	# Check if already researched
 	combined_data = check_if_company_file_exists(owner_name)
 	if combined_data:
-		print(f"\n✅ Existing data found for '{owner_name}'")
+		print(f"\n✅ Existing FH json data found for '{owner_name}'")
 		return combined_data
 	
 	model = "gpt-5.2"

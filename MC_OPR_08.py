@@ -414,7 +414,7 @@ while 1:
 		html = client.campaigns.content.get(CID)
 		html = html['html']
 		htmlFileName = '{0}.html'.format(campTitleCSVFileName.replace(' ', ''))
-		with open('C:/Users/Public/Public Mapfiles/awsUpload/Maps/{0}'.format(htmlFileName), 'w', newline='') as f:
+		with open('C:/Users/Public/Public Mapfiles/awsUpload/Maps/{0}'.format(htmlFileName), 'w', newline='', encoding='utf-8') as f:
 			html = html.replace('\u034f', '')
 			f.write(html)
 		# Upload to AWS

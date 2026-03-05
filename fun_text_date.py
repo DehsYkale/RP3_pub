@@ -20,10 +20,17 @@ def address_formatter(dAcc):
 		if dAcc['STREET'].isupper():
 			dAcc['STREET'] = titlecase_street(dAcc['STREET'])
 		dAcc['STREET'] = get_abbreviate_street_name(dAcc['STREET'])
+	if 'BillingStreet' in dAcc.keys():
+		if dAcc['BillingStreet'].isupper():
+			dAcc['BillingStreet'] = titlecase_street(dAcc['BillingStreet'])
+		dAcc['BillingStreet'] = get_abbreviate_street_name(dAcc['BillingStreet'])
 
 	if 'CITY' in dAcc.keys():
 		if dAcc['CITY'].isupper():
 			dAcc['CITY'] = dAcc['CITY'].title()
+	if 'BillingCity' in dAcc.keys():
+		if dAcc['BillingCity'].isupper():
+			dAcc['BillingCity'] = dAcc['BillingCity'].title()
 	
 	# Skip state conversion if the country is not USA
 	lCountry = ['USA', 'UNITED STATES', 'US', 'UNITED STATES OF AMERICA', 'NONE']
@@ -33,12 +40,14 @@ def address_formatter(dAcc):
 			return dAcc
 	
 	if 'STATE' in dAcc.keys():
-		if len(dAcc['STATE']) > 2 and dAcc['STATE'] != 'None':
-			print('here1')
+		if len(dAcc['STATE']) > 2 and dAcc['STATE'] != 'None' and dAcc['STATE'] != '':
 			print(dAcc['STATE'])
 			dAcc['STATE'] = lao.convertState(dAcc['STATE'])
-		# if dAcc['CITY'].isupper():
-		# 	dAcc['CITY'] = dAcc['CITY'].title()
+	if 'BillingState' in dAcc.keys():
+		if len(dAcc['BillingState']) > 2 and dAcc['BillingState'] != 'None' and dAcc['BillingState'] != '':
+			print(dAcc['BillingState'])
+			dAcc['BillingState'] = lao.convertState(dAcc['BillingState'])
+
 	return dAcc
 
 # Standardizes the format of a billing street address

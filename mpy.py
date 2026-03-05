@@ -6,6 +6,7 @@ import aws
 import bb
 from collections import Counter
 import dicts
+from dotenv import load_dotenv
 import fjson
 import fun_login
 import geopandas as gpd
@@ -20,25 +21,27 @@ from shapely.geometry import Point
 import fun_text_date as td
 import time
 
+
 def get_arcgis_token():
 	"""Get authentication token for LAO ArcGIS REST API."""
 
 	print('\n Getting ArcGIS token...')
 
-	from dotenv import load_dotenv
+
 	# Load environment variables from a .env file
 	load_dotenv()
 
 	# Get the value of an environment variable
 	username = os.getenv('ARCGIS_USERNAME')
 	password = os.getenv('ARCGIS_PASSWORD')
+	url = os.getenv('ARCGIS_URL')
+	referer_url = os.getenv('ARCGIS_REFERER_URL')
 
-	url = "https://maps.landadvisors.com/portal/sharing/rest/generateToken"
 	data = {
 		"username": username,
 		"password": password,
 		"client": "referer",
-		"referer": "https://maps.landadvisors.com",
+		"referer": referer_url,
 		"f": "json"
 	}
 	response = requests.post(url, data=data)
@@ -57,9 +60,13 @@ def get_lead_layer_id(token, leadid):
 	lead_layer_name = f"{state}LEADS{county}"
 	parcel_layer_name = f"{state}PARCELS{county}"
 	
+	
+	# Load environment variables from a .env file
+	load_dotenv()
+
 	# Query the FeatureServer to get all layers
-	# url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
-	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_Leads/MapServer"
+	base_url = os.getenv('ARCGIS_LEADS_BASE_URL')
+	url = f"{base_url}/{lead_layer_name}/query"
 	params = {
 		"f": "json",
 		"token": token
@@ -73,7 +80,8 @@ def get_lead_layer_id(token, leadid):
 			lead_layer_id = layer["id"]
 	
 	# Query the FeatureServer to get all layers
-	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer"
+	base_url = os.getenv('ARCGIS_PARCELS_BASE_URL')
+	url = f"{base_url}/{parcel_layer_name}/query"
 	params = {
 		"f": "json",
 		"token": token
@@ -86,14 +94,49 @@ def get_lead_layer_id(token, leadid):
 		if layer["name"].upper() == parcel_layer_name:
 			parcel_layer_id = layer["id"]
 	
+	print(f'\n State County: {state} {county}')
+	print(f' Lead Layer ID: {lead_layer_id}')
+	print(f' Parcel Layer ID: {parcel_layer_id}')
+	
 	return lead_layer_id, parcel_layer_id
+
+# Get parcel layer id
+def get_parcel_layer_id(token, county, state):
+	lao.print_function_name(' internal - get_parcel_layer_id')
+	county = county.upper().replace(' ', '')
+	state = state.upper()
+	parcel_layer_name = f"{state}PARCELS{county}"
+	print(f"Looking for parcel layer with name: {parcel_layer_name}")
+
+	# Load environment variables from a .env file
+	load_dotenv()
+
+		# Query the FeatureServer to get all layers
+	base_url = os.getenv('ARCGIS_PARCELS_BASE_URL')
+	url = f"{base_url}/{parcel_layer_name}/query"
+	params = {
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
+
+	# Find the layer with matching name
+	for layer in data.get("layers", []):
+		if layer["name"].upper() == parcel_layer_name:
+			return layer["id"]
+	
+	td.warningMsg(" No matching parcel layer found.")
+	return None
 
 # Get Lead attributes by leadid from ArcGIS REST API
 def get_lead_by_id(token, leadid, layer_id):
 	lao.print_function_name(' mpy def get_lead_by_id')
 
-	# base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_leads/FeatureServer"
-	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_Leads/MapServer"
+	# Load environment variables from a .env file
+	load_dotenv()
+	base_url = os.getenv('ARCGIS_LEADS_BASE_URL')
+
 	url = f"{base_url}/{layer_id}/query"
 	params = {
 		"where": f"leadid='{leadid}'",
@@ -112,6 +155,26 @@ def get_lead_by_id(token, leadid, layer_id):
 	# ui = td.uInput('\n Continue [00]... > ')
 	# if ui == '00':
 	# 	exit('\n Terminating program...')
+
+	if data.get("features"):
+		return data["features"][0]["attributes"]
+	return None
+
+# Get Lead attributes by APN from ArcGIS REST API
+def get_lead_by_apn(token, apn, layer_id):
+	lao.print_function_name(' mpy def get_lead_by_apn')
+
+	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_Leads/MapServer"
+	url = f"{base_url}/{layer_id}/query"
+	params = {
+		"where": f"parcels LIKE '%{apn}%'",
+		"outFields": "*",
+		"returnGeometry": "false",
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
 
 	if data.get("features"):
 		return data["features"][0]["attributes"]
@@ -137,12 +200,11 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 	where_clause = f"apn IN ({apn_list})"
 	
 	parcel_fields = dicts.get_parcel_fields_list()
-	print('\n Parcel Fields list')
-	print(parcel_fields)
-	print(f'\n Parcel_layer_id: {parcel_layer_id}')
-	print('\n')
 
-	base_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer"
+	# Load environment variables from a .env file
+	load_dotenv()
+	base_url = os.getenv('ARCGIS_PARCELS_BASE_URL')
+
 	url = f"{base_url}/{parcel_layer_id}/query"
 	params = {
 		"where": where_clause,
@@ -151,7 +213,7 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 		"f": "json",
 		"token": token
 	}
-	pprint(params)
+	# pprint(params)
 	response = requests.get(url, params=params)
 	data = response.json()
 
@@ -173,11 +235,14 @@ def get_parcel_propertyids(token, parcels_str, parcel_layer_id):
 			owner = feature["attributes"].get("owner", "").upper()
 			lOwners.append(owner)
 			if subdiv == 'None':
-				subdiv = feature["attributes"].get("subdiv", subdiv)
+				if feature["attributes"].get("subdiv", "") != '':
+					subdiv = feature["attributes"].get("subdiv", subdiv)
 			if usedesc == 'None':
-				usedesc = feature["attributes"].get("usedesc", usedesc)
+				if feature["attributes"].get("usedesc", "") != '':
+					usedesc = feature["attributes"].get("usedesc", usedesc)
 			if zoning == 'None':
-				zoning = feature["attributes"].get("zoning", zoning)
+				if feature["attributes"].get("zoning", "") != '':
+					zoning = feature["attributes"].get("zoning", zoning)
 	
 	# Determine the most common owner
 	if lOwners:
@@ -193,14 +258,20 @@ def get_lead_info_dAcc_dTF_dicts(token, LeadId):
 
 	start_time = time.time()
 
-	# token = get_arcgis_token()
+	print(f'\n Getting lead info for LeadID: {LeadId}...')
 
 	lead_layer_id, parcel_layer_id = get_lead_layer_id(token, LeadId)
-	print(f"\n Lead Layer ID: {lead_layer_id}")
-	print(f" Parcel Layer ID: {parcel_layer_id}\n")
+
 
 	dLeadInfo = get_lead_by_id(token, LeadId, lead_layer_id)
-	# pprint(dLeadInfo)
+	
+	print('here1')
+	print('\n LEAD INFO ##################################################')
+	pprint(dLeadInfo)
+	# ui = td.uInput('\n Continue [00]... > ')
+	# if ui == '00':
+	# 	exit('\n Terminating program...')
+	
 
 	# Return empty dicts if no lead info found
 	if not dLeadInfo:
@@ -221,9 +292,10 @@ def get_lead_info_dAcc_dTF_dicts(token, LeadId):
 	dAcc['STREET'] = dLeadInfo.get('mailstreet', '')
 	dAcc['CITY'] = dLeadInfo.get('mailcity', '')
 	dAcc['STATE'] = dLeadInfo.get('mailstate', '')
-	dAcc['ZIP'] = dLeadInfo.get('mailzip', '')
-	dAcc['ADDRESSFULL'] = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIP']}"
-	dAcc['PHONE'] = dLeadInfo.get('phone', '')
+	dAcc['ZIPCODE'] = dLeadInfo.get('mailzip', '')
+	dAcc['ADDRESSFULL'] = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIPCODE']}"
+	if dLeadInfo.get('phone'):
+		dAcc['PHONE'] = dLeadInfo.get('phone', '')
 
 	# Create dTF from dLeadInfo
 	dTF = dicts.get_blank_tf_deal_dict()
@@ -240,7 +312,87 @@ def get_lead_info_dAcc_dTF_dicts(token, LeadId):
 	dTF['Zoning__c'] = zoning
 
 	print(f"Completed in {time.time() - start_time:.2f} seconds.")
-	
+
+	return dAcc, dTF, lPropertyids
+
+def get_parcel_info_dAcc_dTF_dicts(token, APN, state, county):
+	lao.print_function_name(' mpy def get_parcel_info_dAcc_dTF_dicts')
+
+	start_time = time.time()
+
+	state = state.upper()
+	county = county.upper()
+	parcel_layer_name = f"{state}PARCELS{county}"
+
+	# Get parcel layer ID
+	url = "https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer"
+	params = {"f": "json", "token": token}
+	response = requests.get(url, params=params)
+	data = response.json()
+	parcel_layer_id = None
+	for layer in data.get("layers", []):
+		if layer["name"].upper() == parcel_layer_name:
+			parcel_layer_id = layer["id"]
+			break
+
+	print(f" Parcel Layer ID: {parcel_layer_id}\n")
+
+	if parcel_layer_id is None:
+		print(f'\n Parcel layer not found for {state}_{county}...')
+		return {}, {}, []
+
+	# Query parcel layer directly by APN
+	parcel_fields = dicts.get_parcel_fields_list()
+	url = f"https://maps.landadvisors.com/arcgis/rest/services/Research_parcels/FeatureServer/{parcel_layer_id}/query"
+	params = {
+		"where": f"apn='{APN}'",
+		"outFields": parcel_fields,
+		"returnGeometry": "false",
+		"f": "json",
+		"token": token
+	}
+	response = requests.get(url, params=params)
+	data = response.json()
+
+	if not data.get("features"):
+		print(f'\n No parcel found for APN {APN}...')
+		return {}, {}, []
+
+	d = data["features"][0]["attributes"]
+
+	# Create dAcc from parcel data
+	dAcc = dicts.get_blank_account_dict()
+	dAcc['ENTITY'] = d.get('owner', '')
+	dAcc['STREET'] = d.get('mailstreet', '')
+	dAcc['CITY'] = d.get('mailcity', '')
+	dAcc['STATE'] = d.get('mailstate', '')
+	dAcc['ZIPCODE'] = d.get('mailzip', '')
+	dAcc['ADDRESSFULL'] = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIPCODE']}"
+
+	# Create dTF from parcel data
+	dTF = dicts.get_blank_tf_deal_dict()
+	dTF['Acres__c'] = d.get('acres', 0)
+	dTF['Parcels__c'] = APN
+	dTF['Lead_Parcel__c'] = APN
+	dTF['State__c'] = state
+	dTF['County__c'] = county.title()
+	dTF['Latitude__c'] = d.get('y', 0)
+	dTF['Longitude__c'] = d.get('x', 0)
+	dTF['Subdivision__c'] = d.get('subdiv', 'None')
+	dTF['Description__c'] = d.get('usedesc', 'None')
+	dTF['Zoning__c'] = d.get('zoning', 'None')
+	dTF['Sale_Date__c'] = d.get('saledate', 'None')
+	dTF['Sale_Price__c'] = d.get('saleprice', 0)
+	dTF['Recorded_Instrument_Number__c'] = d.get('docnum', 'None')
+	dTF['Loan_Amount__c'] = d.get('mtg1amt', 0)
+
+	lPropertyids = []
+	pid = d.get('propertyid')
+	if pid:
+		lPropertyids.append(pid)
+
+	print(f"Completed in {time.time() - start_time:.2f} seconds.")
+
 	return dAcc, dTF, lPropertyids
 
 # Get list of Parcel PropertyIDs from list of APNs
@@ -837,13 +989,17 @@ def make_opr_map_api(service, PID, pause_it=True):
 		stAbb = results[0]['State__c']
 	parcel_layer = f'{stAbb}_{results[0]['County__c']}'
 
+	# Load environment variables from a .env file
+	load_dotenv()
+	m1_base_url = os.getenv('M1_OPR_MAP_API_URL')
+
 	# Make the API call to create the OPR map
 	lao.print_function_name('mpy def make_opr_map_api - Making map API Call Loop')
 	attempts_counter = 0
 	while 1:
 		is_map_created = False
 		if attempts_counter < 2:
-			url = f'https://m1.landadvisors.com/api/ownerindex-static/{parcel_layer}?pid={PID}'
+			url = f'{m1_base_url}/{parcel_layer}?pid={PID}'
 			r = requests.get(url)
 			# Check if the PNG map was created
 			if aws.aws_file_exists(PID, extention='png', verbose=False):
@@ -858,7 +1014,7 @@ def make_opr_map_api(service, PID, pause_it=True):
 		if is_map_created is False:
 			td.warningMsg(f'\n OPR Map Not Created: {PID}')
 			if pause_it:
-				td.warningMsg('\n Confirm that PID {PID} has a polygon in the OwnerIndex layer.', colorama=True)
+				td.warningMsg(f'\n Confirm that PID {PID} has a polygon in the OwnerIndex layer.', colorama=True)
 				# print('\n API Response: {0}'.format(r.text))
 				print('\n Options:')
 				print('  1) Retry creating OPR Map')
@@ -994,11 +1150,14 @@ def oi_post(m1_params):
 
 	username = lao.getUserName()
 
+	# Load environment variables from a .env file
+	load_dotenv()
+	m1_ownerindex_action_url = os.getenv('M1_OWNERINDEX_ACTION_API_URL')
+
 	action = m1_params["action"]
-	# Define the URL for the POST request
-	url = 'https://m1.landadvisors.com/api/ownerindex-action'
+
 	# Make the POST request with the parameters
-	r = requests.post(url, json=m1_params)
+	r = requests.post(m1_ownerindex_action_url, json=m1_params)
 	if r.status_code == 200:
 		# print(r.status_code)
 		td.colorText(f'\n {action} successful using M1 API.', 'GREEN')
@@ -1018,7 +1177,7 @@ def oi_post(m1_params):
 
 		# Try createing OwnerIndex poly using ArcGIS
 		
-		lResearchers = ['blandis', 'tjacobson', 'avidela', 'lcoxworth', 'lsweetser', 'mwifler', 'ccox', 'mklingen']
+		lResearchers = ['blandis', 'tjacobson', 'avidela', 'inewling', 'mwifler', 'ccox', 'mklingen']
 		if username in lResearchers:
 			from aws import run_Arc_AWS
 			run_Arc_AWS()
@@ -1139,8 +1298,10 @@ def get_OID_from_PID(PID, gis='None'):
 	if gis == 'None':
 		gis = fun_login.LAO_ArcGIS_portal()
 
+	# Load environment variables from a .env file
+	load_dotenv()
 	# Feature Service URL and layer index
-	feature_service_url = "https://maps.landadvisors.com/arcgis/rest/services/Research_Edit_Main/FeatureServer"
+	feature_service_url = os.getenv('ARCGIS_OWNERINDEX_BASE_URL')
 	layer_index = 0  # OwnerIndex is Feature Class 0
 	layer_url = f"{feature_service_url}/{layer_index}"
 

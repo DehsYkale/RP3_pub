@@ -44,7 +44,7 @@ def get_Fox_Hunter_dAcc(dFox):
 	dAcc['STREET'] = dEntity['BillingStreet']
 	dAcc['CITY'] = dEntity['BillingCity']
 	dAcc['STATE'] = dEntity['BillingState']
-	dAcc['ZIP'] = dEntity['BillingPostalCode']
+	dAcc['ZIPCODE'] = dEntity['BillingPostalCode']
 	dAcc['PHONE'] = dEntity['Phone']
 	dAcc['PHONEENTITY'] = dEntity['Phone']
 	dAcc['WEBSITE'] = dEntity['Website']

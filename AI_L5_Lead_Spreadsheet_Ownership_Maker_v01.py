@@ -46,7 +46,7 @@ def get_entity_EID(service, dAcc):
 	else:
 		######################################################
 		entity = dAcc['ENTITY']
-		address = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIP']}"
+		address = f"{dAcc['STREET']}, {dAcc['CITY']}, {dAcc['STATE']} {dAcc['ZIPCODE']}"
 		print(f'\n Owner: {entity}')
 		print(f' Address: {address}')
 

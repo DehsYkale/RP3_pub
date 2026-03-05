@@ -250,15 +250,18 @@ def main(service, dAcc, account_type=None, entity=None, address=None):
 		AID = 'None'
 		first_name = dAcc['NF']
 		last_name = dAcc['NL']
-	
+		first_initial = first_name[0] if len(first_name) > 0 else 'None'
+
 	# Getting address components ##########################################
 	dAcc, BillingStreet, BillingCity, BillingState, BillingPostalCode, full_address, street_number, street_name, unit_suite = get_address_components(dAcc, entity, address)
+	lao.print_function_name(' tfaf def main()')
 
 	# Entity Account Type Handling ########################################
 	# Handle records that do not have an address number by querying with the entity name only
 	if account_type == 'Entity':
 		if street_number is None:
 			found_match = find_best_entity_name_match_no_address(service, full_entity_name)
+			lao.print_function_name(' tfaf def main()')
 
 
 		# TerraForce Query for Address Match
@@ -286,47 +289,69 @@ def main(service, dAcc, account_type=None, entity=None, address=None):
 		
 		# Find best match
 		EID = find_best_entity_name_match_with_address(full_entity_name, results)
+		lao.print_function_name(' tfaf def main()')
 		dAcc['EID'] = EID
 		return EID
 
 	if account_type == 'Person':
-		# TODO: Handle records that do not have an address number by querying with the person name only
-		if street_number is None:
-			# found_match = find_best_person_name_match_no_address(service, first_name, last_name)
-			# td.warningMsg(' No street number found in BillingStreet. Querying by person name only.')
-			# exit()
-			return dAcc
-
+		first_name = dAcc['NF']
+		first_initial = first_name[0] if len(first_name) > 0 else 'None'
+		last_name = dAcc['NL']
+		phone = dAcc['PHONE']
+		phn_digits = ''.join(filter(str.isdigit, phone))
+		mobile = dAcc['MOBILE']
+		mbl_digits = ''.join(filter(str.isdigit, mobile))
+		email = dAcc['EMAIL']
+		
 		# TerraForce Query for Address Match
 		fields = 'default'
 		results = []
 		# Query using street number and street name only
 		if not unit_suite is None:
-			wc = (f" BillingStreet LIKE '{street_number}%' AND BillingStreet LIKE '%{street_name}%' AND BillingStreet LIKE '%{unit_suite}%' AND BillingState = '{BillingState}' AND BillingPostalCode LIKE '{BillingPostalCode}%'")
+			wc = (f"LastName = '{last_name}' AND BillingStreet LIKE '{street_number}%' AND BillingStreet LIKE '%{street_name}%' AND BillingStreet LIKE '%{unit_suite}%' AND BillingState = '{BillingState}' AND BillingPostalCode LIKE '{BillingPostalCode}%'")
 			results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None, fields=fields)
 		
 		# If no results, try without unit_suite
 		if results == []:
 			# Query without unit_suite
-			wc = (f" BillingStreet LIKE '{street_number}%' AND BillingStreet LIKE '%{street_name}%' AND BillingState = '{BillingState}' AND BillingPostalCode LIKE '{BillingPostalCode}%'")
+			wc = (f"LastName = '{last_name}' AND BillingStreet LIKE '{street_number}%' AND BillingStreet LIKE '%{street_name}%' AND BillingState = '{BillingState}' AND BillingPostalCode LIKE '{BillingPostalCode}%'")
 			results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None, fields=fields)
 
+		# If no results, try with last name and phone
+		if results == []:
+			print('here4 Phone Mobile')
+
+			# Make list of phone number formats to try based on the digits we have
+			lPhone_formats = []
+			if dAcc['PHONE'] != 'None' and dAcc['PHONE'] != '':
+				lPhone_formats.append(f"({phn_digits[:3]}) {phn_digits[3:6]}-{phn_digits[6:]}")
+				lPhone_formats.append(f"{phn_digits[:3]}-{phn_digits[3:6]}-{phn_digits[6:]}")
+				lPhone_formats.append(phn_digits)
+			if dAcc['MOBILE'] != 'None' and dAcc['MOBILE'] != '':
+				lPhone_formats.append(f"({mbl_digits[:3]}) {mbl_digits[3:6]}-{mbl_digits[6:]}")
+				lPhone_formats.append(f"{mbl_digits[:3]}-{mbl_digits[3:6]}-{mbl_digits[6:]}")
+				lPhone_formats.append(mbl_digits)
+
+			if lPhone_formats != []:
+				# TerraForce Query
+				fields = 'default'
+				wc = f"LastName = '{last_name}' AND (Phone IN ({', '.join(f"'{phone}'" for phone in lPhone_formats)}) OR PersonMobilePhone IN ({', '.join(f"'{phone}'" for phone in lPhone_formats)}))"
+				results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None, fields=fields)
+		
+		# If no results, try with last name and email
+		# Note: Email is not a required field in our database and may not be consistently populated, so this may not be a reliable search criteria but worth trying if we have the data
+		if results == []:
+			if email != 'None' and email != '':
+				print('here9 Email')
+				wc = (f"LastName = '{last_name}' AND PersonEmail = '{email}'")
+				results = bb.tf_query_3(service, rec_type='Person', where_clause=wc, limit=None, fields=fields)		
+		
 		# If still no results try with entity name
 		# The function will handle exact, partial, and first word matches
 		# If no results, function will return EID as 'None'
-		# if results == []:
-		# 	td.warningMsg(' No TerraForce Account matches found for this address.')
-		# 	AID = find_best_person_name_match_no_address(service, first_name, last_name)
-		# 	return AID
-
-		
-		# print('here1')
-		# pprint(results)
-		# ui = td.uInput('\n Continue [00]... > ')
-		# if ui == '00':
-		# 	exit('\n Terminating program...')
-		
-
+		if results == []:
+			# td.warningMsg(' No TerraForce Account matches found for this address.')
+			return AID
 		
 		# Find best match
 		AID = find_best_person_name_match_with_address(first_name, last_name, results)

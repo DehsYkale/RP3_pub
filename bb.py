@@ -3065,21 +3065,22 @@ def save_contacts_to_cache(contacts):
 
 # Modified version of the original contacts loading code
 def get_contacts_dict(service):
-    """Get contacts either from cache or from Salesforce."""
-    # Try to load from cache first
-    cached_contacts = load_contacts_from_cache()
-    if cached_contacts is not None:
-        print(f'\n Using cached contacts from today ({len(cached_contacts)} records)...\n')
-        return cached_contacts
-        
-    # If no valid cache, query Salesforce
-    print('\n * Generating TF Account dictionary\n This takes a minute, please standby...\n')
-    contacts = getTFAccounts(service, 'Emails')
-    contacts_dict = {contact['PersonEmail']: contact for contact in contacts}
-    
-    # Save to cache for future use
-    save_contacts_to_cache(contacts_dict)
-    
-    print(f' Found {len(contacts_dict)} contacts with email addresses...')
-    return contacts_dict
+	"""Get contacts either from cache or from Salesforce."""
+	# Try to load from cache first
+	cached_contacts = load_contacts_from_cache()
+	# cached_contacts = None
+	if cached_contacts is not None:
+		print(f'\n Using cached contacts from today ({len(cached_contacts)} records)...\n')
+		return cached_contacts
+		
+	# If no valid cache, query Salesforce
+	print('\n * Generating TF Account dictionary\n This takes a minute, please standby...\n')
+	contacts = getTFAccounts(service, 'Emails')
+	contacts_dict = {contact['PersonEmail']: contact for contact in contacts}
+	
+	# Save to cache for future use
+	save_contacts_to_cache(contacts_dict)
+	
+	print(f' Found {len(contacts_dict)} contacts with email addresses...')
+	return contacts_dict
 

@@ -373,7 +373,7 @@ for mkt in dMarketsComps:
 	# Write Top 100 Deals Sheet ##########################################
 	print(' Writing MVP Deals sheet...')
 	lToExcelTop100Deals = dMarketsTop100Deals[mkt]
-	with open('C:/TEMP/{0}.txt'.format(mkt), 'w') as ftxt:
+	with open('C:/TEMP/{0}.txt'.format(mkt), 'w', encoding='utf-8') as ftxt:
 		for element in lToExcelTop100Deals:
 			ftxt.write('{0}\n'.format(element))
 	noRowsTop100Deals = len(lToExcelTop100Deals) + 2
@@ -388,7 +388,7 @@ for mkt in dMarketsComps:
 	# Write LAO Deals Sheet ##########################################
 	print(' Writing LAO Deals sheet...')
 	lToExcelLAODeals = dMarketsLAODeals[mkt]
-	with open('C:/TEMP/{0}.txt'.format(mkt), 'w') as ftxt:
+	with open('C:/TEMP/{0}.txt'.format(mkt), 'w', encoding='utf-8') as ftxt:
 		for element in lToExcelLAODeals:
 			ftxt.write('{0}\n'.format(element))
 	noRowsLAODeals = len(lToExcelLAODeals) + 2

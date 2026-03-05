@@ -234,7 +234,6 @@ def _parse_single_name(name: str, address: str = "") -> dict:
 		"PersonMobilePhone": "",
 		"PersonTitle": "Property Owner",
 		"priority_rank": 1,
-		"_raw_name": name  # Keep original for reference
 	}
 
 
